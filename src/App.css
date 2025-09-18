@@ -1,0 +1,140 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+body {
+  background: #181a20;
+  color: #f1f1f1;
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+.slick-prev:before, .slick-next:before {
+  color: white !important;
+  font-size: 30px !important;
+}
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 0;
+  background: #23272f !important;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  border: none;
+}
+
+
+.read-the-docs {
+  color: #888;
+}
+
+/* Nút chính màu cam */
+.btn-primary {
+  background: #ff4b2b;
+  border: none;
+}
+.btn-primary:hover {
+  background: #ff6f3c;
+}
+.btn-outline-light {
+  border-color: #ff4b2b;
+  color: #ff4b2b;
+}
+.btn-outline-light:hover {
+  background: #ff4b2b;
+  color: #fff;
+}
+
+/* Tiêu đề nổi bật */
+h1, h2, h3, h4, h5, h6 {
+  color: #ff4b2b;
+  font-weight: 700;
+}
+
+/* Badge rating */
+.badge.bg-danger, .badge.bg-primary {
+  font-size: 1rem;
+  padding: 0.5em 1em;
+  border-radius: 8px;
+  background: #2d313a !important;
+  color: #ff4b2b !important;
+}
+
+/* Nút chính màu cam trên nền tối */
+.btn-primary {
+  background: #ff4b2b;
+  border: none;
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #ff6f3c;
+}
+.btn-outline-light {
+  border-color: #ff4b2b;
+  color: #ff4b2b;
+  background: transparent;
+}
+.btn-outline-light:hover {
+  background: #ff4b2b;
+  color: #fff;
+}
+
+/* Card body và text */
+.card-body {
+  background: transparent;
+  color: #f1f1f1;
+}
+
+/* Footer/Header tối màu */
+footer, .footer, header, .header {
+  background: #23272f !important;
+  color: #f1f1f1 !important;
+}
+
+/* Scrollbar tối */
+::-webkit-scrollbar {
+  width: 8px;
+  background: #23272f;
+}
+::-webkit-scrollbar-thumb {
+  background: #393e46;
+  border-radius: 8px;
+}
