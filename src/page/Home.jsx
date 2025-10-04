@@ -24,7 +24,7 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="d-flex flex-column min-vh-100">
+    <div className="d-flex flex-column min-vh-100 home-container">
       <Header />
       
       {/* Hero Banner */}

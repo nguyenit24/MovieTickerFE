@@ -20,7 +20,7 @@ const Login = () => {
   };
 
   return (
-    <div className="d-flex flex-column min-vh-100">
+    <div className="d-flex flex-column min-vh-100 login-container">
       <Header />
       <main className="flex-grow-1 login-page py-5" style={{ 
         background: 'linear-gradient(135deg, #23272f 0%, #121417 100%)',
