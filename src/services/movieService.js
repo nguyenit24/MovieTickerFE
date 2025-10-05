@@ -2,19 +2,19 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
 class MovieService {
-  // Lấy danh sách tất cả phim
-  async getAllMovies() {
+  // Lấy danh sách phim phân trang
+  async getMoviesPaginated(page = 1) {
     try {
-      const response = await fetch(`${API_BASE_URL}/phim`);
+      const url = `${API_BASE_URL}/phim/pageable?page=${page}`;
+      const response = await fetch(url);
       const result = await response.json();
-      
       if (result.code === 200) {
         return { success: true, data: result.data };
       } else {
         return { success: false, message: result.message };
       }
     } catch (error) {
-      console.error('Lỗi kết nối API getAllMovies:', error);
+      console.error('Lỗi kết nối API getMoviesPaginated:', error);
       return { success: false, message: 'Lỗi kết nối server' };
     }
   }

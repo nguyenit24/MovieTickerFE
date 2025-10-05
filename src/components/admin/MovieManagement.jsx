@@ -6,6 +6,7 @@ const MovieManagement = () => {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -26,43 +27,38 @@ const MovieManagement = () => {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    fetchMovies();
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    fetchMovies(currentPage, searchTerm);
+  }, [currentPage, searchTerm]);
 
   const fetchCategories = async () => {
     const result = await categoryService.getAllCategories();
     if (result.success) setCategories(result.data);
   };
 
-  const fetchMovies = async () => {
+  const fetchMovies = async (page = 1) => {
     try {
       setLoading(true);
-      const result = await movieService.getAllMovies();
-      
+      const result = await movieService.getMoviesPaginated(page);
       if (result.success) {
-        setMovies(result.data);
+        console.log(result.data);
+        const { currentMovies, totalPages, currentPage } = result.data;
+        setMovies(currentMovies);
+        setTotalPages(totalPages);
+        setCurrentPage(currentPage);
       } else {
-        console.error('Lỗi lấy danh sách phim:', result.message);
-        setMovies([
-          {
-            maPhim: "P001",
-            tenPhim: "Demon Slayer: Infinity Castle",
-            moTa: "Phim hoạt hình Nhật Bản về những thợ săn quỷ",
-            daoDien: "Haruo Sotozaki",
-            dienVien: "Natsuki Hanae, Akari Kito",
-            thoiLuong: 120,
-            ngayKhoiChieu: "2024-12-15",
-            hinhAnh: "https://via.placeholder.com/300x450/8B5CF6/ffffff?text=Demon+Slayer",
-            trailerURL: "https://youtube.com/watch?v=example",
-            tuoi: 13,
-            trangThai: "Đang chiếu",
-            listTheLoai: [{ tenTheLoai: "Hành động" }, { tenTheLoai: "Anime" }]
-          }
-        ]);
+        setMovies([]);
+        setTotalPages(1);
+        setCurrentPage(1);
       }
     } catch (error) {
       console.error('Lỗi kết nối API:', error);
+      setMovies([]);
+      setTotalPages(1);
+      setCurrentPage(1);
     } finally {
       setLoading(false);
     }
@@ -171,15 +167,7 @@ const MovieManagement = () => {
     return new Date(dateString).toLocaleDateString('vi-VN');
   };
 
-  const filteredMovies = movies.filter(movie => 
-    movie.tenPhim.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    movie.daoDien.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredMovies.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentMovies = filteredMovies.slice(startIndex, startIndex + itemsPerPage);
+  const currentMovies = movies;
 
   if (loading) {
     return (
@@ -248,16 +236,16 @@ const MovieManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {currentMovies.map((movie) => (
+                {currentMovies?.map((movie) => (
                   <tr key={movie.maPhim}>
                     <td>
                       <img 
-                        src={movie.hinhAnh || 'https://via.placeholder.com/60x80/cccccc/666666?text=No+Image'} 
+                        src={movie.hinhAnh || '/images/no_image.jpg'} 
                         alt={movie.tenPhim}
                         className="rounded"
                         style={{ width: '50px', height: '70px', objectFit: 'cover' }}
                         onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/60x80/cccccc/666666?text=No+Image';
+                          e.target.src = '/images/no_image.jpg';
                         }}
                       />
                     </td>
@@ -310,7 +298,7 @@ const MovieManagement = () => {
           </div>
 
           {/* Empty state */}
-          {currentMovies.length === 0 && (
+          {currentMovies?.length === 0 && (
             <div className="text-center py-5">
               <i className="bi bi-film display-1 text-muted"></i>
               <p className="text-muted mt-2">Không tìm thấy phim nào.</p>
@@ -319,7 +307,7 @@ const MovieManagement = () => {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {totalPages && totalPages > 1 && (
           <div className="card-footer bg-white">
             <nav>
               <ul className="pagination pagination-sm justify-content-center mb-0">
