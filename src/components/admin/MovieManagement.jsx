@@ -111,9 +111,14 @@ const MovieManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Chuyển mảng id thể loại sang mảng tên thể loại
+    const theLoaiNames = categories
+      .filter(cat => formData.theLoai.includes(cat.maTheLoai))
+      .map(cat => cat.tenTheLoai);
+    const submitData = { ...formData, theLoai: theLoaiNames };
     try {
       if (modalType === 'add') {
-        const result = await movieService.createMovie(formData);
+        const result = await movieService.createMovie(submitData);
         if (result.success) {
           alert('Thêm phim thành công!');
           fetchMovies();
@@ -122,7 +127,7 @@ const MovieManagement = () => {
           alert('Lỗi: ' + result.message);
         }
       } else if (modalType === 'edit') {
-        const result = await movieService.updateMovie(selectedMovie.maPhim, formData);
+        const result = await movieService.updateMovie(selectedMovie.maPhim, submitData);
         if (result.success) {
           alert('Cập nhật phim thành công!');
           fetchMovies();
@@ -235,6 +240,7 @@ const MovieManagement = () => {
                   <th style={{ width: '80px' }}>Poster</th>
                   <th>Tên phim</th>
                   <th>Đạo diễn</th>
+                  <th>Thể loại</th>
                   <th>Thời lượng</th>
                   <th>Ngày KC</th>
                   <th>Trạng thái</th>
@@ -260,6 +266,7 @@ const MovieManagement = () => {
                       <small className="text-muted">Mã: {movie.maPhim}</small>
                     </td>
                     <td>{movie.daoDien}</td>
+                    <td>{movie.listTheLoai ? movie.listTheLoai.map(tl => tl.tenTheLoai).join(', ') : 'N/A'}</td>
                     <td>{formatDuration(movie.thoiLuong)}</td>
                     <td>{formatDate(movie.ngayKhoiChieu)}</td>
                     <td>
