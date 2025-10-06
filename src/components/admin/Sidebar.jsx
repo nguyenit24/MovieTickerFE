@@ -9,7 +9,7 @@ const Sidebar = ({ activeMenu, setActiveMenu }) => {
     { id: 'category', icon: 'bi-tags', label: 'Thể loại' },
     { id: 'room', icon: 'bi-house', label: 'Phòng chiếu' },
     { id: 'schedule', icon: 'bi-calendar3', label: 'Suất chiếu' },
-    { id: 'ticket', icon: 'bi-ticket-perforated', label: 'Loại vé' },
+    { id: 'seat', icon: 'bi-ticket-perforated', label: 'Loại ghế' },
     { id: 'revenue', icon: 'bi-currency-dollar', label: 'Doanh thu' }
   ];
 
