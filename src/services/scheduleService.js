@@ -1,11 +1,28 @@
-// Service API cho quản lý lịch chiếu
+// Service API cho quản lý suất chiếu
 const API_BASE_URL = 'http://localhost:8080/api';
 
 class ScheduleService {
-  // Lấy danh sách lịch chiếu
+  // Lấy danh sách suất chiếu có phân trang
+  async getSchedulesPaginated(page = 1) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/suatchieu/pageable?page=${page}`);
+      const result = await response.json();
+      
+      if (result.code === 200) {
+        return { success: true, data: result.data };
+      } else {
+        return { success: false, message: result.message };
+      }
+    } catch (error) {
+      console.error('Lỗi kết nối API getSchedulesPaginated:', error);
+      return { success: false, message: 'Lỗi kết nối server' };
+    }
+  }
+
+  // Lấy tất cả suất chiếu (không phân trang)
   async getAllSchedules() {
     try {
-      const response = await fetch(`${API_BASE_URL}/schedules`);
+      const response = await fetch(`${API_BASE_URL}/suatchieu`);
       const result = await response.json();
       
       if (result.code === 200) {
@@ -19,10 +36,10 @@ class ScheduleService {
     }
   }
 
-  // Lấy lịch chiếu theo ID
+  // Lấy suất chiếu theo ID
   async getScheduleById(scheduleId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/schedules/${scheduleId}`);
+      const response = await fetch(`${API_BASE_URL}/suatchieu/${scheduleId}`);
       const result = await response.json();
       
       if (result.code === 200) {
@@ -36,14 +53,13 @@ class ScheduleService {
     }
   }
 
-  // Tạo lịch chiếu mới
+  // Tạo suất chiếu mới
   async createSchedule(scheduleData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/schedules`, {
+      const response = await fetch(`${API_BASE_URL}/suatchieu`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(scheduleData)
       });
@@ -61,14 +77,13 @@ class ScheduleService {
     }
   }
 
-  // Cập nhật lịch chiếu
+  // Cập nhật suất chiếu
   async updateSchedule(scheduleId, scheduleData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/schedules/${scheduleId}`, {
+      const response = await fetch(`${API_BASE_URL}/suatchieu/${scheduleId}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(scheduleData)
       });
@@ -86,14 +101,11 @@ class ScheduleService {
     }
   }
 
-  // Xóa lịch chiếu
+  // Xóa suất chiếu
   async deleteSchedule(scheduleId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/schedules/${scheduleId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
+      const response = await fetch(`${API_BASE_URL}/suatchieu/${scheduleId}`, {
+        method: 'DELETE'
       });
       
       const result = await response.json();
@@ -109,10 +121,10 @@ class ScheduleService {
     }
   }
 
-  // Lấy lịch chiếu theo phim
-  async getSchedulesByMovie(movieId) {
+  // Lấy danh sách phim cho form tạo suất chiếu
+  async getMoviesForSchedule() {
     try {
-      const response = await fetch(`${API_BASE_URL}/schedules/movie/${movieId}`);
+      const response = await fetch(`${API_BASE_URL}/phim`);
       const result = await response.json();
       
       if (result.code === 200) {
@@ -121,45 +133,10 @@ class ScheduleService {
         return { success: false, message: result.message };
       }
     } catch (error) {
-      console.error('Lỗi kết nối API getSchedulesByMovie:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
-    }
-  }
-
-  // Lấy lịch chiếu theo phòng
-  async getSchedulesByRoom(roomId) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/schedules/room/${roomId}`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
-    } catch (error) {
-      console.error('Lỗi kết nối API getSchedulesByRoom:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
-    }
-  }
-
-  // Lấy lịch chiếu theo ngày
-  async getSchedulesByDate(date) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/schedules/date/${date}`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
-    } catch (error) {
-      console.error('Lỗi kết nối API getSchedulesByDate:', error);
+      console.error('Lỗi kết nối API getMoviesForSchedule:', error);
       return { success: false, message: 'Lỗi kết nối server' };
     }
   }
 }
 
-// Export singleton instance
 export default new ScheduleService();

@@ -3,6 +3,8 @@ import Sidebar from '../components/admin/Sidebar';
 import Dashboard from '../components/admin/Dashboard';
 import MovieManagement from '../components/admin/MovieManagement';
 import CategoryManager from '../components/admin/CategoryManager';
+import RoomManager from '../components/admin/RoomManager';
+import ScheduleManager from '../components/admin/ScheduleManager';
 
 const Admin = () => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -34,41 +36,9 @@ const Admin = () => {
           </div>
         );
       case 'room':
-        return (
-          <div className="card border-0 shadow-sm">
-            <div className="card-header bg-white py-3">
-              <h5 className="card-title mb-0 text-primary">
-                <i className="bi bi-house me-2"></i>
-                Quản lý phòng chiếu
-              </h5>
-            </div>
-            <div className="card-body p-4">
-              <div className="text-center py-5">
-                <i className="bi bi-code-slash text-muted" style={{ fontSize: '3rem' }}></i>
-                <h4 className="mt-3">Đang phát triển</h4>
-                <p className="text-muted">Chức năng quản lý phòng chiếu sẽ sớm được cập nhật.</p>
-              </div>
-            </div>
-          </div>
-        );
+        return <RoomManager />;
       case 'schedule':
-        return (
-          <div className="card border-0 shadow-sm">
-            <div className="card-header bg-white py-3">
-              <h5 className="card-title mb-0 text-primary">
-                <i className="bi bi-calendar3 me-2"></i>
-                Quản lý suất chiếu
-              </h5>
-            </div>
-            <div className="card-body p-4">
-              <div className="text-center py-5">
-                <i className="bi bi-code-slash text-muted" style={{ fontSize: '3rem' }}></i>
-                <h4 className="mt-3">Đang phát triển</h4>
-                <p className="text-muted">Chức năng quản lý suất chiếu sẽ sớm được cập nhật.</p>
-              </div>
-            </div>
-          </div>
-        );
+        return <ScheduleManager />;
       case 'ticket':
         return (
           <div className="card border-0 shadow-sm">
