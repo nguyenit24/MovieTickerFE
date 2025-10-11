@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 
 const Header = () => {
   const navItems = [
-    { name: "Home", href: "/" },
-    { name: "About", href: "/about" },
-    { name: "Movies", href: "/movies" },
-    { name: "Blogs", href: "/blogs" },
+    { name: "Trang chủ", href: "/" },
+    { name: "Phim", href: "/movies" },
+    { name: "Vé của tôi", href: "/tickets" },
+    { name: "Liên hệ", href: "/contact" },
   ];
 
   return (
