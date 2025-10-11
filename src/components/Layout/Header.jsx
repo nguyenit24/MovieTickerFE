@@ -1,14 +1,13 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext"; // Import hook để lấy thông tin user
+import { useAuth } from "../../context/AuthContext";
 
 const Header = () => {
-  // Lấy ra thông tin user và hàm logOut từ "trung tâm điều phối" AuthContext
   const { user, logOut } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logOut(); // Gọi hàm xóa thông tin đăng nhập
-    navigate("/"); // Chuyển người dùng về trang chủ
+    logOut();
+    navigate("/");
   };
 
   return (
@@ -42,8 +41,24 @@ const Header = () => {
               </NavLink>
             </li>
 
-            {/* --- LOGIC PHÂN QUYỀN GIAO DIỆN --- */}
-            {/* Chỉ hiển thị link "Quản trị" nếu user tồn tại và có vai trò là ROLE_ADMIN */}
+            {/* --- PHẦN BỔ SUNG --- */}
+            {/* Thêm link Vé của tôi (chỉ hiển thị khi đã đăng nhập) */}
+            {user && (
+              <li>
+                <NavLink to="/tickets" className="nav-link px-2 text-white">
+                  Vé của tôi
+                </NavLink>
+              </li>
+            )}
+            {/* Thêm link Liên hệ */}
+            <li>
+              <NavLink to="/contact" className="nav-link px-2 text-white">
+                Liên hệ
+              </NavLink>
+            </li>
+            {/* --- KẾT THÚC PHẦN BỔ SUNG --- */}
+
+            {/* Link Quản trị cho Admin */}
             {user && user.roles.includes("ROLE_ADMIN") && (
               <li>
                 <NavLink to="/admin" className="nav-link px-2 text-warning">
@@ -56,7 +71,7 @@ const Header = () => {
           {/* Khu vực Đăng nhập / Người dùng */}
           <div className="text-end">
             {user ? (
-              // --- GIAO DIỆN KHI ĐÃ ĐĂNG NHẬP ---
+              // Giao diện khi đã đăng nhập
               <div className="dropdown">
                 <a
                   href="#"
@@ -87,7 +102,7 @@ const Header = () => {
                 </ul>
               </div>
             ) : (
-              // --- GIAO DIỆN KHI CHƯA ĐĂNG NHẬP ---
+              // Giao diện khi chưa đăng nhập
               <div>
                 <Link to="/login" className="btn btn-outline-light me-2">
                   Đăng nhập

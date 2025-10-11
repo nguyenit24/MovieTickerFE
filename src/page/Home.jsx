@@ -10,12 +10,9 @@ const Home = () => {
 
   useEffect(() => {
     setLoading(true);
-    // Sửa 1: Đổi "/api/movies" thành "/api/phim" cho đúng với backend
     fetch("http://localhost:8080/api/phim")
       .then((res) => res.json())
       .then((result) => {
-        // Đổi tên biến 'data' thành 'result' để dễ hiểu
-        // Sửa 2: Lấy mảng phim từ result.data
         setMovies(result.data);
         setLoading(false);
       })
@@ -27,8 +24,6 @@ const Home = () => {
 
   return (
     <div className="d-flex flex-column min-vh-100 home-container">
-      <Header />
-
       {/* Hero Banner */}
       <div
         className="hero-banner position-relative"
@@ -127,7 +122,6 @@ const Home = () => {
           )}
         </div>
       </main>
-      <Footer />
     </div>
   );
 };

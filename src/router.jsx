@@ -1,63 +1,74 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import React from "react";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+
+// --- Import các trang (Pages) ---
 import Home from "./page/Home";
 import Login from "./page/Login";
-import Admin from "./page/Admin";
 import Register from "./page/Register";
+import Admin from "./page/Admin";
 import ForgotPassword from "./page/ForgotPassword";
-import ResetPassword from "./page/ResetPassword"; // Đảm bảo bạn đã import trang này
+import ResetPassword from "./page/ResetPassword";
+import BookingPage from "./page/BookingPage";
+import TicketsPage from "./page/TicketsPage";
 
-// Import các "Người Gác Cổng"
+// --- Import các thành phần đặc biệt (Components) ---
+import InvoiceDetail from "./components/ticket/InvoiceDetail";
+import PaymentReturn from "./components/payment/PaymentReturn";
+import VNPayRedirect from "./components/payment/VNPayRedirect";
+
+// --- Import Layout và "Người Gác Cổng" (Guards) ---
+import Header from "./components/Layout/Header";
+import Footer from "./components/Layout/Footer";
 import AdminRoute from "./components/common/AdminRoute";
-import PublicRoute from "./components/common/PublicRoute";
+import PublicRoute from "./components/common/PublicRoute"; // Giả sử bạn đã tạo file này
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Home />,
-  },
+/**
+ * Component Layout chính cho các trang người dùng
+ * Bao gồm Header và Footer chung, nội dung trang sẽ được hiển thị qua <Outlet />
+ */
+const MainLayout = () => (
+  <>
+    <Header />
+    <main>
+      <Outlet />
+    </main>
+    <Footer />
+  </>
+);
 
-  // -- CÁC TRANG CÔNG KHAI ĐƯỢC BẢO VỆ --
-  // Chỉ người chưa đăng nhập mới vào được
-  {
-    element: <PublicRoute />,
-    children: [
-      {
-        path: "/login",
-        element: <Login />,
-      },
-      {
-        path: "/register",
-        element: <Register />,
-      },
-    ],
-  },
+const Router = () => (
+  <BrowserRouter>
+    <Routes>
+      {/* --- Tuyến đường có Layout chung (Header & Footer) --- */}
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/booking/:movieId" element={<BookingPage />} />
+        <Route path="/tickets" element={<TicketsPage />} />
+        <Route path="/invoice/:invoiceId" element={<InvoiceDetail />} />
+        <Route path="/payment/return" element={<PaymentReturn />} />
+        {/* Bạn có thể thêm các trang người dùng khác vào đây */}
+      </Route>
 
-  // Các trang không cần bảo vệ đặc biệt
-  {
-    path: "/forgot-password",
-    element: <ForgotPassword />,
-  },
-  {
-    path: "/reset-password",
-    element: <ResetPassword />,
-  },
+      {/* --- Tuyến đường cho người chưa đăng nhập --- */}
+      {/* Các trang này thường không cần Header/Footer đầy đủ */}
+      <Route element={<PublicRoute />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Route>
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
-  // -- BẢO VỆ TRANG ADMIN --
-  // Chỉ Admin đã đăng nhập mới vào được
-  {
-    element: <AdminRoute />,
-    children: [
-      {
-        path: "/admin",
-        element: <Admin />,
-      },
-      // Thêm các trang admin khác vào đây nếu có
-    ],
-  },
-]);
+      {/* --- Tuyến đường được bảo vệ cho Admin --- */}
+      {/* Trang Admin có layout riêng bên trong nó */}
+      <Route element={<AdminRoute />}>
+        <Route path="/admin/*" element={<Admin />} />
+      </Route>
 
-const Router = () => {
-  return <RouterProvider router={router} />;
-};
+      {/* --- Tuyến đường xử lý Redirect không cần giao diện --- */}
+      <Route path="/api/payment/return" element={<VNPayRedirect />} />
+      <Route path="/vnpay_return" element={<VNPayRedirect />} />
+    </Routes>
+  </BrowserRouter>
+);
 
 export default Router;

@@ -104,6 +104,23 @@ class SeatService {
     }
   }
 
+  // Lấy ghế đã đặt cho suất chiếu
+  async getBookedSeats(maSuatChieu) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/ghe/booking/${maSuatChieu}`);
+      const result = await response.json();
+      
+      if (result.code === 200) {
+        return { success: true, data: result.data || [] };
+      } else {
+        return { success: false, data: [], message: result.message };
+      }
+    } catch (error) {
+      console.error('Lỗi kết nối API getBookedSeats:', error);
+      return { success: false, data: [], message: 'Lỗi kết nối server' };
+    }
+  }
+
 
 
   // Cập nhật ghế
@@ -135,8 +152,6 @@ class SeatService {
       return { success: false, message: 'Lỗi kết nối server' };
     }
   }
-
-
 }
 
 export default new SeatService();
