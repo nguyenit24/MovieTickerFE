@@ -1,11 +1,15 @@
 // Service API cho quản lý thể loại phim
 const API_BASE_URL = 'http://localhost:8080/api';
-
+const token = localStorage.getItem("accessToken");
 class CategoryService {
   // Lấy danh sách thể loại
   async getAllCategories() {
     try {
-      const response = await fetch(`${API_BASE_URL}/theloai`);
+      const response = await fetch(`${API_BASE_URL}/theloai`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const result = await response.json();
       if (result.code === 200) {
         return { success: true, data: result.data };
@@ -21,7 +25,11 @@ class CategoryService {
   // Lấy chi tiết thể loại theo ID
   async getCategoryById(categoryId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/theloai/${categoryId}`);
+      const response = await fetch(`${API_BASE_URL}/theloai/${categoryId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const result = await response.json();
       if (result.code === 200) {
         return { success: true, data: result.data };
@@ -41,6 +49,7 @@ class CategoryService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(categoryData)
       });
@@ -63,6 +72,7 @@ class CategoryService {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(categoryData)
       });
@@ -82,7 +92,10 @@ class CategoryService {
   async deleteCategory(categoryId) {
     try {
       const response = await fetch(`${API_BASE_URL}/theloai/${categoryId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       const result = await response.json();
       if (result.code === 200) {

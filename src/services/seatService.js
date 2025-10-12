@@ -1,11 +1,16 @@
 // Service API cho quản lý ghế và loại ghế
 const API_BASE_URL = 'http://localhost:8080/api';
-
+const token = localStorage.getItem("accessToken");
 class SeatService {
   // Lấy danh sách loại ghế
   async getAllSeatTypes() {
     try {
-      const response = await fetch(`${API_BASE_URL}/loaighe`);
+      const response = await fetch(`${API_BASE_URL}/loaighe`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
       const result = await response.json();
       
       if (result.code === 200) {
@@ -22,7 +27,11 @@ class SeatService {
   // Lấy thông tin loại ghế theo ID
   async getSeatTypeById(seatTypeId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/loaighe/${seatTypeId}`);
+      const response = await fetch(`${API_BASE_URL}/loaighe/${seatTypeId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const result = await response.json();
       
       if (result.code === 200) {
@@ -42,7 +51,8 @@ class SeatService {
       const response = await fetch(`${API_BASE_URL}/loaighe`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(seatTypeData)
       });
@@ -66,7 +76,8 @@ class SeatService {
       const response = await fetch(`${API_BASE_URL}/loaighe/${seatTypeId}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(seatTypeData)
       });
@@ -88,7 +99,10 @@ class SeatService {
   async deleteSeatType(seatTypeId) {
     try {
       const response = await fetch(`${API_BASE_URL}/loaighe/${seatTypeId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       const result = await response.json();
@@ -107,7 +121,11 @@ class SeatService {
   // Lấy ghế đã đặt cho suất chiếu
   async getBookedSeats(maSuatChieu) {
     try {
-      const response = await fetch(`${API_BASE_URL}/ghe/booking/${maSuatChieu}`);
+      const response = await fetch(`${API_BASE_URL}/ghe/booking/${maSuatChieu}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const result = await response.json();
       
       if (result.code === 200) {
@@ -135,7 +153,8 @@ class SeatService {
       const response = await fetch(`${API_BASE_URL}/ghe/${seatId}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(dataWithDefaultRoom)
       });

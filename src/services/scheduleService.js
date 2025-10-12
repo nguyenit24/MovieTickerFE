@@ -1,11 +1,15 @@
 // Service API cho quản lý suất chiếu
 const API_BASE_URL = 'http://localhost:8080/api';
-
+const token = localStorage.getItem("accessToken");
 class ScheduleService {
   // Lấy danh sách suất chiếu có phân trang
   async getSchedulesPaginated(page = 1) {
     try {
-      const response = await fetch(`${API_BASE_URL}/suatchieu/pageable?page=${page}`);
+      const response = await fetch(`${API_BASE_URL}/suatchieu/pageable?page=${page}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const result = await response.json();
       
       if (result.code === 200) {
@@ -22,7 +26,11 @@ class ScheduleService {
   // Lấy tất cả suất chiếu (không phân trang)
   async getAllSchedules() {
     try {
-      const response = await fetch(`${API_BASE_URL}/suatchieu`);
+      const response = await fetch(`${API_BASE_URL}/suatchieu`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const result = await response.json();
       
       if (result.code === 200) {
@@ -39,7 +47,11 @@ class ScheduleService {
   // Lấy suất chiếu theo ID
   async getScheduleById(scheduleId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/suatchieu/${scheduleId}`);
+      const response = await fetch(`${API_BASE_URL}/suatchieu/${scheduleId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const result = await response.json();
       
       if (result.code === 200) {
@@ -59,7 +71,8 @@ class ScheduleService {
       const response = await fetch(`${API_BASE_URL}/suatchieu`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(scheduleData)
       });
@@ -83,7 +96,8 @@ class ScheduleService {
       const response = await fetch(`${API_BASE_URL}/suatchieu/${scheduleId}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(scheduleData)
       });
@@ -105,7 +119,10 @@ class ScheduleService {
   async deleteSchedule(scheduleId) {
     try {
       const response = await fetch(`${API_BASE_URL}/suatchieu/${scheduleId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       const result = await response.json();
@@ -124,7 +141,11 @@ class ScheduleService {
   // Lấy danh sách phim cho form tạo suất chiếu
   async getMoviesForSchedule() {
     try {
-      const response = await fetch(`${API_BASE_URL}/phim`);
+      const response = await fetch(`${API_BASE_URL}/phim`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const result = await response.json();
       
       if (result.code === 200) {

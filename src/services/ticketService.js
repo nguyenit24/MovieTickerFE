@@ -1,5 +1,7 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
+const token = localStorage.getItem("accessToken");
+
 const ticketService = {
   // Đặt vé theo API mới
   bookTicket: async (bookingData) => {
@@ -8,6 +10,7 @@ const ticketService = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(bookingData)
       });
@@ -38,7 +41,11 @@ const ticketService = {
   // Lấy chi tiết hóa đơn
   getInvoiceDetail: async (maHD) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/payment/detail/${maHD}`);
+      const response = await fetch(`${API_BASE_URL}/payment/detail/${maHD}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const result = await response.json();
       
       if (result.code === 200) {
@@ -70,6 +77,7 @@ const ticketService = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(paymentData)
       });
@@ -100,7 +108,11 @@ const ticketService = {
   // Kiểm tra trạng thái thanh toán
   checkPaymentStatus: async (orderId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/payment/status/${orderId}`);
+      const response = await fetch(`${API_BASE_URL}/payment/status/${orderId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const result = await response.json();
       
       if (result.code === 200) {
@@ -132,6 +144,7 @@ const ticketService = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
       });
       const result = await response.json();
@@ -161,7 +174,11 @@ const ticketService = {
   // Lấy danh sách hóa đơn của user
   getUserInvoices: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/payment/all`);
+      const response = await fetch(`${API_BASE_URL}/payment/my-invoices`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const result = await response.json();
       
       if (result.code === 200) {

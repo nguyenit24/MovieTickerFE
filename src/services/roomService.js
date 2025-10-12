@@ -1,11 +1,15 @@
 // Service API cho quản lý phòng chiếu
 const API_BASE_URL = 'http://localhost:8080/api';
-
+const token = localStorage.getItem("accessToken");
 class RoomService {
 
   async getRoomsPaginated(page = 1) {
     try {
-      const response = await fetch(`${API_BASE_URL}/phongchieu/pageable?page=${page}`);
+      const response = await fetch(`${API_BASE_URL}/phongchieu/pageable?page=${page}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const result = await response.json();
       
       if (result.code === 200) {
@@ -21,7 +25,11 @@ class RoomService {
 
   async getAllRooms() {
     try {
-      const response = await fetch(`${API_BASE_URL}/phongchieu`);
+      const response = await fetch(`${API_BASE_URL}/phongchieu`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const result = await response.json();
       
       if (result.code === 200) {
@@ -37,7 +45,11 @@ class RoomService {
 
   async getRoomById(roomId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/phongchieu/${roomId}`);
+      const response = await fetch(`${API_BASE_URL}/phongchieu/${roomId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const result = await response.json();
       
       if (result.code === 200) {
@@ -56,7 +68,8 @@ class RoomService {
       const response = await fetch(`${API_BASE_URL}/phongchieu`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(roomData)
       });
@@ -79,7 +92,8 @@ class RoomService {
       const response = await fetch(`${API_BASE_URL}/phongchieu/${roomId}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(roomData)
       });
@@ -100,7 +114,10 @@ class RoomService {
   async deleteRoom(roomId) {
     try {
       const response = await fetch(`${API_BASE_URL}/phongchieu/${roomId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       const result = await response.json();
@@ -118,7 +135,11 @@ class RoomService {
 
   async getRoomSeats(roomId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/rooms/${roomId}/seats`);
+      const response = await fetch(`${API_BASE_URL}/rooms/${roomId}/seats`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const result = await response.json();
       
       if (result.code === 200) {
