@@ -1,3 +1,4 @@
+
 import apiClient from "./apiClient";
 
 const handleApiResponse = (response) => ({
@@ -9,7 +10,6 @@ const handleError = (error) => ({
   success: false,
   message: error.response?.data?.message || "Lỗi kết nối server",
 });
-
 class SeatService {
   // Lấy danh sách loại ghế
   async getAllSeatTypes() {

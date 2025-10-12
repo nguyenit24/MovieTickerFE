@@ -1,13 +1,18 @@
-import apiClient from './apiClient';
-
-const handleApiResponse = (response) => ({ success: true, data: response.data.data, message: response.data.message });
-const handleError = (error) => ({ success: false, message: error.response?.data?.message || "Lỗi kết nối server" });
-
+import apiClient from "./apiClient";
+const handleApiResponse = (response) => ({
+  success: true,
+  data: response.data.data,
+  message: response.data.message,
+});
+const handleError = (error) => ({
+  success: false,
+  message: error.response?.data?.message || "Lỗi kết nối server",
+});
 const promotionService = {
   // Lấy tất cả khuyến mãi
   getAllPromotions: async () => {
     try {
-      const response = await apiClient.get('/khuyenmai');
+      const response = await apiClient.get("/khuyenmai");
       return handleApiResponse(response);
     } catch (error) {
       return handleError(error);
@@ -27,7 +32,7 @@ const promotionService = {
   // Tạo khuyến mãi mới
   createPromotion: async (promotionData) => {
     try {
-      const response = await apiClient.post('/khuyenmai', promotionData);
+      const response = await apiClient.post("/khuyenmai", promotionData);
       return handleApiResponse(response);
     } catch (error) {
       return handleError(error);

@@ -236,6 +236,15 @@ const InvoiceDetail = () => {
                                   {ticket.thanhTien?.toLocaleString('vi-VN')} VNĐ
                                 </strong>
                               </div>
+
+                              {/* Mã QR */}
+                              <div className="mt-3">
+                                <img
+                                  src={ticket.qrCodeUrl}
+                                  alt={`QR Code for ${ticket.maVe}`}
+                                  className="img-fluid"
+                                />
+                              </div>
                             </div>
                           </div>
                         </div>

@@ -200,7 +200,7 @@ const BookingPage = () => {
                 Thời gian giữ ghế
               </h6>
               <p className="text-muted small">
-                Ghế được giữ trong 15 phút kể từ khi chọn
+                Ghế được giữ trong 10 phút kể từ khi chọn
               </p>
             </div>
             <div className="col-md-4">

@@ -9,7 +9,6 @@ const handleError = (error) => ({
   success: false,
   message: error.response?.data?.message || "Lỗi kết nối server",
 });
-
 class RoomService {
   // Lấy danh sách phòng chiếu phân trang
   async getRoomsPaginated(page = 1) {

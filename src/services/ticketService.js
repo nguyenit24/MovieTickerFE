@@ -10,6 +10,8 @@ const handleError = (error) => ({
   message: error.response?.data?.message || "Lỗi kết nối server",
 });
 
+const token = localStorage.getItem("accessToken");
+
 const ticketService = {
   // Đặt vé theo API mới
   bookTicket: async (bookingData) => {
