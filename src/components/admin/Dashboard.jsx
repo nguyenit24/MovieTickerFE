@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import movieService from '../../services/movieService';
+import React, { useState, useEffect } from "react";
+import movieService from "../../services/movieService";
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
     totalMovies: 0,
     nowShowing: 0,
     comingSoon: 0,
-    ended: 0
+    ended: 0,
   });
 
   const [loading, setLoading] = useState(true);
@@ -23,7 +23,7 @@ const Dashboard = () => {
         setStats(result.data);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     } finally {
       setLoading(false);
     }
@@ -53,13 +53,15 @@ const Dashboard = () => {
               </button>
             </div>
           </div>
-          
+
           <div className="row g-3">
             <div className="col-md-3 mb-3">
               <div className="card border-0 shadow-sm h-100">
                 <div className="card-body text-center py-4">
-                  <div className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                       style={{ width: '60px', height: '60px' }}>
+                  <div
+                    className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                    style={{ width: "60px", height: "60px" }}
+                  >
                     <i className="bi bi-film fs-1 text-primary"></i>
                   </div>
                   <h3 className="fw-bold mb-0">{stats.totalMovies}</h3>
@@ -71,8 +73,10 @@ const Dashboard = () => {
             <div className="col-md-3 mb-3">
               <div className="card border-0 shadow-sm h-100">
                 <div className="card-body text-center py-4">
-                  <div className="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                       style={{ width: '60px', height: '60px' }}>
+                  <div
+                    className="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                    style={{ width: "60px", height: "60px" }}
+                  >
                     <i className="bi bi-play-circle fs-1 text-success"></i>
                   </div>
                   <h3 className="fw-bold mb-0">{stats.nowShowing}</h3>
@@ -84,8 +88,10 @@ const Dashboard = () => {
             <div className="col-md-3 mb-3">
               <div className="card border-0 shadow-sm h-100">
                 <div className="card-body text-center py-4">
-                  <div className="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                       style={{ width: '60px', height: '60px' }}>
+                  <div
+                    className="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                    style={{ width: "60px", height: "60px" }}
+                  >
                     <i className="bi bi-clock fs-1 text-warning"></i>
                   </div>
                   <h3 className="fw-bold mb-0">{stats.comingSoon}</h3>
@@ -97,8 +103,10 @@ const Dashboard = () => {
             <div className="col-md-3 mb-3">
               <div className="card border-0 shadow-sm h-100">
                 <div className="card-body text-center py-4">
-                  <div className="bg-secondary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                       style={{ width: '60px', height: '60px' }}>
+                  <div
+                    className="bg-secondary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                    style={{ width: "60px", height: "60px" }}
+                  >
                     <i className="bi bi-stop-circle fs-1 text-secondary"></i>
                   </div>
                   <h3 className="fw-bold mb-0">{stats.ended}</h3>
@@ -109,7 +117,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="row">
         <div className="col-md-8 mb-4">
           <div className="card border-0 shadow-sm h-100">
@@ -118,13 +126,13 @@ const Dashboard = () => {
             </div>
             <div className="card-body">
               <div className="text-center py-5 text-muted">
-                <i className="bi bi-bar-chart" style={{ fontSize: '2rem' }}></i>
+                <i className="bi bi-bar-chart" style={{ fontSize: "2rem" }}></i>
                 <p className="mt-3">Biểu đồ thống kê sẽ hiển thị tại đây</p>
               </div>
             </div>
           </div>
         </div>
-        
+
         <div className="col-md-4 mb-4">
           <div className="card border-0 shadow-sm h-100">
             <div className="card-header bg-white py-3">
@@ -133,21 +141,32 @@ const Dashboard = () => {
             <div className="card-body p-0">
               <ul className="list-group list-group-flush">
                 <li className="list-group-item d-flex align-items-center border-start-0 border-end-0">
-                  <div className="bg-primary rounded-circle me-3" style={{width: '10px', height: '10px'}}></div>
+                  <div
+                    className="bg-primary rounded-circle me-3"
+                    style={{ width: "10px", height: "10px" }}
+                  ></div>
                   <div>
                     <p className="mb-0">Phim "Fast X" sắp hết lịch chiếu</p>
                     <small className="text-muted">Hôm nay</small>
                   </div>
                 </li>
                 <li className="list-group-item d-flex align-items-center border-start-0 border-end-0">
-                  <div className="bg-success rounded-circle me-3" style={{width: '10px', height: '10px'}}></div>
+                  <div
+                    className="bg-success rounded-circle me-3"
+                    style={{ width: "10px", height: "10px" }}
+                  ></div>
                   <div>
-                    <p className="mb-0">Phim mới "Avengers" đã được thêm vào hệ thống</p>
+                    <p className="mb-0">
+                      Phim mới "Avengers" đã được thêm vào hệ thống
+                    </p>
                     <small className="text-muted">Hôm qua</small>
                   </div>
                 </li>
                 <li className="list-group-item d-flex align-items-center border-start-0 border-end-0">
-                  <div className="bg-warning rounded-circle me-3" style={{width: '10px', height: '10px'}}></div>
+                  <div
+                    className="bg-warning rounded-circle me-3"
+                    style={{ width: "10px", height: "10px" }}
+                  ></div>
                   <div>
                     <p className="mb-0">Có 3 suất chiếu mới được tạo</p>
                     <small className="text-muted">2 ngày trước</small>

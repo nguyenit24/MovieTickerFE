@@ -1,138 +1,85 @@
-// Service API cho quản lý phòng chiếu
-const API_BASE_URL = 'http://localhost:8080/api';
+import apiClient from "./apiClient";
+
+const handleApiResponse = (response) => ({
+  success: true,
+  data: response.data.data,
+  message: response.data.message,
+});
+const handleError = (error) => ({
+  success: false,
+  message: error.response?.data?.message || "Lỗi kết nối server",
+});
 
 class RoomService {
-
+  // Lấy danh sách phòng chiếu phân trang
   async getRoomsPaginated(page = 1) {
     try {
-      const response = await fetch(`${API_BASE_URL}/phongchieu/pageable?page=${page}`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.get(`/phongchieu/pageable?page=${page}`);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API getRoomsPaginated:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 
+  // Lấy tất cả phòng chiếu
   async getAllRooms() {
     try {
-      const response = await fetch(`${API_BASE_URL}/phongchieu`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.get("/phongchieu");
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API getAllRooms:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 
+  // Lấy phòng chiếu theo ID
   async getRoomById(roomId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/phongchieu/${roomId}`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.get(`/phongchieu/${roomId}`);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API getRoomById:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 
+  // Tạo phòng chiếu mới
   async createRoom(roomData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/phongchieu`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(roomData)
-      });
-      
-      const result = await response.json();
-      
-      if (result.code === 201) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.post("/phongchieu", roomData);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API createRoom:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 
+  // Cập nhật phòng chiếu
   async updateRoom(roomId, roomData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/phongchieu/${roomId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(roomData)
-      });
-      
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.put(`/phongchieu/${roomId}`, roomData);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API updateRoom:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 
+  // Xóa phòng chiếu
   async deleteRoom(roomId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/phongchieu/${roomId}`, {
-        method: 'DELETE'
-      });
-      
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, message: 'Xóa phòng thành công' };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.delete(`/phongchieu/${roomId}`);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API deleteRoom:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 
+  // Lấy ghế của một phòng
   async getRoomSeats(roomId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/rooms/${roomId}/seats`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.get(`/phongchieu/${roomId}/ghe`);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API getRoomSeats:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
-
 }
 
-// Export singleton instance
 export default new RoomService();

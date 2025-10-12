@@ -1,195 +1,83 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+import apiClient from "./apiClient";
+
+const handleApiResponse = (response) => ({
+  success: true,
+  data: response.data.data,
+  message: response.data.message,
+});
+const handleError = (error) => ({
+  success: false,
+  message: error.response?.data?.message || "Lỗi kết nối server",
+});
 
 const ticketService = {
   // Đặt vé theo API mới
   bookTicket: async (bookingData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/ve`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookingData)
-      });
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return {
-          success: true,
-          data: result.data,
-          message: result.message
-        };
-      } else {
-        return {
-          success: false,
-          data: null,
-          message: result.message || 'Lỗi khi đặt vé'
-        };
-      }
+      const response = await apiClient.post("/ve", bookingData);
+      return handleApiResponse(response);
     } catch (error) {
-      return {
-        success: false,
-        data: null,
-        message: 'Lỗi kết nối server'
-      };
+      return handleError(error);
     }
   },
 
   // Lấy chi tiết hóa đơn
   getInvoiceDetail: async (maHD) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/payment/detail/${maHD}`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return {
-          success: true,
-          data: result.data,
-          message: result.message
-        };
-      } else {
-        return {
-          success: false,
-          data: null,
-          message: result.message || 'Lỗi khi tải thông tin hóa đơn'
-        };
-      }
+      const response = await apiClient.get(`/payment/detail/${maHD}`);
+      return handleApiResponse(response);
     } catch (error) {
-      return {
-        success: false,
-        data: null,
-        message: 'Lỗi kết nối server'
-      };
+      return handleError(error);
     }
   },
 
   // Tạo thanh toán VNPay
   createVNPayPayment: async (paymentData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/payment/vn_pay/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(paymentData)
-      });
-      const result = await response.json();
-      
-      if (result.code === 201) {
-        return {
-          success: true,
-          data: result.data,
-          message: result.message
-        };
-      } else {
-        return {
-          success: false,
-          data: null,
-          message: result.message || 'Lỗi khi tạo thanh toán'
-        };
-      }
+      const response = await apiClient.post(
+        "/payment/vn_pay/create",
+        paymentData
+      );
+      return handleApiResponse(response);
     } catch (error) {
-      return {
-        success: false,
-        data: null,
-        message: 'Lỗi kết nối server'
-      };
+      return handleError(error);
     }
   },
 
   // Kiểm tra trạng thái thanh toán
   checkPaymentStatus: async (orderId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/payment/status/${orderId}`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return {
-          success: true,
-          data: result.data,
-          message: result.message
-        };
-      } else {
-        return {
-          success: false,
-          data: null,
-          message: result.message || 'Lỗi khi kiểm tra trạng thái'
-        };
-      }
+      const response = await apiClient.get(`/payment/status/${orderId}`);
+      return handleApiResponse(response);
     } catch (error) {
-      return {
-        success: false,
-        data: null,
-        message: 'Lỗi kết nối server'
-      };
+      return handleError(error);
     }
   },
 
   // Hủy hóa đơn
   cancelInvoice: async (maHD) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/payment/cancel/${maHD}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return {
-          success: true,
-          data: result.data,
-          message: result.message
-        };
-      } else {
-        return {
-          success: false,
-          data: null,
-          message: result.message || 'Lỗi khi hủy hóa đơn'
-        };
-      }
+      const response = await apiClient.post(`/payment/cancel/${maHD}`);
+      return handleApiResponse(response);
     } catch (error) {
-      return {
-        success: false,
-        data: null,
-        message: 'Lỗi kết nối server'
-      };
+      return handleError(error);
     }
   },
 
   // Lấy danh sách hóa đơn của user
   getUserInvoices: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/payment/all`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return {
-          success: true,
-          data: result.data || [],
-          message: result.message
-        };
-      } else {
-        return {
-          success: false,
-          data: [],
-          message: result.message || 'Lỗi khi tải danh sách hóa đơn'
-        };
-      }
+      const response = await apiClient.get("/payment/all");
+      return handleApiResponse(response);
     } catch (error) {
-      return {
-        success: false,
-        data: [],
-        message: 'Lỗi kết nối server'
-      };
+      return handleError(error);
     }
   },
 
   // Alias for getUserInvoices để tương thích
   getUserTickets: async () => {
     return ticketService.getUserInvoices();
-  }
+  },
 };
 
 export default ticketService;

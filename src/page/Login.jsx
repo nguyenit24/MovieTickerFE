@@ -24,7 +24,6 @@ const Login = () => {
       // Đăng nhập thành công, lưu token và cập nhật context
       loginAction(result.data);
 
-      // --- PHẦN CHỈNH SỬA ---
       // Giải mã token để lấy thông tin vai trò
       const decodedToken = jwtDecode(result.data.accessToken);
       const roles = decodedToken.scope ? decodedToken.scope.split(" ") : [];
