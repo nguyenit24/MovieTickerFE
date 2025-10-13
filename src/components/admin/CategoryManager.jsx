@@ -20,6 +20,7 @@ const CategoryManager = () =>
   const fetchCategories = async (page = 1) => {
     setLoading(true);
     const result = await categoryService.getAllCategories(page);
+    console.log(categories)
     try {
       if (result.success) {
         const { currentGens, totalPages, currentPage } = result.data;

@@ -3,6 +3,7 @@ import {Film, Plus, Utensils} from "lucide-react";
 import foodService from '../../services/foodService.js';
 import categoryService from "../../services/categoryService.js";
 import movieService from "../../services/movieService.js";
+import {serviceService} from "../../services/index.js";
 
 const AdminFoodManagement = () => {
     const [products, setProducts] = useState([])
@@ -43,14 +44,14 @@ const AdminFoodManagement = () => {
 
 
     const fetchProduct = async () =>  {
-        const result = await foodService.getAllService();
+        const result = await serviceService.getAllServices();
         if (result.success) setProducts(result.data);
     }
 
     const fetchPageProducts = async (page = 1) => {
         try {
             setLoading(true);
-            const result = await foodService.getAllPageService(page);
+            const result = await serviceService.getServicesPaginated(page);
             if (result.success) {
                 const { currentItems, totalPages, currentPage } = result.data;
                 setCurrentProducts(currentItems);
@@ -108,7 +109,7 @@ const AdminFoodManagement = () => {
         e.preventDefault();
 
         if (editingProduct) {
-            const result = await foodService.updateService(editingProduct.maDv, formData)
+            const result = await serviceService.updateService(editingProduct.maDv, formData)
             if (!result.success) {
                 alert(result.message);
                 return;
@@ -120,7 +121,7 @@ const AdminFoodManagement = () => {
                 ));
             }
         } else {
-            const  result = await foodService.createService(formData)
+            const  result = await serviceService.createService(formData)
             if (result.success) {
                 setProducts([...products, result.data]);
                 alert("Thêm mới thành công");
@@ -134,7 +135,7 @@ const AdminFoodManagement = () => {
 
     const handleDelete = (id) => {
         if (window.confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
-            const result = foodService.deleteService(id);
+            const result = serviceService.deleteService(id);
             try {
                 alert("Xóa sản phẩm thành công");
                 setProducts(products.filter(p => p.maDv !== id));
@@ -147,7 +148,7 @@ const AdminFoodManagement = () => {
 
     const handleToggleStatus = async (id) => {
         const newProduct = products.find(p => p.maDv === id);
-        const result = await foodService.updateService(id, {...newProduct, trangThai: newProduct.trangThai !== true});
+        const result = await serviceService.updateService(id, {...newProduct, trangThai: newProduct.trangThai !== true});
         if (!result.success) {
             alert(result.message);
             setProducts(products.map(p =>
@@ -162,7 +163,7 @@ const AdminFoodManagement = () => {
     };
 
     const searchProducts = async (tenDv = '', danhMuc = '', page = 1) => {
-        const result = await foodService.searchService(tenDv, danhMuc, page = 1);
+        const result = await serviceService.searchServices(tenDv, danhMuc, page = 1);
         if (result.success) {
             const { currentItems, totalPages, currentPage } = result.data;
             setCurrentProducts(currentItems);

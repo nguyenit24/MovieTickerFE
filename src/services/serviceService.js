@@ -1,7 +1,5 @@
 import apiClient from "./apiClient";
 
-const API_BASE_URL = 'http://localhost:8080/api';
-
 const handleApiResponse = (response) => ({
   success: true,
   data: response.data.data,
@@ -22,6 +20,55 @@ const serviceService = {
       return handleError(error);
     }
   },
+
+    getServicesPaginated: async (page = 1) => {
+        try {
+            const response = await apiClient.get(`/dichvudikem/pageable?page=${page}`);
+            return handleApiResponse(response);
+        } catch (error) {
+            return handleError(error);
+        }
+    },
+
+    // Tạo dịch vụ đi kèm mới
+    createService: async (serviceData) => {
+        try {
+            const response = await apiClient.post("/dichvudikem", serviceData);
+            return handleApiResponse(response);
+        } catch (error) {
+            return handleError(error);
+        }
+    },
+
+    // Cập nhật dịch vụ đi kèm
+    updateService: async (maDichVu, serviceData) => {
+        try {
+            const response = await apiClient.put(`/dichvudikem/${maDichVu}`, serviceData);
+            return handleApiResponse(response);
+        } catch (error) {
+            return handleError(error);
+        }
+    },
+
+    // Xóa dịch vụ đi kèm
+    deleteService: async (maDichVu) => {
+        try {
+            const response = await apiClient.delete(`/dichvudikem/${maDichVu}`);
+            return handleApiResponse(response);
+        } catch (error) {
+            return handleError(error);
+        }
+    },
+
+    //Tra cứu dịch vụ
+    searchServices: async (tenDv, danhMuc, page = 1) => {
+        try {
+            const response = await apiClient.get(`/dichvudikem/search?search?Ten=${encodeURIComponent(tenDv)}&Danhmuc=${encodeURIComponent(danhMuc)}&page=${page}`);
+            return handleApiResponse(response);
+        } catch (error) {
+            return handleError(error);
+        }
+    },
 
   // Lấy chi tiết dịch vụ
   getServiceById: async (maDichVu) => {
