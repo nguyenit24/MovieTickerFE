@@ -1,188 +1,85 @@
-// Service API cho quản lý vé và doanh thu
-const API_BASE_URL = 'http://localhost:8080/api';
+import apiClient from "./apiClient";
 
-class TicketService {
-  // Lấy danh sách loại vé
-  async getAllTicketTypes() {
+const handleApiResponse = (response) => ({
+  success: true,
+  data: response.data.data,
+  message: response.data.message,
+});
+const handleError = (error) => ({
+  success: false,
+  message: error.response?.data?.message || "Lỗi kết nối server",
+});
+
+const token = localStorage.getItem("accessToken");
+
+const ticketService = {
+  // Đặt vé theo API mới
+  bookTicket: async (bookingData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/ticket-types`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.post("/ve", bookingData);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API getAllTicketTypes:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
-  }
+  },
 
-  // Lấy chi tiết loại vé
-  async getTicketTypeById(ticketTypeId) {
+  // Lấy chi tiết hóa đơn
+  getInvoiceDetail: async (maHD) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/ticket-types/${ticketTypeId}`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.get(`/payment/detail/${maHD}`);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API getTicketTypeById:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
-  }
+  },
 
-  // Thêm loại vé mới
-  async createTicketType(ticketTypeData) {
+  // Tạo thanh toán VNPay
+  createVNPayPayment: async (paymentData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/ticket-types`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        },
-        body: JSON.stringify(ticketTypeData)
-      });
-      
-      const result = await response.json();
-      
-      if (result.code === 201) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.post(
+        "/payment/vn_pay/create",
+        paymentData
+      );
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API createTicketType:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
-  }
+  },
 
-  // Cập nhật loại vé
-  async updateTicketType(ticketTypeId, ticketTypeData) {
+  // Kiểm tra trạng thái thanh toán
+  checkPaymentStatus: async (orderId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/ticket-types/${ticketTypeId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        },
-        body: JSON.stringify(ticketTypeData)
-      });
-      
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.get(`/payment/status/${orderId}`);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API updateTicketType:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
-  }
+  },
 
-  // Xóa loại vé
-  async deleteTicketType(ticketTypeId) {
+  // Hủy hóa đơn
+  cancelInvoice: async (maHD) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/ticket-types/${ticketTypeId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-      
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, message: 'Xóa loại vé thành công' };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.post(`/payment/cancel/${maHD}`);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API deleteTicketType:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
-  }
+  },
 
-  // Lấy thống kê doanh thu theo phim
-  async getRevenueByMovie(startDate, endDate) {
+  // Lấy danh sách hóa đơn của user
+  getUserInvoices: async () => {
     try {
-      const url = new URL(`${API_BASE_URL}/analytics/revenue/movie`);
-      if (startDate) url.searchParams.append('startDate', startDate);
-      if (endDate) url.searchParams.append('endDate', endDate);
-
-      const response = await fetch(url.toString(), {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-      
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.get("/payment/all");
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API getRevenueByMovie:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
-  }
+  },
 
-  // Lấy thống kê doanh thu theo ngày
-  async getRevenueByDate(startDate, endDate) {
-    try {
-      const url = new URL(`${API_BASE_URL}/analytics/revenue/date`);
-      if (startDate) url.searchParams.append('startDate', startDate);
-      if (endDate) url.searchParams.append('endDate', endDate);
+  // Alias for getUserInvoices để tương thích
+  getUserTickets: async () => {
+    return ticketService.getUserInvoices();
+  },
+};
 
-      const response = await fetch(url.toString(), {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-      
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
-    } catch (error) {
-      console.error('Lỗi kết nối API getRevenueByDate:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
-    }
-  }
-
-  // Lấy tổng quan doanh thu
-  async getRevenueSummary() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/analytics/revenue/summary`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-      
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
-    } catch (error) {
-      console.error('Lỗi kết nối API getRevenueSummary:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
-    }
-  }
-}
-
-// Export singleton instance
-export default new TicketService();
+export default ticketService;

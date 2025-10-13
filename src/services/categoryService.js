@@ -1,98 +1,68 @@
-// Service API cho quản lý thể loại phim
-const API_BASE_URL = 'http://localhost:8080/api';
+import apiClient from "./apiClient";
+
+const handleApiResponse = (response) => ({
+  success: true,
+  data: response.data.data,
+  message: response.data.message,
+});
+const handleError = (error) => ({
+  success: false,
+  data: [],
+  message: error.response?.data?.message || "Lỗi kết nối server",
+});
 
 class CategoryService {
   // Lấy danh sách thể loại
   async getAllCategories(page = 1) {
     try {
-      const response = await fetch(`${API_BASE_URL}/theloai?page=${page}`);
+      const response = await apiClient.get(`/theloai?page=${page}`);
       const result = await response.json();
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API getAllCategories:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 
   // Lấy chi tiết thể loại theo ID
   async getCategoryById(categoryId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/theloai/${categoryId}`);
-      const result = await response.json();
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.get(`/theloai/${categoryId}`);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API getCategoryById:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 
   // Thêm thể loại mới
   async createCategory(categoryData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/theloai`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(categoryData)
-      });
-      const result = await response.json();
-      if (result.code === 201 || result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.post("/theloai", categoryData);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API createCategory:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 
   // Cập nhật thể loại
   async updateCategory(categoryId, categoryData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/theloai/${categoryId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(categoryData)
-      });
-      const result = await response.json();
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.put(
+        `/theloai/${categoryId}`,
+        categoryData
+      );
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API updateCategory:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 
   // Xóa thể loại
   async deleteCategory(categoryId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/theloai/${categoryId}`, {
-        method: 'DELETE'
-      });
-      const result = await response.json();
-      if (result.code === 200) {
-        return { success: true, message: 'Xóa thể loại thành công' };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.delete(`/theloai/${categoryId}`);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API deleteCategory:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 }

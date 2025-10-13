@@ -1,56 +1,24 @@
-// Centralized services export
-import movieService from './movieService';
-import userService from './userService';
-import roomService from './roomService';
-import scheduleService from './scheduleService';
-import ticketService from './ticketService';
+// src/services/index.js
+import movieService from "./movieService";
+import userService from "./userService";
+import roomService from "./roomService";
+import scheduleService from "./scheduleService";
+import ticketService from "./ticketService";
+import categoryService from "./categoryService";
+import seatService from "./seatService";
+import promotionService from "./promotionService";
+import serviceService from "./serviceService";
+import authService from "./authService"; // Thêm nếu chưa có
 
-// Config cho API
-const API_CONFIG = {
-  BASE_URL: 'http://localhost:8080/api',
-  TIMEOUT: 30000, // 30 seconds
-  withCredentials: true
-};
-
-// Helper functions
-const apiHelpers = {
-  // Format API response
-  formatResponse: (data, status = 200, message = 'Success') => {
-    return {
-      data,
-      status,
-      message,
-      timestamp: new Date().toISOString()
-    };
-  },
-  
-  // Format error response
-  formatError: (message = 'Error', status = 500) => {
-    return {
-      data: null,
-      status,
-      message,
-      timestamp: new Date().toISOString()
-    };
-  },
-  
-  // Get headers with auth token
-  getAuthHeaders: () => {
-    const token = localStorage.getItem('authToken');
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : ''
-    };
-  }
-};
-
-// Export tất cả services
 export {
+  authService,
   movieService,
   userService,
   roomService,
   scheduleService,
   ticketService,
-  API_CONFIG,
-  apiHelpers
+  categoryService,
+  seatService,
+  promotionService,
+  serviceService,
 };

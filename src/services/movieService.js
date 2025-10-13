@@ -1,152 +1,94 @@
-// Movie Service - Quản lý tất cả API calls liên quan đến phim
-const API_BASE_URL = 'http://localhost:8080/api';
+import apiClient from "./apiClient";
+
+const handleApiResponse = (response) => {
+  const responseData =
+    response.data.data !== undefined ? response.data.data : response.data;
+  const message = response.data.message || "Thành công";
+  return { success: true, data: responseData, message };
+};
+
+const handleError = (error) => {
+  const message = error.response?.data?.message || "Lỗi kết nối server";
+  return { success: false, message };
+};
 
 class MovieService {
   // Lấy danh sách phim phân trang
   async getMoviesPaginated(page = 1) {
     try {
-      let url = `${API_BASE_URL}/phim/pageable?page=${page}`;
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.get(`/phim/pageable?page=${page}`);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API getMoviesPaginated:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      console.error("Lỗi kết nối API getMoviesPaginated:", error);
+      return handleError(error);
     }
   }
 
   // Lấy chi tiết phim theo ID
   async getMovieById(movieId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/phim/${movieId}`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.get(`/phim/${movieId}`);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API getMovieById:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      console.error("Lỗi kết nối API getMovieById:", error);
+      return handleError(error);
     }
   }
 
   // Thêm phim mới
   async createMovie(movieData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/phim`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(movieData)
-      });
-      
-      const result = await response.json();
-      
-      if (result.code === 200 || result.code === 201) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.post("/phim", movieData);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API createMovie:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      console.error("Lỗi kết nối API createMovie:", error);
+      return handleError(error);
     }
   }
 
   // Cập nhật phim
   async updateMovie(movieId, movieData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/phim/${movieId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(movieData)
-      });
-      
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.put(`/phim/${movieId}`, movieData);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API updateMovie:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      console.error("Lỗi kết nối API updateMovie:", error);
+      return handleError(error);
     }
   }
 
   // Xóa phim
   async deleteMovie(movieId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/phim/${movieId}`, {
-        method: 'DELETE'
-      });
-      
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, message: 'Xóa phim thành công' };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.delete(`/phim/${movieId}`);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API deleteMovie:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      console.error("Lỗi kết nối API deleteMovie:", error);
+      return handleError(error);
     }
   }
 
   // Tìm kiếm phim theo từ khóa
   async searchMovies(keyword, page = 1) {
     try {
-      const response = await fetch(`${API_BASE_URL}/phim/search?keyword=${encodeURIComponent(keyword)}&page=${page}`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.get(
+        `/phim/search?keyword=${encodeURIComponent(keyword)}&page=${page}`
+      );
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API searchMovies:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      console.error("Lỗi kết nối API searchMovies:", error);
+      return handleError(error);
     }
   }
 
-  // Lấy thống kê phim cho dashboard
+  // Lấy thống kê phim
   async getMovieStats() {
     try {
-      const response = await fetch(`${API_BASE_URL}/phim/stats`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        // Fallback data nếu API không có endpoint stats
-        const allMovies = await this.getAllMovies();
-        if (allMovies.success) {
-          const movies = allMovies.data;
-          const stats = {
-            totalMovies: movies.length,
-            nowShowing: movies.filter(m => m.trangThai === 'Đang chiếu').length,
-            comingSoon: movies.filter(m => m.trangThai === 'Sắp chiếu').length,
-            ended: movies.filter(m => m.trangThai === 'Đã chiếu').length
-          };
-          return { success: true, data: stats };
-        }
-        return { success: false, message: 'Không thể lấy thống kê' };
-      }
+      const response = await apiClient.get("/phim/stats");
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API getMovieStats:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      console.error("Lỗi kết nối API getMovieStats:", error);
+      return handleError(error);
     }
   }
 
@@ -154,26 +96,16 @@ class MovieService {
   async uploadMovieImage(imageFile) {
     try {
       const formData = new FormData();
-      formData.append('image', imageFile);
-      
-      const response = await fetch(`${API_BASE_URL}/upload/image`, {
-        method: 'POST',
-        body: formData
+      formData.append("file", imageFile);
+      const response = await apiClient.post("/phim/upload-image", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API uploadMovieImage:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      console.error("Lỗi kết nối API uploadMovieImage:", error);
+      return handleError(error);
     }
   }
 }
 
-// Export singleton instance
 export default new MovieService();

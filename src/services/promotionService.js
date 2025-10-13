@@ -1,84 +1,63 @@
-// Service API cho quản lý thể loại phim
-const API_BASE_URL = 'http://localhost:8080/api';
-
-class PromotionService {
-
-    async getAllPromotion(page = 1) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/khuyenmai`);
-            const result = await response.json();
-            if (result.code === 200) {
-                return { success: true, data: result.data };
-            } else {
-                return { success: false, message: result.message };
-            }
-        } catch (error) {
-            console.error('Lỗi kết nối API getAllPromotion:', error);
-            return { success: false, message: 'Lỗi kết nối server' };
-        }
+import apiClient from "./apiClient";
+const handleApiResponse = (response) => ({
+  success: true,
+  data: response.data.data,
+  message: response.data.message,
+});
+const handleError = (error) => ({
+  success: false,
+  message: error.response?.data?.message || "Lỗi kết nối server",
+});
+const promotionService = {
+  // Lấy tất cả khuyến mãi
+  getAllPromotions: async () => {
+    try {
+      const response = await apiClient.get("/khuyenmai");
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleError(error);
     }
+  },
 
-    // Thêm thể loại mới
-    async createPromotion(promotionData) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/khuyenmai`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(promotionData)
-            });
-            const result = await response.json();
-            if (result.code === 201 || result.code === 200) {
-                return { success: true, data: result.data };
-            } else {
-                return { success: false, message: result.message };
-            }
-        } catch (error) {
-            console.error('Lỗi kết nối API createCategory:', error);
-            return { success: false, message: 'Lỗi kết nối server' };
-        }
+  // Lấy khuyến mãi theo ID
+  getPromotionById: async (id) => {
+    try {
+      const response = await apiClient.get(`/khuyenmai/${id}`);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleError(error);
     }
+  },
 
-    // Cập nhật thể loại
-    async updateCategory(categoryId, categoryData) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/theloai/${categoryId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(categoryData)
-            });
-            const result = await response.json();
-            if (result.code === 200) {
-                return { success: true, data: result.data };
-            } else {
-                return { success: false, message: result.message };
-            }
-        } catch (error) {
-            console.error('Lỗi kết nối API updateCategory:', error);
-            return { success: false, message: 'Lỗi kết nối server' };
-        }
+  // Tạo khuyến mãi mới
+  createPromotion: async (promotionData) => {
+    try {
+      const response = await apiClient.post("/khuyenmai", promotionData);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleError(error);
     }
+  },
 
-    // Xóa thể loại
-    async deleteCategory(categoryId) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/theloai/${categoryId}`, {
-                method: 'DELETE'
-            });
-            const result = await response.json();
-            if (result.code === 200) {
-                return { success: true, message: 'Xóa thể loại thành công' };
-            } else {
-                return { success: false, message: result.message };
-            }
-        } catch (error) {
-            console.error('Lỗi kết nối API deleteCategory:', error);
-            return { success: false, message: 'Lỗi kết nối server' };
-        }
+  // Cập nhật khuyến mãi
+  updatePromotion: async (id, promotionData) => {
+    try {
+      const response = await apiClient.put(`/khuyenmai/${id}`, promotionData);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleError(error);
     }
-}
+  },
 
-export default new PromotionService();
+  // Xóa khuyến mãi
+  deletePromotion: async (id) => {
+    try {
+      const response = await apiClient.delete(`/khuyenmai/${id}`);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+};
+
+export default promotionService;

@@ -1,140 +1,87 @@
-// Service API cho quản lý suất chiếu
-const API_BASE_URL = 'http://localhost:8080/api';
+
+import apiClient from "./apiClient";
+
+const handleApiResponse = (response) => ({
+  success: true,
+  data: response.data.data,
+  message: response.data.message,
+});
+const handleError = (error) => ({
+  success: false,
+  message: error.response?.data?.message || "Lỗi kết nối server",
+});
 
 class ScheduleService {
   // Lấy danh sách suất chiếu có phân trang
   async getSchedulesPaginated(page = 1) {
     try {
-      const response = await fetch(`${API_BASE_URL}/suatchieu/pageable?page=${page}`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.get(`/suatchieu/pageable?page=${page}`);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API getSchedulesPaginated:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 
-  // Lấy tất cả suất chiếu (không phân trang)
+  // Lấy tất cả suất chiếu
   async getAllSchedules() {
     try {
-      const response = await fetch(`${API_BASE_URL}/suatchieu`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.get("/suatchieu");
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API getAllSchedules:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 
   // Lấy suất chiếu theo ID
   async getScheduleById(scheduleId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/suatchieu/${scheduleId}`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.get(`/suatchieu/${scheduleId}`);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API getScheduleById:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 
   // Tạo suất chiếu mới
   async createSchedule(scheduleData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/suatchieu`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(scheduleData)
-      });
-      
-      const result = await response.json();
-      
-      if (result.code === 201) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.post("/suatchieu", scheduleData);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API createSchedule:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 
   // Cập nhật suất chiếu
   async updateSchedule(scheduleId, scheduleData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/suatchieu/${scheduleId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(scheduleData)
-      });
-      
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.put(
+        `/suatchieu/${scheduleId}`,
+        scheduleData
+      );
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API updateSchedule:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 
   // Xóa suất chiếu
   async deleteSchedule(scheduleId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/suatchieu/${scheduleId}`, {
-        method: 'DELETE'
-      });
-      
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, message: 'Xóa lịch chiếu thành công' };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.delete(`/suatchieu/${scheduleId}`);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API deleteSchedule:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 
   // Lấy danh sách phim cho form tạo suất chiếu
   async getMoviesForSchedule() {
     try {
-      const response = await fetch(`${API_BASE_URL}/phim`);
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        return { success: true, data: result.data };
-      } else {
-        return { success: false, message: result.message };
-      }
+      const response = await apiClient.get("/phim");
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Lỗi kết nối API getMoviesForSchedule:', error);
-      return { success: false, message: 'Lỗi kết nối server' };
+      return handleError(error);
     }
   }
 }

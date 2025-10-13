@@ -1,13 +1,20 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.jsx";
+import { AuthProvider } from "./context/AuthContext"; // Import
 import './index.css'
 import App from './App.jsx'
 import { ToastProvider } from './components/common/Toast';
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <ToastProvider>
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+      <ToastProvider>
+    <AuthProvider>
+      {" "}
+      {/* Bọc App */}
       <App />
-    </ToastProvider>
-  </StrictMode>,
-)
+    </AuthProvider>
+      </ToastProvider>
+  </React.StrictMode>
+);
+
