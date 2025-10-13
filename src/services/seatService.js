@@ -31,9 +31,9 @@ class SeatService {
                 return handleError(error);
             }
         }
-  }
+    }
 
-  // Lấy thông tin loại ghế theo ID
+    // Lấy thông tin loại ghế theo ID
   async getSeatTypeById(seatTypeId) {
     try {
       const response = await apiClient.get(`/loaighe/${seatTypeId}`);
