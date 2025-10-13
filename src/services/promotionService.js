@@ -19,6 +19,15 @@ const promotionService = {
     }
   },
 
+    getAllPromotionsPageable: async (page = 1) => {
+        try {
+            const response = await apiClient.get(`/khuyenmai/pageable?page=${page}`);
+            return handleApiResponse(response);
+        } catch (error) {
+            return handleError(error);
+        }
+    },
+
   // Lấy khuyến mãi theo ID
   getPromotionById: async (id) => {
     try {
@@ -58,6 +67,19 @@ const promotionService = {
       return handleError(error);
     }
   },
+
+
+    async searchPromotions(keyword, page = 1) {
+        try {
+            const response = await apiClient.get(
+                `/khuyenmai/search?keyword=${encodeURIComponent(keyword)}&page=${page}`
+            );
+            return handleApiResponse(response);
+        } catch (error) {
+            console.error("Lỗi kết nối API searchMovies:", error);
+            return handleError(error);
+        }
+    },
 };
 
 export default promotionService;

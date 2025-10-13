@@ -1,8 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, use} from 'react';
 import {Film, Plus, Utensils} from "lucide-react";
-import foodService from '../../services/foodService.js';
-import categoryService from "../../services/categoryService.js";
-import movieService from "../../services/movieService.js";
 import {serviceService} from "../../services/index.js";
 
 const AdminFoodManagement = () => {
@@ -31,17 +28,8 @@ const AdminFoodManagement = () => {
     },[])
 
     useEffect(() => {
-        const delayDebounce = setTimeout(() => {
-            if (searchTerm || filterCategory !== 'all') {
-                searchProducts(searchTerm, filterCategory, currentPage);
-            } else {
-                fetchPageProducts(currentPage);
-            }
-        }, 500); // debounce 0.5s để tránh spam API
-
-        return () => clearTimeout(delayDebounce);
-    }, [searchTerm, filterCategory, currentPage]);
-
+        fetchPageProducts(currentPage);
+    }, [currentPage]);
 
     const fetchProduct = async () =>  {
         const result = await serviceService.getAllServices();
@@ -176,7 +164,11 @@ const AdminFoodManagement = () => {
         }
     }
 
-    const filteredProducts = currentProducts;
+    const filteredProducts = products.filter(product => {
+        const matchSearch = product.tenDv.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchCategory = filterCategory === 'all' || product.danhMuc === filterCategory;
+        return matchSearch && matchCategory;
+    });
 
 
     const getCategoryBadge = (category) => {
@@ -364,12 +356,6 @@ const AdminFoodManagement = () => {
                                             </span>
                                         </td>
                                         <td className="fw-bold">{product.donGia.toLocaleString('vi-VN')}đ</td>
-                                        {/*<td className="text-muted">{product.cost.toLocaleString('vi-VN')}đ</td>*/}
-                        {/*                <td>*/}
-                        {/*<span className="badge bg-success">*/}
-                        {/*  {((product.price - product.cost) / product.price * 100).toFixed(0)}%*/}
-                        {/*</span>*/}
-                        {/*                </td>*/}
                                         <td>
                         <span
                             className={`badge ${product.trangThai === true ? 'bg-success' : 'bg-secondary'}`}

@@ -13,15 +13,23 @@ const handleError = (error) => ({
 
 class CategoryService {
   // Lấy danh sách thể loại
-  async getAllCategories(page = 1) {
+  async getAllCategoriesPaginable(page = 1) {
     try {
-      const response = await apiClient.get(`/theloai?page=${page}`);
-      const result = await response.json();
+      const response = await apiClient.get(`/theloai/pageable?page=${page}`);
       return handleApiResponse(response);
     } catch (error) {
       return handleError(error);
     }
   }
+
+    async getAllCategories() {
+        try {
+            const response = await apiClient.get(`/theloai`);
+            return handleApiResponse(response);
+        } catch (error) {
+            return handleError(error);
+        }
+    }
 
   // Lấy chi tiết thể loại theo ID
   async getCategoryById(categoryId) {

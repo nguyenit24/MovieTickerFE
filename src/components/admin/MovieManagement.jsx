@@ -47,7 +47,7 @@ const MovieManagement = () => {
   const fetchCategories = async () => {
     const result = await categoryService.getAllCategories();
     console.log(result);
-    if (result.success) setCategories(result.data.currentGens);
+    if (result.success) setCategories(result.data);
   };
 
   const fetchMovies = async (page = 1) => {
@@ -238,7 +238,7 @@ const MovieManagement = () => {
                     </div>
                     <button
                         className="btn btn-primary btn-lg"
-                        onClick={() => openModal(null, 'add')}
+                        onClick={() => openModal('add', null)}
                     >
                         <Plus size={20} className="me-2" style={{verticalAlign: 'middle'}}/>
                         Thêm Suất Chiếu

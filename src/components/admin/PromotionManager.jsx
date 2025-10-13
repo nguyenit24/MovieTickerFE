@@ -1,46 +1,61 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { Ticket, Plus, Edit2, Trash2, Search, Calendar, DollarSign, Users, TrendingUp } from 'lucide-react';
-import MovieManagement from "./MovieManagement.jsx";
-import foodService from "../../services/foodService.js";
-import categoryService from "../../services/categoryService.js";
 import promotionService from "../../services/promotionService.js";
+import {serviceService} from "../../services/index.js";
 
 const PromotionManager = () => {
     const [activeTab, setActiveTab] = useState('list');
     const [searchTerm, setSearchTerm] = useState('');
     const [promotions, setPromotions] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const [formData, setFormData] = useState({
-        title: '',
-        code: '',
-        description: '',
-        discount: '',
-        startDate: '',
-        endDate: '',
-        usageLimit: '',
-        image: ''
+        maKm: '',
+        tenKm: '',
+        moTa: '',
+        giaTri: '',
+        ngayBatDau: '',
+        ngayKetThuc: '',
+        maCode: '',
+        soLuong: '',
+        urlHinh: '',
+        trangThai: true
     });
-
-    const fetchPromotions = async () => {
-        const result = await promotionService.getAllPromotion();
-        if (result.success) setPromotions(result.data);
+    const [errors, setErrors] = useState({});
+    const fetchPromotions = async (page = 1) => {
+        const result = await promotionService.getAllPromotionsPageable(page);
+        const { currentItems, totalPages, currentPage } = result.data;
+        try {
+            if (result.success) {
+                setPromotions(currentItems);
+                setTotalPages(totalPages);
+                setCurrentPage(currentPage);
+            } else {
+                setPromotions([]);
+                setTotalPages(1);
+                setCurrentPage(1);
+            }
+        }
+        catch (error) {
+            console.error('Lỗi kết nối API:', error);
+            setPromotions([]);
+            setTotalPages(1);
+            setCurrentPage(1);
+        } finally {
+            setLoading(false);
+        }
     }
 
-    useState(() => {
-        fetchPromotions();
-    }, [])
+    useEffect(() => {
+        fetchPromotions(currentPage);
+    }, [currentPage])
 
 
     const [editingId, setEditingId] = useState(null);
-
-    const filteredPromotions = promotions.filter(promo =>
-        promo.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        promo.code.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const activePromotions = promotions.filter(p => p.status === 'active').length;
-    const totalUsage = promotions.reduce((sum, p) => sum + p.usageCount, 0);
+    const activePromotions = promotions.filter(p => p.trangThai === true).length;
+    const totalUsage = promotions.reduce((sum, p) => sum + p.ves.length, 0);
     const avgUsageRate = promotions.length > 0
-        ? (promotions.reduce((sum, p) => sum + (p.usageCount / p.usageLimit * 100), 0) / promotions.length).toFixed(1)
+        ? (promotions.reduce((sum, p) => sum + (p.ves.length / p.soLuong * 100), 0) / promotions.length).toFixed(1)
         : 0;
 
     const handleInputChange = (e) => {
@@ -48,19 +63,79 @@ const PromotionManager = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    // const searchProducts = async (tenDv = '', danhMuc = '', page = 1) => {
+    //     const result = await serviceService.searchServices(tenDv, danhMuc, page = 1);
+    //     if (result.success) {
+    //         const { currentItems, totalPages, currentPage } = result.data;
+    //         setCurrentProducts(currentItems);
+    //         setTotalPages(totalPages);
+    //         setCurrentPage(currentPage);
+    //     } else {
+    //         setCurrentProducts([]);
+    //         setTotalPages(1);
+    //         setCurrentPage(1);
+    //     }
+    // }
+
+    const filteredPromotions = promotions.filter(promo =>
+        promo.tenKm.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        promo.maCode.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const newErrors = {};
+        if (!formData.tenKm.trim()) newErrors.tenKm = 'Vui lòng nhập tên khuyến mãi';
+        if (!formData.maCode.trim()) newErrors.maCode = 'Vui lòng nhập mã code';
+        if (!formData.moTa.trim()) newErrors.moTa = 'Vui lòng nhập mô tả';
+        if (!formData.giaTri || formData.giaTri <= 0)
+            newErrors.giaTri = 'Vui lòng nhập giá trị giảm hợp lệ';
+        if (!formData.ngayBatDau) newErrors.ngayBatDau = 'Vui lòng chọn ngày bắt đầu';
+        if (!formData.ngayKetThuc) newErrors.ngayKetThuc = 'Vui lòng chọn ngày kết thúc';
+        if (!formData.soLuong || formData.soLuong <= 0)
+            newErrors.soLuong = 'Vui lòng nhập giới hạn sử dụng hợp lệ';
+        if (!formData.urlHinh.trim()) newErrors.urlHinh = 'Vui lòng nhập URL hình ảnh';
+
+
+        if (formData.trangThai === null || formData.trangThai === undefined) {
+            newErrors.trangThai = 'Vui lòng chọn trạng thái';
+        }
+
+        const ngayKetThuc = new Date(formData.ngayKetThuc);
+        const hientai = new Date();
+
+        if (formData.trangThai === true && ngayKetThuc <= hientai) {
+            newErrors.ngayKetThuc = "Ngày kết thúc phải sau ngày hiện tại nếu khuyến mãi đang hoạt động";
+        }
+
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+        setErrors({})
 
         if (editingId) {
-            setPromotions(promotions.map(promo =>
-                promo.id === editingId
-                    ? { ...promo, ...formData, usageCount: promo.usageCount }
-                    : promo
-            ));
+            console.log(formData)
+            const result = await promotionService.updatePromotion(editingId, formData);
+            console.log(result);
+            if (result.success) {
+                setPromotions(promotions.map(promo =>
+                    promo.maKm === editingId
+                        ? result.data
+                        : promo
+                ));
+            }
+            else {
+                alert(result.message);
+            }
+
             setEditingId(null);
         } else {
             const  result = await promotionService.createPromotion(formData)
             if (result.success) {
+                result.data.ves = [];
                 setPromotions([...promotions, result.data]);
                 alert("Thêm mới thành công");
             } else {
@@ -69,7 +144,7 @@ const PromotionManager = () => {
         }
 
         setFormData({
-            maKm: '',
+            maKm: null,
             tenKm: '',
             moTa: '',
             giaTri: '',
@@ -77,21 +152,25 @@ const PromotionManager = () => {
             ngayKetThuc: '',
             maCode: '',
             soLuong: '',
-            urlHinh: ''
+            urlHinh: '',
+            trangThai: true
         });
         setActiveTab('list');
     };
 
     const handleEdit = (promo) => {
+        setErrors({})
         setFormData({
             maKm : promo.maKm,
             tenKm: promo.tenKm,
             moTa: promo.moTa,
             giaTri: promo.giaTri,
+            maCode: promo.maCode,
             ngayBatDau: promo.ngayBatDau,
             ngayKetThuc: promo.ngayKetThuc,
             soLuong: promo.soLuong,
-            urlHinh: promo.urlHinh
+            urlHinh: promo.urlHinh,
+            trangThai: promo.trangThai
         });
         setEditingId(promo.maKm);
         setActiveTab('form');
@@ -99,7 +178,14 @@ const PromotionManager = () => {
 
     const handleDelete = (id) => {
         if (window.confirm('Bạn có chắc chắn muốn xóa khuyến mãi này?')) {
-            setPromotions(promotions.filter(promo => promo.id !== id));
+            const result = promotionService.deletePromotion(id)
+            try {
+                setPromotions(promotions.filter(promo => promo.maKm !== id));
+                alert("Xóa thành công");
+            } catch (error)
+            {
+                alert(error.message);
+            }
         }
     };
 
@@ -113,11 +199,36 @@ const PromotionManager = () => {
             ngayKetThuc: '',
             maCode: '',
             soLuong: '',
-            urlHinh: ''
+            urlHinh: '',
+            trangThai: true
         });
+        setErrors({})
         setEditingId(null);
         setActiveTab('list');
     };
+
+    const handleToggleStatus = async (id) => {
+        const newPromotion = promotions.find(p => p.maKm === id);
+        const ngayKetThuc = new Date(newPromotion.ngayKetThuc);
+        const hientai = new Date();
+
+        if (newPromotion.trangThai !== true && ngayKetThuc <= hientai) {
+            alert("Ngày kết thúc phải sau ngày hiện tại nếu khuyến mãi đang hoạt động")
+            return
+        }
+        const result = await promotionService.updatePromotion(id, {...newPromotion, trangThai: newPromotion.trangThai !== true});
+        if (!result.success) {
+            alert(result.message);
+            setPromotions(promotions.map(p =>
+                p.maKm === id ? newPromotion : p
+            ));
+        }
+        else {
+            setPromotions(promotions.map(p =>
+                p.maKm === id ? result.data : p
+            ));
+        }
+    }
 
     return (
         <div className="min-vh-100 bg-light">
@@ -262,49 +373,51 @@ const PromotionManager = () => {
                                         </thead>
                                         <tbody>
                                         {filteredPromotions.map(promo => (
-                                            <tr key={promo.id}>
-                                                <td>{promo.id}</td>
+                                            <tr key={promo.maKm}>
+                                                <td>{promo.maKm}</td>
                                                 <td>
                                                     <img
-                                                        src={promo.image}
-                                                        alt={promo.title}
+                                                        src={promo.urlHinh}
+                                                        alt={promo.tenKm}
                                                         className="rounded"
                                                         style={{width: '80px', height: '50px', objectFit: 'cover'}}
                                                     />
                                                 </td>
                                                 <td>
-                                                    <strong>{promo.title}</strong>
+                                                    <strong>{promo.tenKm}</strong>
                                                     <br />
-                                                    <small className="text-muted">{promo.description}</small>
+                                                    <small className="text-muted">{promo.moTa}</small>
                                                 </td>
                                                 <td>
-                                                    <code className="bg-light px-2 py-1 rounded">{promo.code}</code>
+                                                    <code className="bg-light px-2 py-1 rounded">{promo.maCode}</code>
                                                 </td>
                                                 <td>
                             <span className="badge bg-danger">
-                              {promo.type === 'percentage' ? `${promo.discount}%` : `${promo.discount.toLocaleString()}đ`}
+                              {`${promo.giaTri}%`}
                             </span>
                                                 </td>
                                                 <td>
                                                     <small>
                                                         <Calendar size={14} className="me-1" />
-                                                        {promo.startDate} đến {promo.endDate}
+                                                        {promo.ngayBatDau} đến {promo.ngayKetThuc}
                                                     </small>
                                                 </td>
                                                 <td>
                                                     <div className="d-flex flex-column">
-                                                        <small>{promo.usageCount} / {promo.usageLimit}</small>
+                                                        <small>{promo.ves.length} / {promo.soLuong}</small>
                                                         <div className="progress" style={{height: '4px'}}>
                                                             <div
                                                                 className="progress-bar bg-success"
-                                                                style={{width: `${(promo.usageCount / promo.usageLimit) * 100}%`}}
+                                                                style={{width: `${(promo.ves.length / promo.soLuong) * 100}%`}}
                                                             />
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td>
-                            <span className={`badge ${promo.status === 'active' ? 'bg-success' : 'bg-secondary'}`}>
-                              {promo.status === 'active' ? 'Hoạt động' : 'Hết hạn'}
+                            <span className={`badge ${promo.trangThai === true ? 'bg-success' : 'bg-secondary'}`}
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => handleToggleStatus(promo.maKm)}>
+                                {promo.trangThai === true ? 'Hoạt động' : 'Hết hạn'}
                             </span>
                                                 </td>
                                                 <td>
@@ -317,7 +430,7 @@ const PromotionManager = () => {
                                                     </button>
                                                     <button
                                                         className="btn btn-sm btn-outline-danger"
-                                                        onClick={() => handleDelete(promo.id)}
+                                                        onClick={() => handleDelete(promo.maKm)}
                                                         title="Xóa"
                                                     >
                                                         <Trash2 size={14} />
@@ -332,32 +445,32 @@ const PromotionManager = () => {
                         )}
 
                         {activeTab === 'form' && (
-                            <div onSubmit={handleSubmit}>
+                            <form onSubmit={handleSubmit}>
                                 <div className="row">
                                     <div className="col-md-8">
                                         <div className="mb-3">
                                             <label className="form-label">Tên Khuyến Mãi *</label>
                                             <input
                                                 type="text"
-                                                className="form-control"
-                                                name="title"
-                                                value={formData.title}
+                                                className={`form-control ${errors.tenKm ? 'is-invalid' : ''}`}
+                                                name="tenKm"
+                                                value={formData.tenKm}
                                                 onChange={handleInputChange}
-                                                required
                                                 placeholder="VD: Giảm 50% Vé Xem Phim"
+                                                required
                                             />
                                         </div>
 
                                         <div className="mb-3">
                                             <label className="form-label">Mô Tả *</label>
                                             <textarea
-                                                className="form-control"
-                                                name="description"
-                                                value={formData.description}
+                                                className={`form-control ${errors.moTa ? 'is-invalid' : ''}`}
+                                                name="moTa"
+                                                value={formData.moTa}
                                                 onChange={handleInputChange}
                                                 rows="3"
-                                                required
                                                 placeholder="Mô tả chi tiết về chương trình khuyến mãi"
+                                                required
                                             />
                                         </div>
 
@@ -366,12 +479,12 @@ const PromotionManager = () => {
                                                 <label className="form-label">Mã Code *</label>
                                                 <input
                                                     type="text"
-                                                    className="form-control text-uppercase"
-                                                    name="code"
-                                                    value={formData.code}
+                                                    className={`form-control text-uppercase ${errors.maCode ? 'is-invalid' : ''}`}
+                                                    name="maCode"
+                                                    value={formData.maCode}
                                                     onChange={handleInputChange}
-                                                    required
                                                     placeholder="VD: CINEMA50"
+                                                    required
                                                 />
                                             </div>
 
@@ -391,12 +504,14 @@ const PromotionManager = () => {
                                                 <label className="form-label">Giá Trị Giảm *</label>
                                                 <input
                                                     type="number"
-                                                    className="form-control"
-                                                    name="discount"
-                                                    value={formData.discount}
+                                                    className={`form-control ${errors.giaTri ? 'is-invalid' : ''}`}
+                                                    name="giaTri"
+                                                    value={formData.giaTri}
                                                     onChange={handleInputChange}
-                                                    required
                                                     placeholder= '50'
+                                                    min={0}
+                                                    max={100}
+                                                    required
                                                 />
                                             </div>
 
@@ -404,11 +519,10 @@ const PromotionManager = () => {
                                                 <label className="form-label">Giới Hạn Sử Dụng *</label>
                                                 <input
                                                     type="number"
-                                                    className="form-control"
-                                                    name="usageLimit"
-                                                    value={formData.usageLimit}
+                                                    className={`form-control ${errors.soLuong ? 'is-invalid' : ''}`}
+                                                    name="soLuong"
+                                                    value={formData.soLuong}
                                                     onChange={handleInputChange}
-                                                    required
                                                     placeholder="1000"
                                                 />
                                             </div>
@@ -419,10 +533,11 @@ const PromotionManager = () => {
                                                 <label className="form-label">Ngày Bắt Đầu *</label>
                                                 <input
                                                     type="date"
-                                                    className="form-control"
-                                                    name="startDate"
-                                                    value={formData.startDate}
+                                                    className={`form-control ${errors.ngayBatDau ? 'is-invalid' : ''}`}
+                                                    name="ngayBatDau"
+                                                    value={formData.ngayBatDau}
                                                     onChange={handleInputChange}
+                                                    min={new Date().toISOString().split("T")[0]}
                                                     required
                                                 />
                                             </div>
@@ -431,10 +546,11 @@ const PromotionManager = () => {
                                                 <label className="form-label">Ngày Kết Thúc *</label>
                                                 <input
                                                     type="date"
-                                                    className="form-control"
-                                                    name="endDate"
-                                                    value={formData.endDate}
+                                                    name="ngayKetThuc"
+                                                    className={`form-control ${errors.ngayKetThuc ? 'is-invalid' : ''}`}
+                                                    value={formData.ngayKetThuc}
                                                     onChange={handleInputChange}
+                                                    min={formData.ngayBatDau || new Date().toISOString().split("T")[0]}
                                                     required
                                                 />
                                             </div>
@@ -444,13 +560,46 @@ const PromotionManager = () => {
                                             <label className="form-label">URL Hình Ảnh *</label>
                                             <input
                                                 type="url"
-                                                className="form-control"
-                                                name="image"
-                                                value={formData.image}
+                                                name="urlHinh"
+                                                className={`form-control ${errors.urlHinh ? 'is-invalid' : ''}`}
+                                                value={formData.urlHinh}
                                                 onChange={handleInputChange}
-                                                required
                                                 placeholder="https://example.com/image.jpg"
                                             />
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label fw-bold">Trạng Thái</label>
+                                            <div>
+                                                <div className="form-check form-check-inline">
+                                                    <input
+                                                        className="form-check-input"
+                                                        type="radio"
+                                                        id="statusActive"
+                                                        value="active"
+                                                        checked={formData.trangThai === true}
+                                                        onChange={(e) => setFormData({ ...formData, trangThai: true })}
+                                                    />
+                                                    <label className="form-check-label" htmlFor="statusActive">
+                                                        Hoạt động
+                                                    </label>
+                                                </div>
+                                                <div className="form-check form-check-inline">
+                                                    <input
+                                                        className="form-check-input"
+                                                        type="radio"
+                                                        id="statusInactive"
+                                                        value="inactive"
+                                                        checked={formData.trangThai === false}
+                                                        onChange={(e) => setFormData({ ...formData, trangThai: false })}
+                                                    />
+                                                    <label className="form-check-label" htmlFor="statusInactive">
+                                                        Hết hạn
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            {errors.trangThai && (
+                                                <div className="invalid-feedback d-block">{errors.trangThai}</div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -458,25 +607,25 @@ const PromotionManager = () => {
                                         <div className="card bg-light border-0">
                                             <div className="card-body">
                                                 <h6 className="card-title">Preview</h6>
-                                                {formData.image && (
+                                                {formData.urlHinh && (
                                                     <img
-                                                        src={formData.image}
+                                                        src={formData.urlHinh}
                                                         alt="Preview"
                                                         className="img-fluid rounded mb-3"
                                                         onError={(e) => e.target.style.display = 'none'}
                                                     />
                                                 )}
-                                                <p className="mb-1"><strong>{formData.title || 'Tên khuyến mãi'}</strong></p>
-                                                <p className="small text-muted mb-2">{formData.description || 'Mô tả...'}</p>
-                                                {formData.code && (
+                                                <p className="mb-1"><strong>{formData.tenKm || 'Tên khuyến mãi'}</strong></p>
+                                                <p className="small text-muted mb-2">{formData.moTa || 'Mô tả...'}</p>
+                                                {formData.maCode && (
                                                     <code className="bg-white px-2 py-1 rounded d-inline-block mb-2">
-                                                        {formData.code}
+                                                        {formData.maCode}
                                                     </code>
                                                 )}
-                                                {formData.discount && (
+                                                {formData.giaTri && (
                                                     <div>
                             <span className="badge bg-danger">
-                              Giảm {`${formData.discount}%`}
+                              Giảm {`${formData.giaTri}%`}
                             </span>
                                                     </div>
                                                 )}
@@ -494,7 +643,7 @@ const PromotionManager = () => {
                                         Hủy
                                     </button>
                                 </div>
-                            </div>
+                            </form>
                         )}
                     </div>
                 </div>

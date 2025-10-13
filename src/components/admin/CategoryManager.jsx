@@ -13,14 +13,15 @@ const CategoryManager = () =>
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+
   useEffect(() => {
     fetchCategories(currentPage);
   }, [currentPage]);
 
   const fetchCategories = async (page = 1) => {
     setLoading(true);
-    const result = await categoryService.getAllCategories(page);
-    console.log(categories)
+    const result = await categoryService.getAllCategoriesPaginable(page);
+    console.log(result);
     try {
       if (result.success) {
         const { currentGens, totalPages, currentPage } = result.data;
@@ -103,7 +104,7 @@ const CategoryManager = () =>
                     </div>
                     <button
                         className="btn btn-primary btn-lg"
-                        onClick={() => openModal(null, 'add')}
+                        onClick={() => openModal('add', null)}
                     >
                         <Plus size={20} className="me-2" style={{verticalAlign: 'middle'}}/>
                         Thêm Suất Chiếu
