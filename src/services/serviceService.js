@@ -1,5 +1,7 @@
 import apiClient from "./apiClient";
 
+const API_BASE_URL = 'http://localhost:8080/api';
+
 const handleApiResponse = (response) => ({
   success: true,
   data: response.data.data,
