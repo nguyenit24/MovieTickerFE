@@ -5,7 +5,7 @@ class MovieService {
   // Lấy danh sách phim phân trang
   async getMoviesPaginated(page = 1) {
     try {
-      const url = `${API_BASE_URL}/phim/pageable?page=${page}`;
+      let url = `${API_BASE_URL}/phim/pageable?page=${page}`;
       const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
@@ -105,9 +105,9 @@ class MovieService {
   }
 
   // Tìm kiếm phim theo từ khóa
-  async searchMovies(keyword) {
+  async searchMovies(keyword, page = 1) {
     try {
-      const response = await fetch(`${API_BASE_URL}/phim/search?keyword=${encodeURIComponent(keyword)}`);
+      const response = await fetch(`${API_BASE_URL}/phim/search?keyword=${encodeURIComponent(keyword)}&page=${page}`);
       const result = await response.json();
       
       if (result.code === 200) {

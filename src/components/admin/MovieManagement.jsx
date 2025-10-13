@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import movieService from '../../services/movieService';
 import categoryService from '../../services/categoryService';
+import { useNavigate } from 'react-router-dom';
+import {Calendar, Film, Plus} from "lucide-react";
+
 
 const MovieManagement = () => {
   const [movies, setMovies] = useState([]);
@@ -25,18 +28,26 @@ const MovieManagement = () => {
     theLoai: []
   });
   const [categories, setCategories] = useState([]);
+    const navigate = useNavigate();
 
-  useEffect(() => {
+    useEffect(() => {
     fetchCategories();
   }, []);
 
   useEffect(() => {
-    fetchMovies(currentPage, searchTerm);
-  }, [currentPage, searchTerm]);
+      if (searchTerm.trim() === '') {
+          fetchMovies(currentPage);
+      }
+      else {
+            console.log(currentPage);
+            searchMovies(searchTerm, currentPage);
+      }
+  }, [currentPage]);
 
   const fetchCategories = async () => {
     const result = await categoryService.getAllCategories();
-    if (result.success) setCategories(result.data);
+    console.log(result);
+    if (result.success) setCategories(result.data.currentGens);
   };
 
   const fetchMovies = async (page = 1) => {
@@ -44,7 +55,6 @@ const MovieManagement = () => {
       setLoading(true);
       const result = await movieService.getMoviesPaginated(page);
       if (result.success) {
-        console.log(result.data);
         const { currentMovies, totalPages, currentPage } = result.data;
         setMovies(currentMovies);
         setTotalPages(totalPages);
@@ -63,6 +73,31 @@ const MovieManagement = () => {
       setLoading(false);
     }
   };
+
+  const searchMovies = async (page = 1, keyword) => {
+      try {
+          setLoading(true);
+          const result = await movieService.searchMovies(page, keyword);
+          console.log(result);
+          if (result.success) {
+              const { currentMovies, totalPages, currentPage } = result.data;
+              setMovies(currentMovies);
+              setTotalPages(totalPages);
+              setCurrentPage(currentPage);
+          } else {
+              setMovies([]);
+              setTotalPages(1);
+              setCurrentPage(1);
+          }
+      } catch (error) {
+          console.error('Lỗi kết nối API:', error);
+          setMovies([]);
+          setTotalPages(1);
+          setCurrentPage(1);
+      } finally {
+          setLoading(false);
+      }
+  }
 
   const openModal = (type, movie = null) => {
     setModalType(type);
@@ -169,6 +204,13 @@ const MovieManagement = () => {
 
   const currentMovies = movies;
 
+  const handleSearchInput = (e) => {
+    if (e.key === 'Enter' || e.key === 'Spacebar') {
+        searchMovies(searchTerm);
+      console.log('Searching for:', searchTerm);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container-fluid p-4">
@@ -182,23 +224,28 @@ const MovieManagement = () => {
   return (
     <div className="container-fluid p-4">
       {/* Header */}
-      <div className="row mb-4">
-        <div className="col-12">
-          <div className="d-flex justify-content-between align-items-center">
-            <h1 className="h2 text-primary fw-bold">
-              <i className="bi bi-film me-2"></i>
-              Quản lý Phim
-            </h1>
-            <button 
-              className="btn btn-primary"
-              onClick={() => openModal('add')}
-            >
-              <i className="bi bi-plus-circle me-2"></i>
-              Thêm phim mới
-            </button>
-          </div>
+        <div className="card shadow-sm mb-4">
+            <div className="card-body">
+                <div className="d-flex align-items-center justify-content-between">
+                    <div className="d-flex align-items-center gap-3">
+                        <div className="bg-primary text-white p-3 rounded">
+                            <Film size={32}/>
+                        </div>
+                        <div>
+                            <h1 className="mb-0 h3">Quản Lý Phim</h1>
+                            <p className="text-muted mb-0">Hệ thống quản lý rạp chiếu phim</p>
+                        </div>
+                    </div>
+                    <button
+                        className="btn btn-primary btn-lg"
+                        onClick={() => openModal(null, 'add')}
+                    >
+                        <Plus size={20} className="me-2" style={{verticalAlign: 'middle'}}/>
+                        Thêm Suất Chiếu
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
 
       {/* Search */}
       <div className="row mb-4">
@@ -207,145 +254,131 @@ const MovieManagement = () => {
             <span className="input-group-text">
               <i className="bi bi-search"></i>
             </span>
-            <input 
+            <input
               type="text"
               className="form-control"
               placeholder="Tìm kiếm phim, đạo diễn..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchInput}
             />
           </div>
         </div>
       </div>
 
-      {/* Movies Table */}
-      <div className="card border-0 shadow-sm">
-        <div className="card-body p-0">
-          <div className="table-responsive">
-            <table className="table table-hover mb-0">
-              <thead className="table-light">
-                <tr>
-                  <th style={{ width: '80px' }}>Poster</th>
-                  <th>Tên phim</th>
-                  <th>Đạo diễn</th>
-                  <th>Thể loại</th>
-                  <th>Thời lượng</th>
-                  <th>Ngày KC</th>
-                  <th>Trạng thái</th>
-                  <th style={{ width: '150px' }}>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentMovies?.map((movie) => (
-                  <tr key={movie.maPhim}>
-                    <td>
-                      <img 
-                        src={movie.hinhAnh || '/images/no_image.jpg'} 
-                        alt={movie.tenPhim}
-                        className="rounded"
-                        style={{ width: '50px', height: '70px', objectFit: 'cover' }}
-                        onError={(e) => {
-                          e.target.src = '/images/no_image.jpg';
-                        }}
-                      />
-                    </td>
-                    <td>
-                      <div className="fw-bold">{movie.tenPhim}</div>
-                      <small className="text-muted">Mã: {movie.maPhim}</small>
-                    </td>
-                    <td>{movie.daoDien}</td>
-                    <td>{movie.listTheLoai ? movie.listTheLoai.map(tl => tl.tenTheLoai).join(', ') : 'N/A'}</td>
-                    <td>{formatDuration(movie.thoiLuong)}</td>
-                    <td>{formatDate(movie.ngayKhoiChieu)}</td>
-                    <td>
-                      <span className={`badge ${
-                        movie.trangThai === 'Đang chiếu' ? 'bg-success' :
-                        movie.trangThai === 'Sắp chiếu' ? 'bg-warning' :
-                        'bg-secondary'
-                      }`}>
-                        {movie.trangThai}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="btn-group" role="group">
-                        <button 
-                          className="btn btn-sm btn-outline-info"
-                          onClick={() => openModal('view', movie)}
-                          title="Xem chi tiết"
-                        >
-                          <i className="bi bi-eye"></i>
-                        </button>
-                        <button 
-                          className="btn btn-sm btn-outline-warning"
-                          onClick={() => openModal('edit', movie)}
-                          title="Chỉnh sửa"
-                        >
-                          <i className="bi bi-pencil"></i>
-                        </button>
-                        <button 
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => handleDelete(movie.maPhim)}
-                          title="Xóa"
-                        >
+      {/* Movies Panel/Grid - Card view, hình ảnh nằm trong panel, shadow bao quanh card */}
+      <div className="row g-4">
+        {currentMovies?.length > 0 ? (
+          currentMovies.map((movie) => (
+            <div className="col-12 col-sm-6 col-md-4 col-lg-3" key={movie.maPhim}
+                 onClick={() => navigate(`/admin/film/${movie.maPhim}`)}
+                 style={{ cursor: 'pointer' }}
+            >
+              <div className="card h-100 shadow rounded-4 border-0 d-flex flex-column"
+                   style={{
+                  transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+              }}
+                   onMouseEnter={(e) => {
+                       e.currentTarget.style.transform = 'scale(1.04)';
+                       e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.2)';
+                   }}
+                   onMouseLeave={(e) => {
+                       e.currentTarget.style.transform = 'scale(1)';
+                       e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.12)';
+                   }}>
+                <div className="card-body d-flex flex-column align-items-center p-3">
+                  <div className="mb-3 w-100 d-flex justify-content-center">
+                      {/* Nút Xóa phim */}
+                      <button
+                          className="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
+                          onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(movie.maPhim);
+                          }}
+                      >
                           <i className="bi bi-trash"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Empty state */}
-          {currentMovies?.length === 0 && (
-            <div className="text-center py-5">
-              <i className="bi bi-film display-1 text-muted"></i>
-              <p className="text-muted mt-2">Không tìm thấy phim nào.</p>
+                      </button>
+                    <img
+                      src={movie.hinhAnh || '/images/no_image.jpg'}
+                      alt={movie.tenPhim}
+                      className="rounded-3"
+                      style={{ width: '100%', maxWidth: '240px', height: '240px', objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}
+                      onError={(e) => { e.target.src = '/images/no_image.jpg'; }}
+                    />
+                  </div>
+                  <h5 className="card-title fw-bold mb-1 text-center">
+                      {movie.tenPhim}</h5>
+                    <div className="mb-2 text-center">
+                    <span className={`badge ${
+                        movie.trangThai === 'Đang chiếu' ? 'bg-success' :
+                            movie.trangThai === 'Sắp chiếu' ? 'bg-warning' :
+                                'bg-secondary'
+                    }`}>
+                      {movie.trangThai}
+                    </span>
+                    </div>
+                    <div className="d-flex align-items-center gap-4">
+                        <div className="mb-1 text-center" style={{fontSize: '0.95em'}}>
+                            <i className="bi bi-clock"
+                               style={{color: '#0d6efd', fontSize: '1.2rem', marginRight: '6px'}}></i>
+                            {formatDuration(movie.thoiLuong)}</div>
+                        <div className="mb-1 text-center" style={{fontSize: '0.95em'}}>
+                            <i className="bi bi-calendar-event"
+                               style={{color: '#0d6efd', fontSize: '1.2rem', marginRight: '6px'}}></i>
+                            {formatDate(movie.ngayKhoiChieu)}
+                        </div>
+                    </div>
+                    <div className="mb-1 text-muted text-center" style={{ fontSize: '0.95em' }}>Đạo diễn: {movie.daoDien}</div>
+                    <div className="mb-1 text-center" style={{ fontSize: '0.95em' }}>Thể loại: {movie.listTheLoai ? movie.listTheLoai.map(tl => tl.tenTheLoai).join(', ') : 'N/A'}</div>
+                </div>
+              </div>
             </div>
-          )}
-        </div>
-
-        {/* Pagination */}
-        {totalPages && totalPages > 1 && (
-          <div className="card-footer bg-white">
-            <nav>
-              <ul className="pagination pagination-sm justify-content-center mb-0">
-                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                  <button 
-                    className="page-link"
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    Trước
-                  </button>
-                </li>
-                
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
-                  <li key={pageNum} className={`page-item ${currentPage === pageNum ? 'active' : ''}`}>
-                    <button 
-                      className="page-link"
-                      onClick={() => setCurrentPage(pageNum)}
-                    >
-                      {pageNum}
-                    </button>
-                  </li>
-                ))}
-                
-                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                  <button 
-                    className="page-link"
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    Sau
-                  </button>
-                </li>
-              </ul>
-            </nav>
+          ))
+        ) : (
+          <div className="col-12 text-center py-5">
+            <i className="bi bi-film display-1 text-muted"></i>
+            <p className="text-muted mt-2">Không tìm thấy phim nào.</p>
           </div>
         )}
       </div>
+
+      {/* Pagination giữ nguyên */}
+      {totalPages && totalPages > 1 && (
+        <div className="card-footer bg-white mt-4">
+          <nav>
+            <ul className="pagination pagination-sm justify-content-center mb-0">
+              <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                <button
+                  className="page-link"
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  Trước
+                </button>
+              </li>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+                <li key={pageNum} className={`page-item ${currentPage === pageNum ? 'active' : ''}`}>
+                  <button
+                    className="page-link"
+                    onClick={() => setCurrentPage(pageNum)}
+                  >
+                    {pageNum}
+                  </button>
+                </li>
+              ))}
+              <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                <button
+                  className="page-link"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Sau
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      )}
 
       {/* Modal */}
       {showModal && (
@@ -355,8 +388,6 @@ const MovieManagement = () => {
               <div className="modal-header">
                 <h5 className="modal-title">
                   {modalType === 'add' && 'Thêm phim mới'}
-                  {modalType === 'edit' && 'Chỉnh sửa phim'}
-                  {modalType === 'view' && 'Chi tiết phim'}
                 </h5>
                 <button 
                   type="button" 
@@ -364,87 +395,6 @@ const MovieManagement = () => {
                   onClick={closeModal}
                 ></button>
               </div>
-
-              {modalType === 'view' ? (
-                <div className="modal-body">
-                  {selectedMovie && (
-                    <div className="row">
-                      <div className="col-md-4">
-                        <img 
-                          src={selectedMovie.hinhAnh || 'https://via.placeholder.com/300x400/cccccc/666666?text=No+Image'} 
-                          alt={selectedMovie.tenPhim}
-                          className="img-fluid rounded"
-                          onError={(e) => {
-                            e.target.src = 'https://via.placeholder.com/300x400/cccccc/666666?text=No+Image';
-                          }}
-                        />
-                      </div>
-                      <div className="col-md-8">
-                        <h3 className="fw-bold mb-3">{selectedMovie.tenPhim}</h3>
-                        <table className="table table-borderless">
-                          <tbody>
-                            <tr>
-                              <td className="fw-bold" style={{ width: '120px' }}>Mã phim:</td>
-                              <td>{selectedMovie.maPhim}</td>
-                            </tr>
-                            <tr>
-                              <td className="fw-bold">Đạo diễn:</td>
-                              <td>{selectedMovie.daoDien}</td>
-                            </tr>
-                            <tr>
-                              <td className="fw-bold">Diễn viên:</td>
-                              <td>{selectedMovie.dienVien}</td>
-                            </tr>
-                            <tr>
-                              <td className="fw-bold">Thời lượng:</td>
-                              <td>{formatDuration(selectedMovie.thoiLuong)}</td>
-                            </tr>
-                            <tr>
-                              <td className="fw-bold">Ngày KC:</td>
-                              <td>{formatDate(selectedMovie.ngayKhoiChieu)}</td>
-                            </tr>
-                            <tr>
-                              <td className="fw-bold">Độ tuổi:</td>
-                              <td>{selectedMovie.tuoi}+</td>
-                            </tr>
-                            <tr>
-                              <td className="fw-bold">Trạng thái:</td>
-                              <td>
-                                <span className={`badge ${
-                                  selectedMovie.trangThai === 'Đang chiếu' ? 'bg-success' :
-                                  selectedMovie.trangThai === 'Sắp chiếu' ? 'bg-warning' :
-                                  'bg-secondary'
-                                }`}>
-                                  {selectedMovie.trangThai}
-                                </span>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                        {selectedMovie.moTa && (
-                          <div className="mt-3">
-                            <h6 className="fw-bold">Mô tả:</h6>
-                            <p>{selectedMovie.moTa}</p>
-                          </div>
-                        )}
-                        {selectedMovie.trailerURL && (
-                          <div className="mt-3">
-                            <a 
-                              href={selectedMovie.trailerURL} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="btn btn-primary"
-                            >
-                              <i className="bi bi-play-circle me-2"></i>
-                              Xem Trailer
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
                 <form onSubmit={handleSubmit}>
                   <div className="modal-body">
                     <div className="row">
@@ -578,29 +528,28 @@ const MovieManagement = () => {
                       <label className="form-label">Mô tả</label>
                       <textarea 
                         className="form-control" 
-                        rows="4"
+                        rows={4}
                         value={formData.moTa}
-                        onChange={(e) => setFormData({...formData, moTa: e.target.value})}
-                        placeholder="Mô tả về nội dung phim..."
+                        onChange={e => setFormData({...formData, moTa: e.target.value})}
+                        placeholder="Nhập mô tả phim..."
                       />
                     </div>
                   </div>
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" onClick={closeModal}>
-                      Hủy
+                      Đóng
                     </button>
                     <button type="submit" className="btn btn-primary">
-                      {modalType === 'add' ? 'Thêm phim' : 'Cập nhật'}
+                      {modalType === 'add' ? 'Thêm phim' : 'Lưu thay đổi'}
                     </button>
                   </div>
                 </form>
-              )}
             </div>
           </div>
         </div>
       )}
     </div>
   );
-};
+}
 
 export default MovieManagement;

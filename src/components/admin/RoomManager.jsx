@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import roomService from '../../services/roomService';
+import { useNavigate } from 'react-router-dom';
+import {Film, House, Plus} from "lucide-react";
 
-const RoomManager = () => {
+const RoomManager = ({ setActiveMenu, setSelectedRoomId }) => {
+  const navigate = useNavigate();
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -117,17 +120,36 @@ const RoomManager = () => {
     );
   };
 
+  const handleViewSeats = (roomId) => {
+      navigate(`/admin/rooms/${roomId}/seats`);
+  };
+
+
   return (
     <div className="container-fluid p-4">
       <div className="row mb-4">
-        <div className="col-12 d-flex justify-content-between align-items-center">
-          <h2 className="h4 text-primary fw-bold">
-            <i className="bi bi-house me-2"></i>Quản lý phòng chiếu
-          </h2>
-          <button className="btn btn-primary" onClick={() => openModal('add')}>
-            <i className="bi bi-plus-circle me-2"></i>Thêm phòng chiếu
-          </button>
-        </div>
+          <div className="card shadow-sm mb-4">
+              <div className="card-body">
+                  <div className="d-flex align-items-center justify-content-between">
+                      <div className="d-flex align-items-center gap-3">
+                          <div className="bg-primary text-white p-3 rounded">
+                              <House size={32}/>
+                          </div>
+                          <div>
+                              <h1 className="mb-0 h3">Quản Lý phòng chiếu</h1>
+                              <p className="text-muted mb-0">Hệ thống quản lý rạp chiếu phim</p>
+                          </div>
+                      </div>
+                      <button
+                          className="btn btn-primary btn-lg"
+                          onClick={() => openModal(null, 'add')}
+                      >
+                          <Plus size={20} className="me-2" style={{verticalAlign: 'middle'}}/>
+                          Thêm phòng chiếu
+                      </button>
+                  </div>
+              </div>
+          </div>
       </div>
       <div className="row">
         <div className="col-12">
@@ -140,8 +162,8 @@ const RoomManager = () => {
               <table className="table table-bordered table-hover">
                 <thead className="table-light">
                   <tr>
-                    <th style={{ width: '40px' }}>#</th>
-                    <th>Mã phòng</th>
+                    <th style={{ width: '40px' }}>STT</th>
+                    {/*<th>Mã phòng</th>*/}
                     <th>Tên phòng</th>
                     <th>Số lượng ghế</th>
                     <th style={{ width: '160px' }}>Hành động</th>
@@ -151,10 +173,13 @@ const RoomManager = () => {
                   {rooms.map((room, idx) => (
                     <tr key={room.maPhongChieu}>
                       <td>{(currentPage - 1) * 10 + idx + 1}</td>
-                      <td>{room.maPhongChieu}</td>
                       <td>{room.tenPhong}</td>
                       <td>{room.soLuongGhe}</td>
                       <td>
+                           <button
+                          className="btn btn-sm btn-info me-2" onClick={() => handleViewSeats(room.maPhongChieu)}>
+                          <i className="bi bi-grid me-1"></i>
+                        </button>
                         <button className="btn btn-sm btn-warning me-2" onClick={() => openModal('edit', room)}>
                           <i className="bi bi-pencil-square"></i>
                         </button>

@@ -3,9 +3,9 @@ const API_BASE_URL = 'http://localhost:8080/api';
 
 class CategoryService {
   // Lấy danh sách thể loại
-  async getAllCategories() {
+  async getAllCategories(page = 1) {
     try {
-      const response = await fetch(`${API_BASE_URL}/theloai`);
+      const response = await fetch(`${API_BASE_URL}/theloai?page=${page}`);
       const result = await response.json();
       if (result.code === 200) {
         return { success: true, data: result.data };

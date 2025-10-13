@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import seatService from '../../services/seatService';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from '../common/Toast';
 
+
 const SeatManager = () => {
-  const [seatTypes, setSeatTypes] = useState([]);
+  const [seatTypes, setSeatTypes] = useState([]); // Tất cả loại ghế
+  const [roomSeats, setRoomSeats] = useState([]); // Danh sách ghế của phòng
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
@@ -20,51 +23,61 @@ const SeatManager = () => {
   const [seatsMap, setSeatsMap] = useState({});
   const [editingSeat, setEditingSeat] = useState(null);
   const [hoveringSeatType, setHoveringSeatType] = useState(null);
-
-  // Toast notifications
+  const { roomId } = useParams();
+  const navigate = useNavigate();
   const { showSuccess, showError } = useToast();
 
   useEffect(() => {
-    fetchSeatTypes();
-  }, []);
+    fetchAllSeatTypesAndRoomSeats();
+  }, [roomId]);
 
-  const fetchSeatTypes = async () => {
+  // Lấy tất cả loại ghế và ghế của phòng
+  const fetchAllSeatTypesAndRoomSeats = async () => {
     setLoading(true);
-    const result = await seatService.getAllSeatTypes();
-    if (result.success) {
-      setSeatTypes(result.data);
-      
-      // Create seats map for easy access
+    const [allTypesRes, roomSeatsRes] = await Promise.all([
+      seatService.getAllSeatTypes(roomId),
+      seatService.getSeatForRoom(roomId)
+    ]);
+    if (allTypesRes.success && roomSeatsRes.success) {
+      setSeatTypes(allTypesRes.data || []);
+      setRoomSeats(Array.isArray(roomSeatsRes.data.listGhe) ? roomSeatsRes.data.listGhe : []);
+      // Map ghế cho sơ đồ rạp
       const map = {};
-      result.data.forEach(type => {
-        type.listGhe.forEach(seat => {
-          map[seat.tenGhe] = {
-            ...seat,
-            loaiGhe: type.tenLoaiGhe,
-            maLoaiGhe: type.maLoaiGhe,
-            phuThu: type.phuThu,
-            color: getSeatTypeColor(type.tenLoaiGhe)
-          };
-        });
+      (Array.isArray(roomSeatsRes.data.listGhe) ? roomSeatsRes.data.listGhe : []).forEach(seat => {
+        map[seat.tenGhe] = {
+          ...seat,
+          loaiGhe: seat.loaiGhe.tenLoaiGhe,
+          maLoaiGhe: seat.loaiGhe.maLoaiGhe,
+          phuThu: seat.loaiGhe.phuThu,
+          color: getSeatTypeColor(seat.loaiGhe.tenLoaiGhe)
+        };
       });
       setSeatsMap(map);
     } else {
-      showError(result.message || 'Lỗi khi tải danh sách loại ghế');
+      showError('Lỗi khi tải dữ liệu loại ghế hoặc ghế phòng');
     }
     setLoading(false);
   };
 
-  // Get a color based on seat type
+    const stringToColor = (str) => {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const color = `hsl(${hash % 360}, 70%, 60%)`; // sinh màu theo hue
+        return color;
+    };
+    // Lấy màu theo loại ghế
   const getSeatTypeColor = (seatType) => {
     switch (seatType.toLowerCase()) {
       case 'thường':
-        return '#6c757d'; // Grey
+        return '#6c757d';
       case 'vip':
-        return '#ffc107'; // Yellow
+        return '#ffc107';
       case 'couple':
-        return '#dc3545'; // Red
+        return '#dc3545';
       default:
-        return '#6c757d'; // Grey for unknown types
+        return stringToColor(seatType.toLowerCase());
     }
   };
 
@@ -130,7 +143,7 @@ const SeatManager = () => {
       const result = await seatService.createSeatType(formData);
       if (result.success) {
         showSuccess('Thêm loại ghế thành công');
-        fetchSeatTypes();
+        fetchAllSeatTypesAndRoomSeats();
         closeModal();
       } else {
         showError(result.message || 'Lỗi khi thêm loại ghế');
@@ -139,7 +152,7 @@ const SeatManager = () => {
       const result = await seatService.updateSeatType(selectedSeatType.maLoaiGhe, formData);
       if (result.success) {
         showSuccess('Cập nhật loại ghế thành công');
-        fetchSeatTypes();
+        fetchAllSeatTypesAndRoomSeats();
         closeModal();
       } else {
         showError(result.message || 'Lỗi khi cập nhật loại ghế');
@@ -158,7 +171,7 @@ const SeatManager = () => {
       });
       if (result.success) {
         showSuccess('Thay đổi loại ghế thành công');
-        fetchSeatTypes();
+        fetchAllSeatTypesAndRoomSeats();
         closeModal();
       } else {
         showError(result.message || 'Lỗi khi thay đổi loại ghế');
@@ -172,14 +185,12 @@ const SeatManager = () => {
       const result = await seatService.deleteSeatType(seatTypeId);
       if (result.success) {
         showSuccess('Xóa loại ghế thành công');
-        fetchSeatTypes();
+        fetchAllSeatTypesAndRoomSeats();
       } else {
         showError(result.message || 'Lỗi khi xóa loại ghế');
       }
     }
   };
-
-
 
   // Generate seat grid for cinema layout
   const renderSeatGrid = () => {
@@ -258,8 +269,14 @@ const SeatManager = () => {
     <div className="container-fluid p-4">
       <div className="row mb-4">
         <div className="col-12 d-flex justify-content-between align-items-center">
+          <div>
+            <button className="btn btn-outline-secondary me-3" onClick={() => navigate('/admin/room')}>
+              <i className="bi bi-arrow-left me-1"></i>Quay lại
+            </button>
+          </div>
           <h2 className="h4 text-primary fw-bold">
-            <i className="bi bi-grid-3x3 me-2"></i>Quản lý ghế và loại ghế
+            <i className="bi bi-grid-3x3 me-2"></i>
+            Quản lý ghế - Phòng {roomId}  {/* Thêm số phòng vào title */}
           </h2>
           <div>
             <button className="btn btn-success" onClick={() => openModal('addSeatType')}>
@@ -303,70 +320,73 @@ const SeatManager = () => {
                 </div>
               ) : (
                 <div className="row">
-                  {seatTypes.map((type) => (
-                    <div 
-                      key={type.maLoaiGhe} 
-                      className="col-md-4 mb-3"
-                      onMouseEnter={() => setHoveringSeatType(type.maLoaiGhe)}
-                      onMouseLeave={() => setHoveringSeatType(null)}
-                    >
-                      <div className="card h-100">
-                        <div 
-                          className="card-header d-flex justify-content-between align-items-center"
-                          style={{ backgroundColor: getSeatTypeColor(type.tenLoaiGhe), color: type.tenLoaiGhe.toLowerCase() === 'thường' ? 'white' : 'black' }}
-                        >
-                          <h6 className="mb-0">{type.tenLoaiGhe}</h6>
-                          <div className={`btn-group ${hoveringSeatType === type.maLoaiGhe ? 'opacity-100' : 'opacity-0'}`}>
-                            <button 
-                              className="btn btn-sm btn-light" 
-                              onClick={() => openModal('editSeatType', type)}
-                              title="Chỉnh sửa"
-                            >
-                              <i className="bi bi-pencil-fill"></i>
-                            </button>
-                            <button 
-                              className="btn btn-sm btn-light" 
-                              onClick={() => handleDeleteSeatType(type.maLoaiGhe)}
-                              title="Xóa"
-                              disabled={type.listGhe.length > 0}
-                            >
-                              <i className="bi bi-trash-fill"></i>
-                            </button>
+                  {seatTypes.map((type) => {
+                    // Lọc ghế của phòng thuộc loại này
+                    const seatsOfType = roomSeats.filter(seat => seat.loaiGhe.maLoaiGhe === type.maLoaiGhe);
+                    return (
+                      <div
+                        key={type.maLoaiGhe}
+                        className="col-md-4 mb-3"
+                        onMouseEnter={() => setHoveringSeatType(type.maLoaiGhe)}
+                        onMouseLeave={() => setHoveringSeatType(null)}
+                      >
+                        <div className="card h-100">
+                          <div
+                            className="card-header d-flex justify-content-between align-items-center"
+                            style={{ backgroundColor: getSeatTypeColor(type.tenLoaiGhe), color: type.tenLoaiGhe.toLowerCase() === 'thường' ? 'white' : 'black' }}
+                          >
+                            <h6 className="mb-0">{type.tenLoaiGhe}</h6>
+                            <div className={`btn-group ${hoveringSeatType === type.maLoaiGhe ? 'opacity-100' : 'opacity-0'}`}>
+                              <button
+                                className="btn btn-sm btn-light"
+                                onClick={() => openModal('editSeatType', type)}
+                                title="Chỉnh sửa"
+                              >
+                                <i className="bi bi-pencil-fill"></i>
+                              </button>
+                              <button
+                                className="btn btn-sm btn-light"
+                                onClick={() => handleDeleteSeatType(type.maLoaiGhe)}
+                                title="Xóa"
+                                disabled={seatsOfType.length > 0}
+                              >
+                                <i className="bi bi-trash-fill"></i>
+                              </button>
+                            </div>
+                          </div>
+                          <div className="card-body">
+                            <p className="mb-2">Phụ thu: {type.phuThu.toLocaleString('vi-VN')} VNĐ</p>
+                            <p className="mb-2">Số lượng ghế: {seatsOfType.length}</p>
+                            {seatsOfType.length > 0 && (
+                              <div className="mt-3">
+                                <div className="d-flex flex-wrap gap-1">
+                                  {seatsOfType.slice(0, 15).map((seat) => (
+                                    <span
+                                      key={seat.maGhe}
+                                      className="badge bg-secondary"
+                                      style={{
+                                        backgroundColor: getSeatTypeColor(type.tenLoaiGhe) + ' !important',
+                                        color: type.tenLoaiGhe.toLowerCase() === 'thường' ? 'white' : 'black'
+                                      }}
+                                      title="Click để thay đổi loại ghế"
+                                      onClick={() => openModal('changeSeatType', { ...seat, maLoaiGhe: type.maLoaiGhe, loaiGhe: type.tenLoaiGhe })}
+                                    >
+                                      {seat.tenGhe}
+                                    </span>
+                                  ))}
+                                  {seatsOfType.length > 15 && (
+                                    <span className="badge bg-light text-dark">
+                                      +{seatsOfType.length - 15}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
-                        <div className="card-body">
-                          <p className="mb-2">Phụ thu: {type.phuThu.toLocaleString('vi-VN')} VNĐ</p>
-                          <p className="mb-2">Số lượng ghế: {type.listGhe.length}</p>
-                          
-                          {type.listGhe.length > 0 && (
-                            <div className="mt-3">
-                              <div className="d-flex flex-wrap gap-1">
-                                {type.listGhe.slice(0, 15).map((seat) => (
-                                  <span 
-                                    key={seat.maGhe}
-                                    className="badge bg-secondary"
-                                    style={{ 
-                                      backgroundColor: getSeatTypeColor(type.tenLoaiGhe) + ' !important',
-                                      color: type.tenLoaiGhe.toLowerCase() === 'thường' ? 'white' : 'black'
-                                    }}
-                                    title="Click để thay đổi loại ghế"
-                                    onClick={() => openModal('changeSeatType', { ...seat, maLoaiGhe: type.maLoaiGhe, loaiGhe: type.tenLoaiGhe })}
-                                  >
-                                    {seat.tenGhe}
-                                  </span>
-                                ))}
-                                {type.listGhe.length > 15 && (
-                                  <span className="badge bg-light text-dark">
-                                    +{type.listGhe.length - 15}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -502,3 +522,4 @@ const SeatManager = () => {
 };
 
 export default SeatManager;
+
