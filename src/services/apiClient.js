@@ -18,13 +18,49 @@ const apiClient = axios.create({
   },
 });
 
-// Interceptor 1: "Người gác cổng" - Tự động thêm token vào mỗi request gửi đi
+// Danh sách các API không yêu cầu xác thực (public APIs)
+const PUBLIC_APIS = [
+  '/phim',             // Lấy danh sách phim
+  '/phim/',            // Lấy chi tiết phim 
+  '/suatchieu',        // Lấy danh sách suất chiếu
+  '/suatchieu/',       // Lấy chi tiết suất chiếu
+  '/ve',               // API đặt vé (cho guest)
+  '/ghe',              // API liên quan đến ghế
+  '/ghe/booking/',     // API lấy ghế đã đặt
+  '/loaighe',          // API lấy loại ghế
+  '/dichvudikem',      // API lấy dịch vụ đi kèm
+  '/dichvudikem/',     // API chi tiết dịch vụ
+  '/khuyenmai',        // API khuyến mãi
+  '/khuyenmai/validate',// API kiểm tra khuyến mãi
+  '/khuyenmai/code',   // API lấy thông tin khuyến mãi theo mã
+  '/payment',          // API thanh toán
+  '/payment/vn_pay',   // API VNPay
+  '/payment/status',   // API kiểm tra trạng thái thanh toán
+  '/payment/detail'    // API lấy chi tiết hóa đơn
+];
+
+// Kiểm tra xem một URL có thuộc danh sách API công khai không
+const isPublicApi = (url) => {
+  return PUBLIC_APIS.some(api => url.includes(api));
+};
+
+// Interceptor 1: "Người gác cổng" - Chỉ thêm token vào request khi cần thiết
 apiClient.interceptors.request.use(
   (config) => {
+    // Kiểm tra xem request hiện tại có thuộc vào public API không
+    const isPublicRequest = isPublicApi(config.url);
+    
+    // Chỉ thêm token nếu có token trong localStorage (người dùng đã đăng nhập)
     const token = localStorage.getItem("accessToken");
-    if (token) {
+    
+    // Thêm token vào header nếu:
+    // 1. Người dùng đã đăng nhập (có token) và
+    // 2. API yêu cầu xác thực (không phải public API)
+    //    hoặc là API public nhưng đang dùng phương thức POST/PUT/DELETE
+    if (token && (!isPublicRequest || (isPublicRequest && config.method !== 'get'))) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
+    
     return config;
   },
   (error) => {
@@ -46,11 +82,15 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true; // Đánh dấu là đã thử lại 1 lần để tránh lặp vô hạn
 
       try {
+        // Kiểm tra URL của request gốc, nếu nó là request không yêu cầu xác thực thì không redirect
+        const isPublicRequest = isPublicApi(originalRequest.url);
+        
         const refreshToken = localStorage.getItem("refreshToken");
         if (!refreshToken) {
-          // Nếu không có refresh token, không thể làm gì hơn -> logout
-          // Chỗ này bạn có thể gọi hàm logout từ AuthContext nếu cần
-          window.location.href = "/login";
+          // Nếu không có refresh token và không phải public request, chuyển về trang login
+          if (!isPublicRequest) {
+            window.location.href = "/login";
+          }
           return Promise.reject(error);
         }
 
@@ -72,14 +112,22 @@ apiClient.interceptors.response.use(
           // Gọi lại request ban đầu đã bị lỗi với token mới
           return apiClient(originalRequest);
         } else {
-          // Nếu refresh token cũng thất bại (hết hạn, không hợp lệ) -> logout
+          // Nếu refresh token cũng thất bại (hết hạn, không hợp lệ)
           localStorage.clear();
-          window.location.href = "/login";
+          
+          // Chỉ chuyển hướng nếu không phải API công khai
+          if (!isPublicRequest) {
+            window.location.href = "/login";
+          }
           return Promise.reject(error);
         }
       } catch (_error) {
         localStorage.clear();
-        window.location.href = "/login";
+        
+        // Chỉ chuyển hướng nếu không phải API công khai
+        if (!isPublicRequest) {
+          window.location.href = "/login";
+        }
         return Promise.reject(_error);
       }
     }

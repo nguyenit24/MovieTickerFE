@@ -67,12 +67,13 @@ const PaymentProcess = ({ bookingData, onPaymentSuccess, onPaymentFailure }) => 
       
       if (result.success) {
         const status = result.data.paymentStatus;
+        console.log('Payment status:', status);
         
         if (status === 'SUCCESS') {
           setPaymentStatus('SUCCESS');
           showSuccess('Thanh toán thành công! Vé đã được đặt.');
           // Không tự động chuyển trang, để user xem thông tin và chọn
-        } else if (status === 'FAILED') {
+        } else if (status === 'FAILED' || status === 'CANCELLED'  || status === 'EXPIRED') {
           setPaymentStatus('FAILED');
           showError('Thanh toán thất bại');
           onPaymentFailure();

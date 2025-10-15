@@ -21,7 +21,6 @@ const AdminRoute = () => {
   if (user && user.roles.includes("ROLE_ADMIN")) {
     return <Outlet />;
   }
-
   return <Navigate to="/login" replace />;
 };
 

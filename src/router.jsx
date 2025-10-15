@@ -40,6 +40,11 @@ import SettingsManager from "./components/admin/SettingsManager";
 import ServiceManager from "./components/admin/ServiceManager";
 import MovieDetail from "./components/admin/MovieDetail";
 import PromotionManager from "./components/admin/PromotionManager.jsx";
+import ReviewManager from "./components/admin/ReviewManager";
+import InvoiceManager from "./components/admin/InvoiceManager";
+import TicketManager from "./components/admin/TicketManager";
+import InvoiceDetailAdmin from "./components/admin/InvoiceDetailAdmin";
+import TicketDetailAdmin from "./components/admin/TicketDetailAdmin";
 
 /**
  * Component Layout chính cho các trang người dùng
@@ -65,6 +70,7 @@ const Router = () => (
         <Route path="/tickets" element={<TicketsPage />} />
         <Route path="/invoice/:invoiceId" element={<InvoiceDetail />} />
         <Route path="/payment/return" element={<PaymentReturn />} />
+        <Route path="/payment/result" element={<PaymentReturn />} />
         {/* Bạn có thể thêm các trang người dùng khác vào đây */}
       </Route>
 
@@ -80,7 +86,29 @@ const Router = () => (
       {/* --- Tuyến đường được bảo vệ cho Admin --- */}
       {/* Trang Admin có layout riêng bên trong nó */}
       <Route element={<AdminRoute />}>
-        <Route path="/admin/*" element={<Admin />} />
+        {/* Tất cả các route con của Admin sẽ nằm trong đây */}
+        <Route path="/admin" element={<Admin />}>
+          {/* Navigate tự động từ /admin sang /admin/dashboard */}
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="film" element={<MovieManagement />} />
+          <Route path="category" element={<CategoryManager />} />
+          <Route path="room" element={<RoomManager />} />
+          <Route path="schedule" element={<ScheduleManager />} />
+          <Route path="seat" element={<SeatManager />} />
+          <Route path="user" element={<UserManager />} />
+          <Route path="revenue" element={<RevenueManager />} />
+          <Route path="invoices" element={<InvoiceManager />} />
+          <Route path="invoices/:maHD" element={<InvoiceDetailAdmin />} />
+          <Route path="tickets" element={<TicketManager />} />
+          <Route path="tickets/:maVe" element={<TicketDetailAdmin />} />
+          <Route path="settings" element={<SettingsManager />} />
+          <Route path="service" element={<ServiceManager />} />
+          <Route path="promotion" element={<PromotionManager />} />
+          <Route path="review" element={<ReviewManager />} />
+          <Route path="rooms/:roomId/seats" element={<SeatManager />} />
+          <Route path="film/:movieId" element={<MovieDetail />} />
+        </Route>
       </Route>
 
       {/* --- Tuyến đường xử lý Redirect không cần giao diện --- */}

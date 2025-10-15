@@ -11,6 +11,8 @@ import { Navigate, Outlet } from "react-router-dom";
  */
 const PublicRoute = () => {
   const { user } = useAuth();
+  
+  console.log('PublicRoute - Checking user:', user);
 
   if (user) {
     // Kiểm tra vai trò của người dùng đã đăng nhập

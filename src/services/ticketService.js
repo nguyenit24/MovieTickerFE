@@ -10,8 +10,6 @@ const handleError = (error) => ({
   message: error.response?.data?.message || "Lỗi kết nối server",
 });
 
-const token = localStorage.getItem("accessToken");
-
 const ticketService = {
   // Đặt vé theo API mới
   bookTicket: async (bookingData) => {
@@ -60,6 +58,15 @@ const ticketService = {
   cancelInvoice: async (maHD) => {
     try {
       const response = await apiClient.post(`/payment/cancel/${maHD}`);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  getMyInvoices: async () => {
+    try {
+      const response = await apiClient.get("/payment/my-invoices");
       return handleApiResponse(response);
     } catch (error) {
       return handleError(error);

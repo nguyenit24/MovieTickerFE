@@ -11,20 +11,21 @@ const PaymentReturn = () => {
   const [paymentResult, setPaymentResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [invoiceDetail, setInvoiceDetail] = useState(null);
-
+  const [message, setMessage] = useState(null);
   useEffect(() => {
     handlePaymentReturn();
   }, []);
 
   const handlePaymentReturn = async () => {
     try {
-      // Extract payment parameters from URL
-      const vnp_ResponseCode = searchParams.get('vnp_ResponseCode');
-      const vnp_TxnRef = searchParams.get('vnp_TxnRef'); // This should be the orderId (maHD)
-      const vnp_TransactionNo = searchParams.get('vnp_TransactionNo');
-      const vnp_PayDate = searchParams.get('vnp_PayDate');
+      // Extract payment parameters from URL (new format from backend)
+      const orderId = searchParams.get('orderId');
+      const status = searchParams.get('status');
+      const transactionNo = searchParams.get('transactionNo');
+      const transactionDate = searchParams.get('transactionDate');
+      setMessage(searchParams.get('message'));
 
-      if (!vnp_TxnRef) {
+      if (!orderId) {
         setPaymentResult({
           status: 'ERROR',
           message: 'Không tìm thấy thông tin đơn hàng'
@@ -33,45 +34,35 @@ const PaymentReturn = () => {
         return;
       }
 
-      // Check payment status
-      const statusResult = await ticketService.checkPaymentStatus(vnp_TxnRef);
+      // Get invoice details
+      const invoiceResult = await ticketService.getInvoiceDetail(orderId);
       
-      if (statusResult.success) {
-        // Get invoice details
-        const invoiceResult = await ticketService.getInvoiceDetail(vnp_TxnRef);
-        
-        if (invoiceResult.success) {
-          setInvoiceDetail(invoiceResult.data);
-        }
+      if (invoiceResult.success) {
+        setInvoiceDetail(invoiceResult.data);
+      }
 
-        if (vnp_ResponseCode === '00') {
-          setPaymentResult({
-            status: 'SUCCESS',
-            message: 'Thanh toán thành công',
-            data: {
-              orderId: vnp_TxnRef,
-              transactionNo: vnp_TransactionNo,
-              transactionDate: vnp_PayDate,
-              responseCode: vnp_ResponseCode
-            }
-          });
-          showSuccess('Thanh toán thành công!');
-        } else {
-          setPaymentResult({
-            status: 'FAILED',
-            message: 'Thanh toán thất bại',
-            data: {
-              orderId: vnp_TxnRef,
-              responseCode: vnp_ResponseCode
-            }
-          });
-          showError('Thanh toán thất bại!');
-        }
+      if (status === 'SUCCESS') {
+        setPaymentResult({
+          status: 'SUCCESS',
+          message: 'Thanh toán thành công',
+          data: {
+            orderId: orderId,
+            transactionNo: transactionNo,
+            transactionDate: transactionDate,
+            status: status
+          }
+        });
+        showSuccess('Thanh toán thành công!');
       } else {
         setPaymentResult({
-          status: 'ERROR',
-          message: statusResult.message || 'Có lỗi xảy ra khi kiểm tra trạng thái thanh toán'
+          status: 'FAILED',
+          message: 'Thanh toán thất bại' + (message ? `: ${message}` : ''),
+          data: {
+            orderId: orderId,
+            status: status
+          }
         });
+        showError('Thanh toán thất bại!');
       }
     } catch (error) {
       console.error('Payment return error:', error);
@@ -288,6 +279,7 @@ const PaymentReturn = () => {
                     </div>
                     <h3 className="mt-3 mb-0">Thanh toán thất bại!</h3>
                     <p className="mb-0 mt-2">Đã xảy ra lỗi trong quá trình thanh toán</p>
+                    
                   </div>
                   
                   <div className="card-body p-4 text-center">
@@ -305,6 +297,11 @@ const PaymentReturn = () => {
                     <p className="text-muted mb-4">
                       Giao dịch không thành công. Vui lòng thử lại hoặc liên hệ hỗ trợ.
                     </p>
+                    {message && (
+                      <div className="alert alert-danger" role="alert">
+                        {message}
+                      </div>
+                    )}
 
                     <div className="d-flex gap-2 justify-content-center">
                       <button 

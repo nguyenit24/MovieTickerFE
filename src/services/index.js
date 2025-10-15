@@ -9,6 +9,7 @@ import seatService from "./seatService";
 import promotionService from "./promotionService";
 import serviceService from "./serviceService";
 import authService from "./authService"; // Thêm nếu chưa có
+import reviewService from "./reviewService";
 
 export {
   authService,
@@ -21,4 +22,5 @@ export {
   seatService,
   promotionService,
   serviceService,
+  reviewService,
 };
