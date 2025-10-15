@@ -2,62 +2,65 @@ import React, { useEffect, useState } from 'react';
 import seatService from '../../services/seatService';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from '../common/Toast';
+import {roomService} from "../../services/index.js";
+import {Armchair, MoveLeft, Plus} from "lucide-react";
 
 
 const SeatManager = () => {
-  const [seatTypes, setSeatTypes] = useState([]); // Tất cả loại ghế
-  const [roomSeats, setRoomSeats] = useState([]); // Danh sách ghế của phòng
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState('');
-  const [selectedSeatType, setSelectedSeatType] = useState(null);
-  const [selectedSeat, setSelectedSeat] = useState(null);
-  const [formData, setFormData] = useState({
-    tenLoaiGhe: '',
-    phuThu: 0,
-  });
-  const [seatFormData, setSetFormData] = useState({
-    tenGhe: '',
-    maLoaiGhe: '',
-  });
-  const [seatsMap, setSeatsMap] = useState({});
-  const [editingSeat, setEditingSeat] = useState(null);
-  const [hoveringSeatType, setHoveringSeatType] = useState(null);
-  const { roomId } = useParams();
-  const navigate = useNavigate();
-  const { showSuccess, showError } = useToast();
+    const [seatTypes, setSeatTypes] = useState([]); // Tất cả loại ghế
+    const [roomSeats, setRoomSeats] = useState([]); // Danh sách ghế của phòng
+    const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [modalType, setModalType] = useState('');
+    const [selectedSeatType, setSelectedSeatType] = useState(null);
+    const [selectedSeat, setSelectedSeat] = useState(null);
+    const [formData, setFormData] = useState({
+        tenLoaiGhe: '',
+        phuThu: 0,
+    });
+    const [seatFormData, setSetFormData] = useState({
+        tenGhe: '',
+        maLoaiGhe: '',
+    });
+    const [seatsMap, setSeatsMap] = useState({});
+    const [addSeat, setAddSeat] = useState('');
+    const [editingSeat, setEditingSeat] = useState(null);
+    const [hoveringSeatType, setHoveringSeatType] = useState(null);
+    const {roomId} = useParams();
+    const navigate = useNavigate();
+    const {showSuccess, showError} = useToast();
 
-  useEffect(() => {
-    fetchAllSeatTypesAndRoomSeats();
-  }, [roomId]);
+    useEffect(() => {
+        fetchAllSeatTypesAndRoomSeats();
+    }, [roomId]);
 
-  // Lấy tất cả loại ghế và ghế của phòng
-  const fetchAllSeatTypesAndRoomSeats = async () => {
-    setLoading(true);
-    const [allTypesRes, roomSeatsRes] = await Promise.all([
-      seatService.getAllSeatTypes(roomId),
-      seatService.getSeatTypesByRoom(roomId)
-    ]);
-    if (allTypesRes.success && roomSeatsRes.success) {
-      setSeatTypes(allTypesRes.data || []);
-      setRoomSeats(Array.isArray(roomSeatsRes.data.listGhe) ? roomSeatsRes.data.listGhe : []);
-      // Map ghế cho sơ đồ rạp
-      const map = {};
-      (Array.isArray(roomSeatsRes.data.listGhe) ? roomSeatsRes.data.listGhe : []).forEach(seat => {
-        map[seat.tenGhe] = {
-          ...seat,
-          loaiGhe: seat.loaiGhe.tenLoaiGhe,
-          maLoaiGhe: seat.loaiGhe.maLoaiGhe,
-          phuThu: seat.loaiGhe.phuThu,
-          color: getSeatTypeColor(seat.loaiGhe.tenLoaiGhe)
-        };
-      });
-      setSeatsMap(map);
-    } else {
-      showError('Lỗi khi tải dữ liệu loại ghế hoặc ghế phòng');
-    }
-    setLoading(false);
-  };
+    // Lấy tất cả loại ghế và ghế của phòng
+    const fetchAllSeatTypesAndRoomSeats = async () => {
+        setLoading(true);
+        const [allTypesRes, roomSeatsRes] = await Promise.all([
+            seatService.getAllSeatTypes(roomId),
+            roomService.getRoomSeats(roomId)
+        ]);
+        if (allTypesRes.success && roomSeatsRes.success) {
+            setSeatTypes(allTypesRes.data || []);
+            setRoomSeats(Array.isArray(roomSeatsRes.data.listGhe) ? roomSeatsRes.data.listGhe : []);
+            // Map ghế cho sơ đồ rạp
+            const map = {};
+            (Array.isArray(roomSeatsRes.data.listGhe) ? roomSeatsRes.data.listGhe : []).forEach(seat => {
+                map[seat.tenGhe] = {
+                    ...seat,
+                    loaiGhe: seat.loaiGhe.tenLoaiGhe,
+                    maLoaiGhe: seat.loaiGhe.maLoaiGhe,
+                    phuThu: seat.loaiGhe.phuThu,
+                    color: getSeatTypeColor(seat.loaiGhe.tenLoaiGhe)
+                };
+            });
+            setSeatsMap(map);
+        } else {
+            showError('Lỗi khi tải dữ liệu loại ghế hoặc ghế phòng');
+        }
+        setLoading(false);
+    };
 
     const stringToColor = (str) => {
         let hash = 0;
@@ -68,129 +71,134 @@ const SeatManager = () => {
         return color;
     };
     // Lấy màu theo loại ghế
-  const getSeatTypeColor = (seatType) => {
-    switch (seatType.toLowerCase()) {
-      case 'thường':
-        return '#6c757d';
-      case 'vip':
-        return '#ffc107';
-      case 'couple':
-        return '#dc3545';
-      default:
-        return stringToColor(seatType.toLowerCase());
-    }
-  };
+    const getSeatTypeColor = (seatType) => {
+        switch (seatType.toLowerCase()) {
+            case 'thường':
+                return '#6c757d';
+            case 'vip':
+                return '#ffc107';
+            case 'couple':
+                return '#dc3545';
+            default:
+                return stringToColor(seatType.toLowerCase());
+        }
+    };
 
-  // Open modal for adding/editing
-  const openModal = (type, item = null) => {
-    setModalType(type);
-    
-    if (type === 'addSeatType' || type === 'editSeatType') {
-      setSelectedSeatType(item);
-      setFormData(item ? { 
-        tenLoaiGhe: item.tenLoaiGhe, 
-        phuThu: item.phuThu 
-      } : { 
-        tenLoaiGhe: '', 
-        phuThu: 0 
-      });
+    const getTextColor = (bgColor) => {
+        const hex = bgColor.replace("#", "");
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness > 150 ? "black" : "white";
+    };
 
-    } else if (type === 'changeSeatType') {
-      setEditingSeat(item);
-      setSetFormData({
-        tenGhe: item.tenGhe,
-        maLoaiGhe: item.maLoaiGhe || (seatTypes.length > 0 ? seatTypes[0].maLoaiGhe : ''),
-      });
-    }
-    
-    setShowModal(true);
-  };
+    // Open modal for adding/editing
+    const openModal = (type, item = null, itemname = null) => {
+        setModalType(type);
+        if (type === 'addSeat') {
+            setAddSeat(itemname);
+            setSetFormData({
+                tenGhe: itemname,
+                maLoaiGhe: null,
+            })
+        }
+        setShowModal(true);
+    };
 
-  // Close modal
-  const closeModal = () => {
-    setShowModal(false);
-    setModalType('');
-    setSelectedSeatType(null);
-    setSelectedSeat(null);
-    setEditingSeat(null);
-    setFormData({ tenLoaiGhe: '', phuThu: 0 });
-    setSetFormData({ tenGhe: '', maLoaiGhe: '' });
-  };
+    // Close modal
+    const closeModal = () => {
+        setShowModal(false);
+        setModalType('');
+        setSelectedSeatType(null);
+        setSelectedSeat(null);
+        setEditingSeat(null);
+        setFormData({tenLoaiGhe: '', phuThu: 0});
+        setSetFormData({tenGhe: '', maLoaiGhe: ''});
+    };
 
-  // Handle form input change for seat type
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: name === 'phuThu' ? parseFloat(value) : value,
-    });
-  };
+    // Handle form input change for seat type
+    const handleInputChange = (e) => {
+        const {name, value} = e.target;
+        setFormData({
+            ...formData,
+            [name]: name === 'phuThu' ? parseFloat(value) : value,
+        });
+    };
 
-  // Handle form input change for seat
-  const handleSeatInputChange = (e) => {
-    const { name, value } = e.target;
-    setSetFormData({
-      ...seatFormData,
-      [name]: value,
-    });
-  };
+    // Handle form input change for seat
+    const handleSeatInputChange = (e) => {
+        const {name, value} = e.target;
+        setSetFormData({
+            ...seatFormData,
+            [name]: value,
+        });
+    };
 
-  // Submit seat type form
-  const handleSeatTypeSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (modalType === 'addSeatType') {
-      const result = await seatService.createSeatType(formData);
+    // Submit seat type form
+    const handleSeatTypeSubmit = async (e) => {
+        e.preventDefault();
+
+        if (modalType === 'addSeatType') {
+            const result = await seatService.createSeatType(formData);
+            if (result.success) {
+                showSuccess('Thêm loại ghế thành công');
+                fetchAllSeatTypesAndRoomSeats();
+                closeModal();
+            } else {
+                showError(result.message || 'Lỗi khi thêm loại ghế');
+            }
+        } else if (modalType === 'editSeatType') {
+            const result = await seatService.updateSeatType(selectedSeatType.maLoaiGhe, formData);
+            if (result.success) {
+                showSuccess('Cập nhật loại ghế thành công');
+                fetchAllSeatTypesAndRoomSeats();
+                closeModal();
+            } else {
+                showError(result.message || 'Lỗi khi cập nhật loại ghế');
+            }
+        }
+    };
+
+  const handleDeleteSeat = async (seat) => {
+      const result = await seatService.deleteSeat(seat.maGhe)
       if (result.success) {
-        showSuccess('Thêm loại ghế thành công');
-        fetchAllSeatTypesAndRoomSeats();
-        closeModal();
+          showSuccess('Xóa loại ghế thành công');
+          fetchAllSeatTypesAndRoomSeats();
       } else {
-        showError(result.message || 'Lỗi khi thêm loại ghế');
+          showError(result.message || 'Lỗi khi xóa loại ghế');
       }
-    } else if (modalType === 'editSeatType') {
-      const result = await seatService.updateSeatType(selectedSeatType.maLoaiGhe, formData);
-      if (result.success) {
-        showSuccess('Cập nhật loại ghế thành công');
-        fetchAllSeatTypesAndRoomSeats();
-        closeModal();
-      } else {
-        showError(result.message || 'Lỗi khi cập nhật loại ghế');
-      }
-    }
-  };
+  }
 
-  // Submit seat form
-  const handleSeatSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (modalType === 'changeSeatType') {
-      const result = await seatService.updateSeat(editingSeat.maGhe, {
-        tenGhe: seatFormData.tenGhe,
-        maLoaiGhe: seatFormData.maLoaiGhe
-      });
+  const handleCreatSeat = async (seat) => {
+      const result = await seatService.createSeat(
+          {
+              maPhongChieu: roomId,
+              tenGhe: seatFormData.tenGhe,
+              maLoaiGhe: seatFormData.maLoaiGhe,
+          });
       if (result.success) {
-        showSuccess('Thay đổi loại ghế thành công');
-        fetchAllSeatTypesAndRoomSeats();
-        closeModal();
+          showSuccess('Thêm ghế thành công');
+          fetchAllSeatTypesAndRoomSeats();
+          closeModal();
       } else {
-        showError(result.message || 'Lỗi khi thay đổi loại ghế');
+          showError(result.message || 'Lỗi khi thêm ghế');
       }
-    }
-  };
+  }
 
-  // Delete seat type
-  const handleDeleteSeatType = async (seatTypeId) => {
-    if (window.confirm('Bạn có chắc muốn xóa loại ghế này?')) {
-      const result = await seatService.deleteSeatType(seatTypeId);
-      if (result.success) {
-        showSuccess('Xóa loại ghế thành công');
-        fetchAllSeatTypesAndRoomSeats();
-      } else {
-        showError(result.message || 'Lỗi khi xóa loại ghế');
+      const handleUpdateSeat = async (seat) => {
+          const result = await seatService.updateSeat(editingSeat.maGhe, {
+              tenGhe: seatFormData.tenGhe,
+              maLoaiGhe: seatFormData.maLoaiGhe
+          });
+          if (result.success) {
+              showSuccess('Thay đổi loại ghế thành công');
+              fetchAllSeatTypesAndRoomSeats();
+              closeModal();
+          } else {
+              showError(result.message || 'Lỗi khi thay đổi loại ghế');
+          }
       }
-    }
-  };
 
   // Generate seat grid for cinema layout
   const renderSeatGrid = () => {
@@ -228,7 +236,7 @@ const SeatManager = () => {
                     <div 
                       key={i} 
                       className="mx-1 seat-item"
-                      onClick={() => seat ? openModal('changeSeatType', seat) : null}
+                      onClick={() => seat ? openModal('changeSeatType', seat) : openModal('addSeat', null, seatName)}
                     >
                       <div
                         className={`d-flex justify-content-center align-items-center rounded ${seat ? 'cursor-pointer' : ''}`}
@@ -266,24 +274,30 @@ const SeatManager = () => {
   };
 
   return (
+
     <div className="container-fluid p-4">
       <div className="row mb-4">
-        <div className="col-12 d-flex justify-content-between align-items-center">
-          <div>
-            <button className="btn btn-outline-secondary me-3" onClick={() => navigate('/admin/room')}>
-              <i className="bi bi-arrow-left me-1"></i>Quay lại
-            </button>
+          <div className="card shadow-sm mb-4">
+              <div className="card-body">
+                  <div className="d-flex align-items-center justify-content-between">
+                      <button
+                          className="btn btn-secondary btn-lg"
+                          onClick={() => navigate(-1)}
+                      >
+                          <MoveLeft size={20} className="me-2" style={{verticalAlign: 'middle'}}/>
+                          Quay lại
+                      </button>
+                      <div className="d-flex align-items-center gap-3">
+                          <div className="bg-primary text-white p-3 rounded">
+                              <Armchair size={32}/>
+                          </div>
+                          <div>
+                              <h1 className="mb-0 h3">  Quản lý ghế - Phòng {roomId} </h1>
+                          </div>
+                      </div>
+                  </div>
+              </div>
           </div>
-          <h2 className="h4 text-primary fw-bold">
-            <i className="bi bi-grid-3x3 me-2"></i>
-            Quản lý ghế - Phòng {roomId}  {/* Thêm số phòng vào title */}
-          </h2>
-          <div>
-            <button className="btn btn-success" onClick={() => openModal('addSeatType')}>
-              <i className="bi bi-plus-circle me-2"></i>Thêm loại ghế
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Cinema Layout */}
@@ -333,30 +347,13 @@ const SeatManager = () => {
                         <div className="card h-100">
                           <div
                             className="card-header d-flex justify-content-between align-items-center"
-                            style={{ backgroundColor: getSeatTypeColor(type.tenLoaiGhe), color: type.tenLoaiGhe.toLowerCase() === 'thường' ? 'white' : 'black' }}
+                            style={{ backgroundColor: getSeatTypeColor(type.tenLoaiGhe), color: getTextColor(type.tenLoaiGhe.toLowerCase()) }}
                           >
                             <h6 className="mb-0">{type.tenLoaiGhe}</h6>
-                            <div className={`btn-group ${hoveringSeatType === type.maLoaiGhe ? 'opacity-100' : 'opacity-0'}`}>
-                              <button
-                                className="btn btn-sm btn-light"
-                                onClick={() => openModal('editSeatType', type)}
-                                title="Chỉnh sửa"
-                              >
-                                <i className="bi bi-pencil-fill"></i>
-                              </button>
-                              <button
-                                className="btn btn-sm btn-light"
-                                onClick={() => handleDeleteSeatType(type.maLoaiGhe)}
-                                title="Xóa"
-                                disabled={seatsOfType.length > 0}
-                              >
-                                <i className="bi bi-trash-fill"></i>
-                              </button>
-                            </div>
                           </div>
                           <div className="card-body">
-                            <p className="mb-2">Phụ thu: {type.phuThu.toLocaleString('vi-VN')} VNĐ</p>
-                            <p className="mb-2">Số lượng ghế: {seatsOfType.length}</p>
+                            <p className="mb-2">Phụ thu: <strong>{type.phuThu.toLocaleString('vi-VN')}đ</strong></p>
+                              <p className="mb-2">Số lượng ghế: <strong>{seatsOfType.length}</strong></p>
                             {seatsOfType.length > 0 && (
                               <div className="mt-3">
                                 <div className="d-flex flex-wrap gap-1">
@@ -366,7 +363,7 @@ const SeatManager = () => {
                                       className="badge bg-secondary"
                                       style={{
                                         backgroundColor: getSeatTypeColor(type.tenLoaiGhe) + ' !important',
-                                        color: type.tenLoaiGhe.toLowerCase() === 'thường' ? 'white' : 'black'
+                                        color: getTextColor(type.tenLoaiGhe.toLowerCase())
                                       }}
                                       title="Click để thay đổi loại ghế"
                                       onClick={() => openModal('changeSeatType', { ...seat, maLoaiGhe: type.maLoaiGhe, loaiGhe: type.tenLoaiGhe })}
@@ -447,26 +444,27 @@ const SeatManager = () => {
       )}
       
       {/* Modal for Change Seat Type */}
-      {showModal && modalType === 'changeSeatType' && (
+      {showModal && (modalType === 'changeSeatType' || modalType === 'addSeat') && (
         <div className="modal show d-block modal-overlay">
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Thay đổi loại ghế</h5>
+                <h5 className="modal-title">
+                    {modalType === 'addSeat' ? 'Thêm ghế' : 'Thay đổi loại ghế'}
+                </h5>
                 <button type="button" className="btn-close" onClick={closeModal}></button>
               </div>
-              <form onSubmit={handleSeatSubmit}>
+              <form>
                 <div className="modal-body">
                   <div className="mb-3">
                     <label className="form-label">Tên ghế</label>
                     <input
                       type="text"
                       className="form-control"
-                      value={editingSeat?.tenGhe || ''}
+                      value={editingSeat?.tenGhe || addSeat}
                       readOnly
                     />
                   </div>
-                  
 
 
                   <div className="mb-3">
@@ -490,7 +488,17 @@ const SeatManager = () => {
                 </div>
                 <div className="modal-footer">
                   <button type="button" className="btn btn-secondary" onClick={closeModal}>Hủy</button>
-                  <button type="submit" className="btn btn-primary">
+                    {(modalType === "changeSeatType") ?
+                    <button type="submit" className="btn btn-danger"
+                        onClick={() => handleDeleteSeat(editingSeat)}
+                    >
+                        {'Xóa'}
+                    </button> : ''
+                    }
+                  <button type="submit" className="btn btn-primary"
+                      onClick={() =>
+                      (modalType === 'addSeat') ? handleCreatSeat(addSeat): handleUpdateSeat(editingSeat)
+                  }>
                     {modalType === 'addSeat' ? 'Thêm' : 'Cập nhật'}
                   </button>
                 </div>

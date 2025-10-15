@@ -93,6 +93,24 @@ class SeatService {
       return handleError(error);
     }
   }
+
+  async createSeat(seatData) {
+    try {
+      const response = await apiClient.post(`/ghe`,seatData);
+      return handleApiResponse(response);
+    }  catch (error) {
+        return handleError(error);
+    }
+  }
+
+  async deleteSeat(seatId) {
+      try {
+          const response = await apiClient.delete(`/ghe/${seatId}`);
+          return handleApiResponse(response);
+      } catch (error) {
+          return handleError(error);
+      }
+  }
 }
 
 export default new SeatService();

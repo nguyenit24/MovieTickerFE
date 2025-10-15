@@ -48,7 +48,7 @@ body {
   flex: 1;
   overflow-x: auto;
   min-width: 0;
-  padding-top: 72px; /* Độ cao header, chỉnh lại nếu cần */
+  /*padding-top: 72px; !* Độ cao header, chỉnh lại nếu cần *!*/
   margin-left: 260px; /* Đảm bảo không bị sidebar che */
 }
 
@@ -139,7 +139,7 @@ body {
 
   .admin-content {
     margin-left: 0;
-    padding-top: 72px;
+    padding-top: 0 !important;
   }
   
   .modal-content {

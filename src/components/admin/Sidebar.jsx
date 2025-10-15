@@ -15,7 +15,7 @@ const Sidebar = () => {
 
     const cinemaItems = [
         { id: 'room', icon: 'bi-house', label: 'Phòng chiếu' },
-        { id: 'seat', icon: 'bi-ticket-perforated', label: 'Loại ghế' },
+        { id: 'seattype', icon: 'bi-ticket-perforated', label: 'Loại ghế' },
     ];
 
     const movieItems = [

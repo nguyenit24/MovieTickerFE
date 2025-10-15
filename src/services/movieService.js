@@ -106,6 +106,16 @@ class MovieService {
       return handleError(error);
     }
   }
+
+  async getAllMovies() {
+      try {
+          const response = await apiClient.get(`/phim`);
+          return handleApiResponse(response);
+      } catch (error) {
+          console.error("Lỗi kết nối API getAllMovies:", error);
+          return handleError(error);
+      }
+  }
 }
 
 export default new MovieService();

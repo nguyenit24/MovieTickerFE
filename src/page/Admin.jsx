@@ -11,7 +11,7 @@ const Admin = () => {
           <Sidebar />
         </div>
         <div className="admin-content">
-          <div className="admin-header admin-header-fixed bg-light shadow-sm border-bottom">
+          <div className="admin-header bg-light shadow-sm border-bottom">
             <div className="d-flex justify-content-between align-items-center px-4 py-3">
               <h1 className="mb-0 h4 text-primary">Admin Panel - CineTickets</h1>
               <div className="d-flex align-items-center gap-3">

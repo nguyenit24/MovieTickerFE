@@ -483,9 +483,6 @@ const ScheduleManager = () => {
                                          {/*Showtimes by Room */}
                                         {rooms.map(room => {
                                             const roomShowtimes = groupedByRoom[room.maPhongChieu]
-                                            console.log(roomShowtimes)
-                                            console.log(selectedRoom)
-                                            console.log(room)
                                             if (selectedRoom !== 'all' && selectedRoom !== room.maPhongChieu) return null;
 
                                             return (

@@ -21,7 +21,6 @@ const CategoryManager = () =>
   const fetchCategories = async (page = 1) => {
     setLoading(true);
     const result = await categoryService.getAllCategoriesPaginable(page);
-    console.log(result);
     try {
       if (result.success) {
         const { currentGens, totalPages, currentPage } = result.data;

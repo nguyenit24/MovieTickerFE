@@ -79,6 +79,15 @@ class RoomService {
       return handleError(error);
     }
   }
+
+  async getAllSeats() {
+      try {
+          const response = await apiClient.get(`/ghe`);
+          return handleApiResponse(response);
+      } catch (error) {
+          return handleError(error);
+      }
+  }
 }
 
 export default new RoomService();

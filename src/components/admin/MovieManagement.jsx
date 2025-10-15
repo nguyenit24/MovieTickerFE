@@ -3,6 +3,7 @@ import movieService from '../../services/movieService';
 import categoryService from '../../services/categoryService';
 import { useNavigate } from 'react-router-dom';
 import {Calendar, Film, Plus} from "lucide-react";
+import {useToast} from "../common/Toast.jsx";
 
 
 const MovieManagement = () => {
@@ -14,7 +15,8 @@ const MovieManagement = () => {
   const [modalType, setModalType] = useState('');
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [formData, setFormData] = useState({
+    const {showSuccess, showError} = useToast();
+    const [formData, setFormData] = useState({
     tenPhim: '',
     moTa: '',
     daoDien: '',
@@ -65,7 +67,7 @@ const MovieManagement = () => {
         setCurrentPage(1);
       }
     } catch (error) {
-      console.error('Lỗi kết nối API:', error);
+        showError(error.message);
       setMovies([]);
       setTotalPages(1);
       setCurrentPage(1);
@@ -78,9 +80,9 @@ const MovieManagement = () => {
       try {
           setLoading(true);
           const result = await movieService.searchMovies(page, keyword);
-          console.log(result);
           if (result.success) {
               const { currentMovies, totalPages, currentPage } = result.data;
+              showSuccess(result.message);
               setMovies(currentMovies);
               setTotalPages(totalPages);
               setCurrentPage(currentPage);
@@ -90,7 +92,7 @@ const MovieManagement = () => {
               setCurrentPage(1);
           }
       } catch (error) {
-          console.error('Lỗi kết nối API:', error);
+          showError(error.message);
           setMovies([]);
           setTotalPages(1);
           setCurrentPage(1);
@@ -241,7 +243,7 @@ const MovieManagement = () => {
                         onClick={() => openModal('add', null)}
                     >
                         <Plus size={20} className="me-2" style={{verticalAlign: 'middle'}}/>
-                        Thêm Suất Chiếu
+                        Thêm Phim
                     </button>
                 </div>
             </div>

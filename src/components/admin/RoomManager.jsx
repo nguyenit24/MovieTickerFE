@@ -137,7 +137,6 @@ const RoomManager = ({ setActiveMenu, setSelectedRoomId }) => {
                           </div>
                           <div>
                               <h1 className="mb-0 h3">Quản Lý phòng chiếu</h1>
-                              <p className="text-muted mb-0">Hệ thống quản lý rạp chiếu phim</p>
                           </div>
                       </div>
                       <button

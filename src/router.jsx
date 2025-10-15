@@ -34,6 +34,7 @@ import SettingsManager from './components/admin/SettingsManager';
 import ServiceManager from './components/admin/ServiceManager';
 import MovieDetail from './components/admin/MovieDetail';
 import PromotionManager from "./components/admin/PromotionManager.jsx";
+import SeatTypeManager from "./components/admin/SeatTypeManager.jsx";
 
 /**
  * Component Layout chính cho các trang người dùng
@@ -62,7 +63,7 @@ const Router = () => (
         <Route path="category" element={<CategoryManager />} />
         <Route path="room" element={<RoomManager />} />
         <Route path="schedule" element={<ScheduleManager />} />
-        <Route path="seat" element={<SeatManager />} />
+        <Route path="seattype" element={<SeatTypeManager />} />
         <Route path="user" element={<UserManager />} />
         <Route path="revenue" element={<RevenueManager />} />
         <Route path="settings" element={<SettingsManager />} />
@@ -90,8 +91,8 @@ const Router = () => (
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* --- Tuyến đường được bảo vệ cho Admin --- */}
-      {/* Trang Admin có layout riêng bên trong nó */}
+      {/* --- Tuyến đưng ờng được bảo vệ cho Admin --- */}
+        {/* Trang Admin có layout riêng bên tronó */}
       <Route element={<AdminRoute />}>
         <Route path="/admin/*" element={<Admin />} />
       </Route>
