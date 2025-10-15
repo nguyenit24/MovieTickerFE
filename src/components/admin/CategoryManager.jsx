@@ -41,7 +41,6 @@ const CategoryManager = () =>
       setLoading(false);
     }
   };
-
   const openModal = (type, category = null) => {
     setModalType(type);
     setSelectedCategory(category);

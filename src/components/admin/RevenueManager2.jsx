@@ -5,7 +5,7 @@ import {InvalidTokenError} from "jwt-decode";
 import invoiceService from "../../services/invoiceService.js";
 import {useToast} from "../common/Toast.jsx";
 
-const RevenueManager = () => {
+const RevenueManager2 = () => {
     const [dateRange, setDateRange] = useState('week');
     const [selectedRoom, setSelectedRoom] = useState('all');
     const [invoice, setInvoice] = useState([]);
@@ -480,4 +480,4 @@ const RevenueManager = () => {
     );
 }
 
-export default RevenueManager;
+export default RevenueManager2;

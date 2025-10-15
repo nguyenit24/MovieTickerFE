@@ -16,34 +16,47 @@ const SeatSelection = ({ scheduleData, onSeatsSelect, selectedSeats = [] }) => {
 
   const fetchSeatData = async () => {
     setLoading(true);
+    console.log('Fetching seat type data...');
     const result = await seatService.getAllSeatTypes();
     if (result.success) {
+      console.log('Seat Types retrieved:', result.data);
       setSeatTypes(result.data);
       
       // Create seat map for easy access
       const map = {};
       result.data.forEach(type => {
-        type.listGhe.forEach(seat => {
-          map[seat.tenGhe] = {
-            ...seat,
-            loaiGhe: type.tenLoaiGhe,
-            phuThu: type.phuThu,
-            color: getSeatTypeColor(type.tenLoaiGhe)
-          };
-        });
+        console.log(`Processing seat type: ${type.tenLoaiGhe}, seats count: ${type.listGhe?.length || 0}`);
+        if (type.listGhe && Array.isArray(type.listGhe)) {
+          type.listGhe.forEach(seat => {
+            map[seat.tenGhe] = {
+              ...seat,
+              loaiGhe: type.tenLoaiGhe,
+              phuThu: type.phuThu,
+              color: getSeatTypeColor(type.tenLoaiGhe)
+            };
+          });
+        } else {
+          console.warn(`No seats found for seat type: ${type.tenLoaiGhe}`);
+        }
       });
+      console.log('Seat map created with', Object.keys(map).length, 'seats');
       setSeatMap(map);
+    } else {
+      console.error('Failed to fetch seat types:', result.message);
     }
     setLoading(false);
   };
 
   const fetchBookedSeats = async () => {
     // Fetch booked seats for this schedule
-    // This would be an API call to get booked seats for the specific schedule
     try {
+      console.log('Fetching booked seats for schedule:', scheduleData.maSuatChieu);
       const result = await seatService.getBookedSeats(scheduleData.maSuatChieu);
       if (result.success) {
+        console.log('Booked seats:', result.data);
         setBookedSeats(result.data || []);
+      } else {
+        console.error('Failed to fetch booked seats:', result.message);
       }
     } catch (error) {
       console.error('Error fetching booked seats:', error);
@@ -294,33 +307,6 @@ const SeatSelection = ({ scheduleData, onSeatsSelect, selectedSeats = [] }) => {
               <h5 className="card-title mb-0">Thông tin đặt vé</h5>
             </div>
             <div className="card-body">
-              <div className="mb-3">
-                <h6>Phim: <span className="text-primary">{scheduleData?.phim?.tenPhim}</span></h6>
-                <p className="mb-1">
-                  <small>
-                    <i className="bi bi-calendar me-1"></i>
-                    {new Date(scheduleData?.thoiGianChieu).toLocaleDateString('vi-VN')}
-                  </small>
-                </p>
-                <p className="mb-1">
-                  <small>
-                    <i className="bi bi-clock me-1"></i>
-                    {new Date(scheduleData?.thoiGianChieu).toLocaleTimeString('vi-VN', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </small>
-                </p>
-                <p className="mb-0">
-                  <small>
-                    <i className="bi bi-geo-alt me-1"></i>
-                    {scheduleData?.phongChieu?.tenPhong}
-                  </small>
-                </p>
-              </div>
-
-              <hr />
-
               <div className="mb-3">
                 <h6>Ghế đã chọn ({selectedSeats.length})</h6>
                 {selectedSeats.length === 0 ? (

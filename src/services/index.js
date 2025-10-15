@@ -10,6 +10,7 @@ import promotionService from "./promotionService";
 import serviceService from "./serviceService";
 import authService from "./authService"; // Thêm nếu chưa có
 import settingService from "./settingService.js";
+import reviewService from "./reviewService";
 
 export {
   authService,
@@ -22,5 +23,6 @@ export {
   seatService,
   promotionService,
   serviceService,
-  settingService
+  settingService,
+  reviewService,
 };

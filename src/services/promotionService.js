@@ -68,8 +68,7 @@ const promotionService = {
     }
   },
 
-
-    async searchPromotions(keyword, page = 1) {
+  async searchPromotions(keyword, page = 1) {
         try {
             const response = await apiClient.get(
                 `/khuyenmai/search?keyword=${encodeURIComponent(keyword)}&page=${page}`
@@ -80,6 +79,24 @@ const promotionService = {
             return handleError(error);
         }
     },
+  // Kiểm tra mã khuyến mãi
+  validatePromotion: async (code) => {
+    try {
+      const response = await apiClient.get(`/khuyenmai/validate/code/${code}`);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  getPromotionDetail: async (code) => {
+    try {
+      const response = await apiClient.get(`/khuyenmai/code/${code}`);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleError(error);
+    }
+  },
 };
 
 export default promotionService;

@@ -16,7 +16,7 @@ const TicketsPage = () => {
   const fetchUserTickets = async () => {
     setLoading(true);
     try {
-      const result = await ticketService.getUserTickets();
+      const result = await ticketService.getMyInvoices();
       if (result.success) {
         // Đảm bảo data là array, nếu không set về array rỗng
         setTickets(Array.isArray(result.data) ? result.data : []);
