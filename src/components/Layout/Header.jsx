@@ -1,13 +1,20 @@
+import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 const Header = () => {
   const { user, logOut } = useAuth();
   const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleLogout = () => {
     logOut();
     navigate("/");
+  };
+
+  const toggleDropdown = (e) => {
+    e.preventDefault();
+    setIsDropdownOpen(!isDropdownOpen);
   };
 
   return (
@@ -40,9 +47,6 @@ const Header = () => {
                 Phim
               </NavLink>
             </li>
-
-            {/* --- PHẦN BỔ SUNG --- */}
-            {/* Thêm link Vé của tôi (chỉ hiển thị khi đã đăng nhập) */}
             {user && (
               <li>
                 <NavLink to="/tickets" className="nav-link px-2 text-white">
@@ -50,15 +54,11 @@ const Header = () => {
                 </NavLink>
               </li>
             )}
-            {/* Thêm link Liên hệ */}
             <li>
               <NavLink to="/contact" className="nav-link px-2 text-white">
                 Liên hệ
               </NavLink>
             </li>
-            {/* --- KẾT THÚC PHẦN BỔ SUNG --- */}
-
-            {/* Link Quản trị cho Admin */}
             {user && user.roles.includes("ROLE_ADMIN") && (
               <li>
                 <NavLink to="/admin" className="nav-link px-2 text-warning">
@@ -77,13 +77,14 @@ const Header = () => {
                   href="#"
                   className="d-block link-light text-decoration-none dropdown-toggle"
                   id="dropdownUser1"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
+                  onClick={toggleDropdown}
                 >
                   Chào, {user.username}
                 </a>
                 <ul
-                  className="dropdown-menu text-small"
+                  className={`dropdown-menu text-small ${
+                    isDropdownOpen ? "show" : ""
+                  }`}
                   aria-labelledby="dropdownUser1"
                 >
                   <li>

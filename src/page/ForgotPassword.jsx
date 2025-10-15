@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Thêm useNavigate
 import authService from "../services/authService";
 import "./Login.css";
 
@@ -7,6 +7,8 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // Khởi tạo navigate
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,9 +18,17 @@ const ForgotPassword = () => {
       setError("Vui lòng nhập email của bạn.");
       return;
     }
+    setLoading(true);
     const result = await authService.forgotPassword(email);
+    setLoading(false);
     if (result.success) {
-      setMessage("Yêu cầu thành công! Vui lòng kiểm tra email để nhận mã OTP.");
+      setMessage(
+        "Yêu cầu thành công! Vui lòng kiểm tra email. Tự động chuyển về trang đăng nhập sau 3 giây."
+      );
+      // Tự động chuyển hướng sau 3 giây
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
     } else {
       setError(result.message || "Email không tồn tại trong hệ thống.");
     }
@@ -42,8 +52,23 @@ const ForgotPassword = () => {
               placeholder="Nhập email đã đăng ký"
             />
           </div>
-          <button type="submit" className="btn btn-primary w-100 mb-3">
-            Gửi yêu cầu
+          <button
+            type="submit"
+            className="btn btn-primary w-100 mb-3"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                <span className="sr-only"> Đang tải...</span>
+              </>
+            ) : (
+              "Gửi yêu cầu"
+            )}
           </button>
           <div className="text-center">
             <Link to="/login">Quay lại Đăng nhập</Link>
