@@ -9,6 +9,8 @@ const PromotionManager = () => {
     const [promotions, setPromotions] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [formData, setFormData] = useState({
         maKm: '',
         tenKm: '',

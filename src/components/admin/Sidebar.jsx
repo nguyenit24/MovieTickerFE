@@ -28,6 +28,9 @@ const Sidebar = () => {
         { id: 'user', icon: 'bi-people', label: 'Người dùng' },
         { id: 'service', icon: 'bi-tools', label: 'Dịch vụ khác' },
         {id: 'promotion', icon: 'bi-gift', label: 'Khuyến mãi' },
+        { id: 'invoices', icon: 'bi-receipt', label: 'Hóa đơn' },
+        { id: 'tickets', icon: 'bi-ticket', label: 'Vé' },
+        { id: 'review', icon: 'bi-chat-left-text', label: 'Đánh giá phim' },
         { id: 'revenue', icon: 'bi-currency-dollar', label: 'Doanh thu' }
     ];
 

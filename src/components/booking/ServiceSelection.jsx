@@ -5,33 +5,85 @@ const ServiceSelection = ({ onServicesSelect, selectedServices = [] }) => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [serviceCategories, setServiceCategories] = useState({});
+  const [categoriesList, setCategoriesList] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   useEffect(() => {
     fetchServices();
+    fetchCategories();
   }, []);
 
   const fetchServices = async () => {
     setLoading(true);
-    const result = await serviceService.getAllServices();
+    console.log('Fetching services with category:', selectedCategory);
+    
+    let result;
+    if (selectedCategory && selectedCategory !== 'all') {
+      result = await serviceService.getServicesByCategory(selectedCategory);
+    } else {
+      result = await serviceService.getAllServices();
+    }
+
     if (result.success) {
+      console.log('Services fetched:', result.data);
       setServices(result.data);
-      
-      // Group services by category
+
+      // Group services by category (use danhMuc or loaiDichVu)
       const categories = {};
       result.data.forEach(service => {
-        const category = service.loaiDichVu || 'Khác';
+        // Đảm bảo có đầy đủ thông tin của dịch vụ
+        console.log('Service detail:', {
+          id: service.maDv,
+          name: service.tenDv || service.tenDichVu,
+          category: service.danhMuc || service.loaiDichVu,
+          price: service.donGia || service.gia
+        });
+        
+        const category = service.danhMuc || service.loaiDichVu || 'Khác';
         if (!categories[category]) {
           categories[category] = [];
         }
         categories[category].push(service);
       });
+      
+      console.log('Grouped services by categories:', Object.keys(categories));
       setServiceCategories(categories);
+    } else {
+      console.error('Failed to fetch services:', result.message);
     }
     setLoading(false);
   };
 
+  const fetchCategories = async () => {
+    try {
+      // The backend endpoint returns services for a category; here we call a dedicated endpoint
+      const res = await serviceService.getServicesByCategory('all');
+      if (res.success) {
+        // Derive categories from returned services
+        const cats = new Set();
+        res.data.forEach(s => {
+          cats.add(s.danhMuc || s.loaiDichVu || 'other');
+        });
+        const list = [
+          { id: 'all', name: 'Tất Cả' },
+          { id: 'combo', name: 'Combo' },
+          { id: 'popcorn', name: 'Bỏng Ngô' },
+          { id: 'drink', name: 'Nước Uống' },
+          { id: 'snack', name: 'Đồ Ăn Vặt' },
+          { id: 'other', name: 'Khác' },
+        ].filter(c => c.id === 'all' || cats.has(c.id));
+
+        setCategoriesList(list);
+      }
+    } catch (error) {
+      console.error('Lỗi lấy danh mục dịch vụ:', error);
+    }
+  };
+
   const handleServiceQuantityChange = (service, quantity) => {
     try {
+      console.log('Service object:', service); // Để debug dữ liệu dịch vụ
+      
       const newSelectedServices = [...selectedServices];
       const existingServiceIndex = newSelectedServices.findIndex(
         s => s.maDv === service.maDv
@@ -43,13 +95,18 @@ const ServiceSelection = ({ onServicesSelect, selectedServices = [] }) => {
           newSelectedServices.splice(existingServiceIndex, 1);
         }
       } else {
-        // Update or add service
+        // Update or add service - đảm bảo tất cả thông tin cần thiết được lưu
         const serviceData = {
           maDv: service.maDv,
           soLuong: quantity,
-          tenDichVu: service.tenDv,
-          donGia: service.donGia,
-          urlHinh: service.urlHinh
+          // Đảm bảo lưu tất cả tên dịch vụ có thể có
+          tenDichVu: service.tenDv || service.tenDichVu,
+          tenDv: service.tenDv || service.tenDichVu,
+          // Đảm bảo lưu tất cả giá dịch vụ có thể có
+          donGia: service.donGia || service.gia,
+          gia: service.donGia || service.gia,
+          urlHinh: service.urlHinh,
+          danhMuc: service.danhMuc || service.loaiDichVu
         };
 
         if (existingServiceIndex !== -1) {
@@ -60,6 +117,7 @@ const ServiceSelection = ({ onServicesSelect, selectedServices = [] }) => {
       }
 
       onServicesSelect(newSelectedServices);
+      console.log('Updated selected services:', newSelectedServices);
     } catch (error) {
       console.error('Error updating service quantity:', error);
     }
@@ -81,7 +139,7 @@ const ServiceSelection = ({ onServicesSelect, selectedServices = [] }) => {
     const quantity = getServiceQuantity(service.maDv);
 
     return (
-      <div className="col-md-6 col-lg-4 mb-4">
+      <div className="col-md-6 col-lg-6 mb-4">
         <div className="card h-100 service-card">
           <div className="position-relative">
             <img
@@ -174,6 +232,52 @@ const ServiceSelection = ({ onServicesSelect, selectedServices = [] }) => {
               </small>
             </div>
             <div className="card-body">
+                <div className="mb-3 d-flex align-items-center gap-3">
+                  <label className="mb-0 fw-semibold">Danh mục:</label>
+                  <select
+                    className="form-select w-auto"
+                    value={selectedCategory}
+                    onChange={async (e) => {
+                      const cat = e.target.value;
+                      setSelectedCategory(cat);
+                      setLoading(true);
+                      try {
+                        let r;
+                        if (cat === 'all') {
+                          r = await serviceService.getAllServices();
+                        } else {
+                          r = await serviceService.getServicesByCategory(cat);
+                        }
+
+                        if (r && r.success) {
+                          // Use returned data (r.data) to keep UI in sync
+                          setServices(r.data);
+
+                          const grouped = {};
+                          (Array.isArray(r.data) ? r.data : []).forEach(service => {
+                            const category = service.danhMuc || service.loaiDichVu || 'Khác';
+                            if (!grouped[category]) grouped[category] = [];
+                            grouped[category].push(service);
+                          });
+                          setServiceCategories(grouped);
+                        } else {
+                          setServices([]);
+                          setServiceCategories({});
+                        }
+                      } catch (err) {
+                        console.error(err);
+                        setServices([]);
+                        setServiceCategories({});
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
+                  >
+                    {categoriesList.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
               {Object.keys(serviceCategories).length === 0 ? (
                 <div className="text-center py-5">
                   <i className="bi bi-cup text-muted" style={{ fontSize: '3rem' }}></i>

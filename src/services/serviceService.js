@@ -70,6 +70,17 @@ const serviceService = {
         }
     },
 
+  // Lấy dịch vụ theo danh mục
+  getServicesByCategory: async (category = 'all') => {
+    try {
+      const response = await apiClient.get(`/dichvudikem/category/${category}`);
+      // Some endpoints may wrap data differently; reuse handleApiResponse
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
   // Lấy chi tiết dịch vụ
   getServiceById: async (maDichVu) => {
     try {

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import movieService from '../../services/movieService';
 import scheduleService from '../../services/scheduleService';
+import MovieReviews from '../home/MovieReview';
 
-const MovieDetail = ({ movieId, onShowtimeSelect }) => {
+const MovieDetail = ({ movieId, onShowtimeSelect, onMovieSelect }) => {
   const [movie, setMovie] = useState(null);
   const [showtimes, setShowtimes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,8 +17,16 @@ const MovieDetail = ({ movieId, onShowtimeSelect }) => {
 
   useEffect(() => {
     if (movie && movie.listSuatChieu) {
-      // Hiển thị tất cả suất chiếu không cần filter theo ngày
-      setShowtimes(movie.listSuatChieu);
+      // Lọc chỉ hiển thị các suất chiếu hợp lệ (sau hiện tại + 15 phút)
+      const now = new Date();
+      const validTime = new Date(now.getTime() + 15 * 60000); // Thêm 15 phút
+      
+      const validShowtimes = movie.listSuatChieu.filter(showtime => {
+        const showtimeDate = new Date(showtime.thoiGianBatDau);
+        return showtimeDate > validTime;
+      });
+      
+      setShowtimes(validShowtimes);
     }
   }, [movie]);
 
@@ -26,9 +35,17 @@ const MovieDetail = ({ movieId, onShowtimeSelect }) => {
     const result = await movieService.getMovieById(movieId);
     if (result.success) {
       setMovie(result.data);
-      // Hiển thị tất cả suất chiếu
+      // Lọc suất chiếu hợp lệ ngay khi fetch
       if (result.data.listSuatChieu) {
-        setShowtimes(result.data.listSuatChieu);
+        const now = new Date();
+        const validTime = new Date(now.getTime() + 15 * 60000); // Thêm 15 phút
+        
+        const validShowtimes = result.data.listSuatChieu.filter(showtime => {
+          const showtimeDate = new Date(showtime.thoiGianBatDau);
+          return showtimeDate > validTime;
+        });
+        
+        setShowtimes(validShowtimes);
       }
     }
     setLoading(false);
@@ -153,7 +170,7 @@ const MovieDetail = ({ movieId, onShowtimeSelect }) => {
 
         {/* Showtime List */}
         <div className="showtime-list">
-          {showtimes.length === 0 ? (
+          {showtimes.length === 0  ? (
             <div className="alert alert-info">
               Hiện tại chưa có suất chiếu nào cho phim này
             </div>
@@ -184,7 +201,11 @@ const MovieDetail = ({ movieId, onShowtimeSelect }) => {
 
                       <button
                         className="btn btn-primary btn-sm w-100"
-                        onClick={() => onShowtimeSelect(showtime)}
+                        onClick={() => {
+                          console.log('Showtime selected:', showtime);
+                          onMovieSelect(movie);
+                          onShowtimeSelect(showtime);
+                        }}
                       >
                         Chọn suất
                       </button>
@@ -196,6 +217,17 @@ const MovieDetail = ({ movieId, onShowtimeSelect }) => {
           )}
         </div>
       </div>
+
+      {/* Movie Reviews Section */}
+      {movie && (
+        <div className="container mt-5">
+          <div className="row">
+            <div className="col-12">
+              <MovieReviews maPhim={movie.maPhim} tenPhim={movie.tenPhim} />
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx="true">{`
         .showtime-card {
