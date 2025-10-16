@@ -19,11 +19,14 @@ const PaymentReturn = () => {
   const handlePaymentReturn = async () => {
     try {
       // Extract payment parameters from URL (new format from backend)
+      // Format: /payment/result?orderId=XXX&status=SUCCESS/FAILED&transactionNo=XXX&transactionDate=XXX
+      // Or: /payment/result?orderId=XXX&status=FAILED&responseCode=XXX&message=XXX
       const orderId = searchParams.get('orderId');
       const status = searchParams.get('status');
       const transactionNo = searchParams.get('transactionNo');
       const transactionDate = searchParams.get('transactionDate');
-      setMessage(searchParams.get('message'));
+      const responseCode = searchParams.get('responseCode');
+      const errorMessage = searchParams.get('message');
 
       if (!orderId) {
         setPaymentResult({
@@ -53,16 +56,34 @@ const PaymentReturn = () => {
           }
         });
         showSuccess('Thanh toán thành công!');
-      } else {
+      } else if (status === 'FAILED') {
+        // Failed with responseCode and message
+        const failedMessage = errorMessage 
+          ? decodeURIComponent(errorMessage) 
+          : 'Thanh toán thất bại';
+        
         setPaymentResult({
           status: 'FAILED',
-          message: 'Thanh toán thất bại' + (message ? `: ${message}` : ''),
+          message: failedMessage,
+          data: {
+            orderId: orderId,
+            status: status,
+            responseCode: responseCode,
+            errorMessage: errorMessage
+          }
+        });
+        showError(failedMessage);
+      } else {
+        // Unknown status
+        setPaymentResult({
+          status: 'ERROR',
+          message: 'Trạng thái thanh toán không xác định',
           data: {
             orderId: orderId,
             status: status
           }
         });
-        showError('Thanh toán thất bại!');
+        showError('Trạng thái thanh toán không xác định');
       }
     } catch (error) {
       console.error('Payment return error:', error);
@@ -70,6 +91,7 @@ const PaymentReturn = () => {
         status: 'ERROR',
         message: 'Có lỗi xảy ra khi xử lý kết quả thanh toán'
       });
+      showError('Có lỗi xảy ra khi xử lý kết quả thanh toán');
     }
     
     setLoading(false);
@@ -157,6 +179,8 @@ const PaymentReturn = () => {
                               </strong>
                             </div>
                           )}
+                          {/* thông tin khách hàng */}
+                          
                           <div className="d-flex justify-content-between py-2">
                             <span className="text-muted">Trạng thái:</span>
                             <span className="badge bg-success">Thành công</span>
@@ -294,14 +318,22 @@ const PaymentReturn = () => {
                       </div>
                     </div>
 
-                    <p className="text-muted mb-4">
-                      Giao dịch không thành công. Vui lòng thử lại hoặc liên hệ hỗ trợ.
-                    </p>
-                    {message && (
-                      <div className="alert alert-danger" role="alert">
-                        {message}
+                    <div className="alert alert-danger mb-4" role="alert">
+                      <i className="bi bi-exclamation-triangle me-2"></i>
+                      <strong>Lý do:</strong> {paymentResult.message || 'Giao dịch không thành công'}
+                    </div>
+
+                    {paymentResult.data?.responseCode && (
+                      <div className="mb-4">
+                        <small className="text-muted">
+                          Mã lỗi: <code>{paymentResult.data.responseCode}</code>
+                        </small>
                       </div>
                     )}
+
+                    <p className="text-muted mb-4">
+                      Vui lòng thử lại hoặc liên hệ hỗ trợ nếu vấn đề vẫn tiếp tục.
+                    </p>
 
                     <div className="d-flex gap-2 justify-content-center">
                       <button 

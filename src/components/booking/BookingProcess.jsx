@@ -28,16 +28,13 @@ const BookingProcess = ({ movieId: initialMovieId }) => {
   const [loading, setLoading] = useState(false);
   const [tenPhim, setTenPhim] = useState('');
   
-  // Customer information for guests
   const [customerInfo, setCustomerInfo] = useState({
     tenKhachHang: '',
     sdtKhachHang: '',
     emailKhachHang: ''
   });
   const [formErrors, setFormErrors] = useState({});
-  // console.log('Selected Services:', selectedServices);
-  // console.log('Applied Promotion:', appliedPromotion);
-  // console.log('Selected Seats:', selectedSeats);
+  const [paymentMethod, setPaymentMethod] = useState('VNPAY'); // Default to VNPAY
   console.log('Selected Showtime:', selectedShowtime);
   console.log('Movie ID:', movieId);
   console.log('Ten Phim:', tenPhim);
@@ -197,17 +194,7 @@ const BookingProcess = ({ movieId: initialMovieId }) => {
 
     setLoading(true);
 
-    // Log chi tiết các thông tin quan trọng
-    console.log('=== BOOKING INFORMATION ===');
-    console.log('Selected movie:', { id: movieId, title: tenPhim });
-    console.log('Selected showtime:', selectedShowtime);
-    console.log('Selected seats:', selectedSeats);
-    console.log('Selected services:', selectedServices);
-    console.log('Applied promotion:', appliedPromotion);
-    if (!user) {
-      console.log('Customer info:', customerInfo);
-    }
-    
+
     // Format dữ liệu theo API mới
     const bookingRequest = {
       maPhim: movieId,
@@ -218,7 +205,7 @@ const BookingProcess = ({ movieId: initialMovieId }) => {
         maDv: service.maDv,
         soLuong: service.soLuong
       })),
-      phuongThucThanhToan: "VNPAY"
+      phuongThucThanhToan: paymentMethod // Use selected payment method
     };
     
     // Add customer info if user is not logged in
@@ -575,6 +562,70 @@ const BookingProcess = ({ movieId: initialMovieId }) => {
                     </div>
                   </div>
                 )}
+
+                {/* Payment Method Selection */}
+                <div className="card border-0 shadow-sm mb-4">
+                  <div className="card-header bg-white">
+                    <h5 className="mb-0">
+                      <i className="bi bi-credit-card me-2"></i>
+                      Phương thức thanh toán
+                    </h5>
+                  </div>
+                  <div className="card-body">
+                    <div className="row g-3">
+                      <div className="col-md-6">
+                        <div 
+                          className={`payment-method-card p-4 border rounded cursor-pointer ${paymentMethod === 'VNPAY' ? 'border-primary bg-primary bg-opacity-10' : 'border-secondary'}`}
+                          onClick={() => setPaymentMethod('VNPAY')}
+                          style={{ cursor: 'pointer', transition: 'all 0.3s' }}
+                        >
+                          <div className="d-flex align-items-center justify-content-between">
+                            <div className="d-flex align-items-center">
+                              <i className="bi bi-wallet2 fs-1 me-3 text-primary"></i>
+                              <div>
+                                <h6 className="mb-0 fw-bold">VNPay</h6>
+                                <small className="text-muted">Ví điện tử VNPay</small>
+                              </div>
+                            </div>
+                            <div>
+                              {paymentMethod === 'VNPAY' && (
+                                <i className="bi bi-check-circle-fill text-primary fs-4"></i>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div 
+                          className={`payment-method-card p-4 border rounded cursor-pointer ${paymentMethod === 'MOMO' ? 'border-danger bg-danger bg-opacity-10' : 'border-secondary'}`}
+                          onClick={() => setPaymentMethod('MOMO')}
+                          style={{ cursor: 'pointer', transition: 'all 0.3s' }}
+                        >
+                          <div className="d-flex align-items-center justify-content-between">
+                            <div className="d-flex align-items-center">
+                              <i className="bi bi-phone fs-1 me-3 text-danger"></i>
+                              <div>
+                                <h6 className="mb-0 fw-bold">MoMo</h6>
+                                <small className="text-muted">Ví điện tử MoMo</small>
+                              </div>
+                            </div>
+                            <div>
+                              {paymentMethod === 'MOMO' && (
+                                <i className="bi bi-check-circle-fill text-danger fs-4"></i>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <small className="text-muted">
+                        <i className="bi bi-shield-check me-1"></i>
+                        Thanh toán được bảo mật và mã hóa
+                      </small>
+                    </div>
+                  </div>
+                </div>
 
                 {/* Promotion Section */}
                 <div className="card border-0 shadow-sm mb-4">

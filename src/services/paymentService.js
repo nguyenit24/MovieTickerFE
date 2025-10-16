@@ -53,6 +53,26 @@ const paymentService = {
       return handleError(error);
     }
   },
+
+  // Hoàn tiền VNPay
+  refundVNPay: async (refundData) => {
+    try {
+      const response = await apiClient.post('/payment/vn_pay/refund', refundData);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  // Hoàn tiền MoMo
+  refundMoMo: async (refundData) => {
+    try {
+      const response = await apiClient.post('/payment/momo/refund', refundData);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleError(error);
+    }
+  },
 };
 
 export default paymentService;

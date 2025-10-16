@@ -42,6 +42,8 @@ const TicketsPage = () => {
         return { class: 'bg-danger', text: 'Đã hủy' };
       case 'EXPIRED':
         return { class: 'bg-secondary', text: 'Hết hạn' };
+      case 'REFUNDED':
+        return { class: 'bg-info', text: 'Đã hoàn tiền' };
       default:
         return { class: 'bg-primary', text: 'Chờ xử lý' };
     }

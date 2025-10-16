@@ -8,6 +8,7 @@ const PaymentProcess = ({ bookingData, onPaymentSuccess, onPaymentFailure }) => 
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes countdown
   const [showQR, setShowQR] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('VNPAY'); // VNPAY or MOMO
   const { showSuccess, showError, showInfo } = useToast();
 
   useEffect(() => {
@@ -45,11 +46,22 @@ const PaymentProcess = ({ bookingData, onPaymentSuccess, onPaymentFailure }) => 
         orderId: bookingData.maHD
       };
 
-      const result = await ticketService.createVNPayPayment(paymentData);
+      // Get payment method from bookingData (set during booking)
+      const method = bookingData.phuongThucThanhToan?.toUpperCase() || 'VNPAY';
+      setPaymentMethod(method);
+
+      let result;
+      if (method === 'MOMO') {
+        result = await ticketService.createMoMoPayment(paymentData);
+      } else {
+        result = await ticketService.createVNPayPayment(paymentData);
+      }
       
       if (result.success) {
-        setPaymentUrl(result.data);
-        showInfo('Đã tạo liên kết thanh toán. Vui lòng hoàn tất trong vòng 5 phút.');
+        // Check if result.data is an object with payUrl (MoMo format) or just a string (VNPay format)
+        const url = typeof result.data === 'object' ? result.data.payUrl : result.data;
+        setPaymentUrl(url);
+        showInfo(`Đã tạo liên kết thanh toán ${method === 'MOMO' ? 'MoMo' : 'VNPay'}. Vui lòng hoàn tất trong vòng 5 phút.`);
       } else {
         showError(result.message);
         onPaymentFailure();
@@ -98,7 +110,7 @@ const PaymentProcess = ({ bookingData, onPaymentSuccess, onPaymentFailure }) => 
     if (paymentUrl) {
       setPaymentStatus('PROCESSING');
       window.open(paymentUrl, '_blank');
-      showInfo('Vui lòng hoàn tất thanh toán trên trang VNPay và quay lại đây.');
+      showInfo(`Vui lòng hoàn tất thanh toán trên trang ${paymentMethod === 'MOMO' ? 'MoMo' : 'VNPay'} và quay lại đây.`);
     }
   };
 
@@ -218,7 +230,9 @@ const PaymentProcess = ({ bookingData, onPaymentSuccess, onPaymentFailure }) => 
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span>Phương thức:</span>
-                      <span className="badge bg-primary">VNPay</span>
+                      <span className={`badge ${paymentMethod === 'MOMO' ? 'bg-danger' : 'bg-primary'}`}>
+                        {paymentMethod === 'MOMO' ? 'MoMo' : 'VNPay'}
+                      </span>
                     </div>
                     <div className="d-flex justify-content-between">
                       <span>Trạng thái:</span>
@@ -244,11 +258,11 @@ const PaymentProcess = ({ bookingData, onPaymentSuccess, onPaymentFailure }) => 
                       <div className="text-center">
                         <h6>Thanh toán trực tiếp</h6>
                         <button
-                          className="btn btn-success btn-lg w-100"
+                          className={`btn btn-lg w-100 ${paymentMethod === 'MOMO' ? 'btn-danger' : 'btn-success'}`}
                           onClick={handlePayNow}
                         >
                           <i className="bi bi-credit-card me-2"></i>
-                          Thanh toán ngay
+                          Thanh toán với {paymentMethod === 'MOMO' ? 'MoMo' : 'VNPay'}
                         </button>
                       </div>
                     </div>
@@ -257,7 +271,7 @@ const PaymentProcess = ({ bookingData, onPaymentSuccess, onPaymentFailure }) => 
                       <div className="text-center">
                         <h6>Quét mã QR</h6>
                         <button
-                          className="btn btn-outline-primary w-100"
+                          className={`btn w-100 ${paymentMethod === 'MOMO' ? 'btn-outline-danger' : 'btn-outline-primary'}`}
                           onClick={() => setShowQR(!showQR)}
                         >
                           <i className="bi bi-qr-code me-2"></i>
@@ -277,7 +291,7 @@ const PaymentProcess = ({ bookingData, onPaymentSuccess, onPaymentFailure }) => 
                           style={{ maxWidth: '200px' }}
                         />
                         <p className="mt-2 text-muted small">
-                          Quét mã QR bằng ứng dụng VNPay để thanh toán
+                          Quét mã QR bằng ứng dụng {paymentMethod === 'MOMO' ? 'MoMo' : 'VNPay'} để thanh toán
                         </p>
                       </div>
                     </div>
@@ -397,7 +411,7 @@ const PaymentProcess = ({ bookingData, onPaymentSuccess, onPaymentFailure }) => 
             <div className="card-footer bg-light text-center">
               <small className="text-muted">
                 <i className="bi bi-shield-check me-1"></i>
-                Thanh toán được bảo mật bởi VNPay
+                Thanh toán được bảo mật bởi {paymentMethod === 'MOMO' ? 'MoMo' : 'VNPay'}
               </small>
             </div>
           </div>

@@ -33,7 +33,7 @@ const PUBLIC_APIS = [
   '/khuyenmai',        // API khuyến mãi
   '/khuyenmai/validate',// API kiểm tra khuyến mãi
   '/khuyenmai/code',   // API lấy thông tin khuyến mãi theo mã
-  '/payment',          // API thanh toán
+  '/payment/vn_pay/create', // API tạo thanh toán VNPay
   '/payment/vn_pay',   // API VNPay
   '/payment/status',   // API kiểm tra trạng thái thanh toán
   '/payment/detail'    // API lấy chi tiết hóa đơn
