@@ -9,73 +9,20 @@ const handleError = (error) => ({
     message: error.response?.data?.message || "Lỗi kết nối server",
 });
 const invoiceService = {
-    getAllInvoice: async () => {
+    getAllInvoice: async (NgayBD, NgayKT) => {
         try {
-            const response = await apiClient.get("/payment");
+            const response = await apiClient.get("/payment?NgayBD=" + NgayBD + "&NgayKT=" + NgayKT);
             return handleApiResponse(response);
         } catch (error) {
             return handleError(error);
         }
     },
 
-    getAllPromotionsPageable: async (page = 1) => {
+    getAllPhimInvoice: async (NgayBD, NgayKT) => {
         try {
-            const response = await apiClient.get(`/khuyenmai/pageable?page=${page}`);
+            const response = await apiClient.get(`/payment/phim?NgayBD=` + NgayBD + `&NgayKT=` + NgayKT);
             return handleApiResponse(response);
         } catch (error) {
-            return handleError(error);
-        }
-    },
-
-    // Lấy khuyến mãi theo ID
-    getPromotionById: async (id) => {
-        try {
-            const response = await apiClient.get(`/khuyenmai/${id}`);
-            return handleApiResponse(response);
-        } catch (error) {
-            return handleError(error);
-        }
-    },
-
-    // Tạo khuyến mãi mới
-    createPromotion: async (promotionData) => {
-        try {
-            const response = await apiClient.post("/khuyenmai", promotionData);
-            return handleApiResponse(response);
-        } catch (error) {
-            return handleError(error);
-        }
-    },
-
-    // Cập nhật khuyến mãi
-    updatePromotion: async (id, promotionData) => {
-        try {
-            const response = await apiClient.put(`/khuyenmai/${id}`, promotionData);
-            return handleApiResponse(response);
-        } catch (error) {
-            return handleError(error);
-        }
-    },
-
-    // Xóa khuyến mãi
-    deletePromotion: async (id) => {
-        try {
-            const response = await apiClient.delete(`/khuyenmai/${id}`);
-            return handleApiResponse(response);
-        } catch (error) {
-            return handleError(error);
-        }
-    },
-
-
-    async searchPromotions(keyword, page = 1) {
-        try {
-            const response = await apiClient.get(
-                `/khuyenmai/search?keyword=${encodeURIComponent(keyword)}&page=${page}`
-            );
-            return handleApiResponse(response);
-        } catch (error) {
-            console.error("Lỗi kết nối API searchMovies:", error);
             return handleError(error);
         }
     },

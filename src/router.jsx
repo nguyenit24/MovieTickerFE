@@ -29,7 +29,7 @@ import RoomManager from './components/admin/RoomManager';
 import ScheduleManager from './components/admin/ScheduleManager';
 import SeatManager from './components/admin/SeatManager';
 import UserManager from './components/admin/UserManager';
-import RevenueManager from './components/admin/RevenueManager2.jsx';
+import RevenueManager from './components/admin/RevenueManager.jsx';
 import SettingsManager from './components/admin/SettingsManager';
 import ServiceManager from './components/admin/ServiceManager';
 import MovieDetail from './components/admin/MovieDetail';
