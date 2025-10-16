@@ -1,5 +1,11 @@
 import React from "react";
-import {BrowserRouter, Routes, Route, Outlet, Navigate} from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Outlet,
+  Navigate,
+} from "react-router-dom";
 
 // --- Import các trang (Pages) ---
 import Home from "./page/Home";
@@ -22,23 +28,23 @@ import Footer from "./components/Layout/Footer";
 import AdminRoute from "./components/common/AdminRoute";
 import PublicRoute from "./components/common/PublicRoute"; // Giả sử bạn đã tạo file này
 
-import Dashboard from './components/admin/Dashboard';
-import MovieManagement from './components/admin/MovieManagement';
-import CategoryManager from './components/admin/CategoryManager';
-import RoomManager from './components/admin/RoomManager';
-import ScheduleManager from './components/admin/ScheduleManager';
-import SeatManager from './components/admin/SeatManager';
-import UserManager from './components/admin/UserManager';
-import RevenueManager from './components/admin/RevenueManager.jsx';
-import SettingsManager from './components/admin/SettingsManager';
-import ServiceManager from './components/admin/ServiceManager';
-import MovieDetail from './components/admin/MovieDetail';
+import Dashboard from "./components/admin/Dashboard";
+import MovieManagement from "./components/admin/MovieManagement";
+import CategoryManager from "./components/admin/CategoryManager";
+import RoomManager from "./components/admin/RoomManager";
+import ScheduleManager from "./components/admin/ScheduleManager";
+import SeatManager from "./components/admin/SeatManager";
+import UserManager from "./components/admin/UserManager";
+import RevenueManager from "./components/admin/RevenueManager";
+import SettingsManager from "./components/admin/SettingsManager";
+import ServiceManager from "./components/admin/ServiceManager";
+import MovieDetail from "./components/admin/MovieDetail";
 import PromotionManager from "./components/admin/PromotionManager.jsx";
-import ReviewManager from './components/admin/ReviewManager';
-import InvoiceManager from './components/admin/InvoiceManager';
-import TicketManager from './components/admin/TicketManager';
-import InvoiceDetailAdmin from './components/admin/InvoiceDetailAdmin';
-import TicketDetailAdmin from './components/admin/TicketDetailAdmin';
+import ReviewManager from "./components/admin/ReviewManager";
+import InvoiceManager from "./components/admin/InvoiceManager";
+import TicketManager from "./components/admin/TicketManager";
+import InvoiceDetailAdmin from "./components/admin/InvoiceDetailAdmin";
+import TicketDetailAdmin from "./components/admin/TicketDetailAdmin";
 
 /**
  * Component Layout chính cho các trang người dùng
@@ -58,29 +64,6 @@ const MainLayout = () => (
 const Router = () => (
   <BrowserRouter>
     <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/admin" element={<Admin />}>
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="film" element={<MovieManagement />} />
-        <Route path="category" element={<CategoryManager />} />
-        <Route path="room" element={<RoomManager />} />
-        <Route path="schedule" element={<ScheduleManager />} />
-        <Route path="seat" element={<SeatManager />} />
-        <Route path="user" element={<UserManager />} />
-        <Route path="revenue" element={<RevenueManager />} />
-  <Route path="invoices" element={<InvoiceManager />} />
-  <Route path="invoices/:maHD" element={<InvoiceDetailAdmin />} />
-  <Route path="tickets" element={<TicketManager />} />
-  <Route path="tickets/:maVe" element={<TicketDetailAdmin />} />
-        <Route path="settings" element={<SettingsManager />} />
-        <Route path="service" element={<ServiceManager />} />
-          <Route path="promotion" element={<PromotionManager />} />
-        <Route path="review" element={<ReviewManager />} />
-        <Route path="rooms/:roomId/seats" element={<SeatManager />} />
-        <Route path="film/:movieId" element={<MovieDetail />} />
-      </Route>
       {/* --- Tuyến đường có Layout chung (Header & Footer) --- */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
@@ -101,11 +84,33 @@ const Router = () => (
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* --- Tuyến đưng ờng được bảo vệ cho Admin --- */}
-        {/* Trang Admin có layout riêng bên tronó */}
-      <Route element={<AdminRoute />}>
-        <Route path="/admin/*" element={<Admin />} />
-      </Route>
+      {/* --- Tuyến đường được bảo vệ cho Admin --- */}
+      {/* Trang Admin có layout riêng bên trong nó */}
+        <Route element={<AdminRoute />}>
+            {/* Tất cả các route con của Admin sẽ nằm trong đây */}
+            <Route path="/admin" element={<Admin />}>
+                {/* Navigate tự động từ /admin sang /admin/dashboard */}
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="film" element={<MovieManagement />} />
+                <Route path="category" element={<CategoryManager />} />
+                <Route path="room" element={<RoomManager />} />
+                <Route path="schedule" element={<ScheduleManager />} />
+                <Route path="seat" element={<SeatManager />} />
+                <Route path="user" element={<UserManager />} />
+                <Route path="revenue" element={<RevenueManager />} />
+                <Route path="invoices" element={<InvoiceManager />} />
+                <Route path="invoices/:maHD" element={<InvoiceDetailAdmin />} />
+                <Route path="tickets" element={<TicketManager />} />
+                <Route path="tickets/:maVe" element={<TicketDetailAdmin />} />
+                <Route path="settings" element={<SettingsManager />} />
+                <Route path="service" element={<ServiceManager />} />
+                <Route path="promotion" element={<PromotionManager />} />
+                <Route path="review" element={<ReviewManager />} />
+                <Route path="rooms/:roomId/seats" element={<SeatManager />} />
+                <Route path="film/:movieId" element={<MovieDetail />} />
+            </Route>
+        </Route>
 
       {/* --- Tuyến đường xử lý Redirect không cần giao diện --- */}
       <Route path="/api/payment/return" element={<VNPayRedirect />} />

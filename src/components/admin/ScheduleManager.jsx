@@ -1,23 +1,21 @@
-
-    import React, { useEffect, useState } from 'react';
-    import {
-        Calendar,
-        Clock,
-        Film,
-        Trash2,
-        Plus,
-        ChevronLeft,
-        ChevronRight,
-        Copy,
-        AlertCircle,
-        Filter,
-        Search,
-        Edit
-    } from 'lucide-react';
-    import scheduleService from '../../services/scheduleService';
-    import roomService from '../../services/roomService';
-    import { v4 as uuidv4 } from 'uuid';
-
+import React, { useEffect, useState } from "react";
+import {
+  Calendar,
+  Clock,
+  Film,
+  Trash2,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  AlertCircle,
+  Filter,
+  Search,
+  Edit,
+} from "lucide-react";
+import scheduleService from "../../services/scheduleService";
+import roomService from "../../services/roomService";
+import { v4 as uuidv4 } from "uuid";
 
 const ScheduleManager = () => {
         const [showtimes, setShowtimes] = useState([]);

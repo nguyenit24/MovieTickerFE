@@ -1,6 +1,6 @@
 // Service API cho xác thực người dùng
 import { API_CONFIG } from "./config";
-import apiClient from "./apiClient"; // Import apiClient
+import apiClient, { publicApiClient } from "./apiClient"; // Import apiClient
 
 const handleApiResponse = (response) => {
   // Axios response có data nằm trong response.data
@@ -32,7 +32,7 @@ const login = async (credentials) => {
 
 const register = async (userData) => {
   try {
-    const response = await apiClient.post("/auth/register", userData);
+    const response = await publicApiClient.post("/auth/register", userData);
     return handleApiResponse(response);
   } catch (error) {
     return handleError(error);
@@ -77,11 +77,15 @@ const refreshToken = async (data) => {
   }
 };
 
-// --- HÀM CẦN TOKEN ---
 const logout = async () => {
   try {
-    const token = localStorage.getItem("refreshToken");
-    await apiClient.post("/auth/logout", { token });
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    // Gửi cả hai token lên server để vô hiệu hóa hoàn toàn phiên đăng nhập
+    if (accessToken && refreshToken) {
+      await apiClient.post("/auth/logout", { accessToken, refreshToken });
+    }
     // Xử lý logout ở client sẽ nằm trong AuthContext
     return { success: true };
   } catch (error) {
@@ -93,8 +97,44 @@ const logout = async () => {
     return { success: true };
   }
 };
+const verifyOtp = async (data) => {
+  try {
+    const response = await publicApiClient.post("/auth/verify-otp", data);
+    return handleApiResponse(response);
+  } catch (error) {
+    return handleError(error);
+  }
+};
 
-export { login, register, forgotPassword, resetPassword, refreshToken, logout };
+const resendOtp = async (data) => {
+  try {
+    const response = await publicApiClient.post("/auth/resend-otp", data);
+    return handleApiResponse(response);
+  } catch (error) {
+    return handleError(error);
+  }
+};
+
+const loginWithGoogle = async (tokenData) => {
+  try {
+    const response = await publicApiClient.post("/auth/google", tokenData);
+    return handleApiResponse(response);
+  } catch (error) {
+    return handleError(error);
+  }
+};
+
+export {
+  login,
+  register,
+  forgotPassword,
+  resetPassword,
+  refreshToken,
+  logout,
+  verifyOtp,
+  resendOtp,
+  loginWithGoogle,
+};
 
 export default {
   login,
@@ -103,4 +143,7 @@ export default {
   resetPassword,
   refreshToken,
   logout,
+  verifyOtp,
+  resendOtp,
+  loginWithGoogle,
 };

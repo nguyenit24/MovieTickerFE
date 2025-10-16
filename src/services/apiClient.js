@@ -3,9 +3,19 @@ import { API_CONFIG } from "./config";
 import { refreshToken as refreshTokenService } from "./authService";
 import { useAuth } from "../context/AuthContext";
 
+// Tạo một public instance của axios
+const publicApiClient = axios.create({
+  baseURL: API_CONFIG.BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 // Tạo một instance của axios
 const apiClient = axios.create({
   baseURL: API_CONFIG.BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 // Danh sách các API không yêu cầu xác thực (public APIs)
@@ -127,4 +137,5 @@ apiClient.interceptors.response.use(
   }
 );
 
+export { publicApiClient };
 export default apiClient;
