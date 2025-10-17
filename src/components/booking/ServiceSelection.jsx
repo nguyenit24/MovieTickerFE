@@ -26,6 +26,7 @@ const ServiceSelection = ({ onServicesSelect, selectedServices = [] }) => {
 
     if (result.success) {
       console.log('Services fetched:', result.data);
+      result.data = result.data.filter(service => service.trangThai !== false);
       setServices(result.data);
 
       // Group services by category (use danhMuc or loaiDichVu)
@@ -251,6 +252,7 @@ const ServiceSelection = ({ onServicesSelect, selectedServices = [] }) => {
 
                         if (r && r.success) {
                           // Use returned data (r.data) to keep UI in sync
+                          r.data = r.data.filter(service => service.trangThai !== false);
                           setServices(r.data);
 
                           const grouped = {};

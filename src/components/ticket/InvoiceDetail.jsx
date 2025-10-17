@@ -173,7 +173,7 @@ const InvoiceDetail = () => {
         <div className="container">
           <div className="row align-items-center">
             <div className="col-md-8">
-              <nav aria-label="breadcrumb">
+              {/* <nav aria-label="breadcrumb">
                 <ol className="breadcrumb mb-2" style={{ backgroundColor: 'transparent' }}>
                   <li className="breadcrumb-item">
                     <a 
@@ -204,7 +204,7 @@ const InvoiceDetail = () => {
                     Chi tiết hóa đơn
                   </li>
                 </ol>
-              </nav>
+              </nav> */}
               <h2 className="mb-0">
                 <i className="bi bi-receipt me-2"></i>
                 Chi tiết hóa đơn #{invoice.maHD}

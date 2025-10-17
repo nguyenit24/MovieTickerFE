@@ -25,13 +25,15 @@ const TicketsPage = () => {
     setLoading(true);
     try {
       const result = await ticketService.getMyInvoices();
-      if (result.success) {
+      if (result.success && result.data !== undefined) {
         // Đảm bảo data là array, nếu không set về array rỗng
         setTickets(Array.isArray(result.data) ? result.data : []);
       } else {
         showError(result.message);
-        setTickets([]); // Set empty array nếu fail
+        console.log('Fetched tickets:', result.message);
+        setTickets([]);
       }
+      console.log('Fetched tickets:', result);
     } catch (error) {
       console.error('Error fetching tickets:', error);
       showError('Có lỗi xảy ra khi tải danh sách vé');

@@ -21,6 +21,16 @@ class UserService {
     }
   }
 
+  async getUsers(){
+    try {
+      const response = await apiClient.get("/user/all");
+      return handleApiResponse(response);
+    }
+    catch (error) {
+      return handleError(error);
+    }
+  }
+
   // Lấy chi tiết người dùng theo ID
   async getUserById(userId) {
     try {
