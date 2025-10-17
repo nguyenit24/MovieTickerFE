@@ -2,6 +2,7 @@ import apiClient from './apiClient';
 
 const handleApiResponse = (response) => ({
   success: true,
+  code : response.data.code,
   data: response.data.data,
   message: response.data.message,
 });

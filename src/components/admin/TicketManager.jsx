@@ -8,6 +8,9 @@ const STATUS_OPTIONS = [
   { value: '', label: 'Tất cả' },
   { value: 'PAID', label: 'PAID' },
   { value: 'CANCELLED', label: 'CANCELLED' },
+  { value: 'PROCESSING', label: 'PROCESSING' },
+  { value: 'REFUNDED', label: 'REFUNDED' },
+  { value: 'EXPIRED', label: 'EXPIRED' }
 ];
 
 const TicketManager = () => {

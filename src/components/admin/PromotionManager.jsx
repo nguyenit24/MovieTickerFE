@@ -65,19 +65,19 @@ const PromotionManager = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    // const searchProducts = async (tenDv = '', danhMuc = '', page = 1) => {
-    //     const result = await serviceService.searchServices(tenDv, danhMuc, page = 1);
-    //     if (result.success) {
-    //         const { currentItems, totalPages, currentPage } = result.data;
-    //         setCurrentProducts(currentItems);
-    //         setTotalPages(totalPages);
-    //         setCurrentPage(currentPage);
-    //     } else {
-    //         setCurrentProducts([]);
-    //         setTotalPages(1);
-    //         setCurrentPage(1);
-    //     }
-    // }
+    const searchProducts = async (tenDv = '', danhMuc = '', page = 1) => {
+        const result = await serviceService.searchServices(tenDv, danhMuc, page = 1);
+        if (result.success) {
+            const { currentItems, totalPages, currentPage } = result.data;
+            setCurrentProducts(currentItems);
+            setTotalPages(totalPages);
+            setCurrentPage(currentPage);
+        } else {
+            setCurrentProducts([]);
+            setTotalPages(1);
+            setCurrentPage(1);
+        }
+    }
 
     const filteredPromotions = promotions.filter(promo =>
         promo.tenKm.toLowerCase().includes(searchTerm.toLowerCase()) ||

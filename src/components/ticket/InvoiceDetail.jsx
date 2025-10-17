@@ -111,13 +111,14 @@ const InvoiceDetail = () => {
         return;
       }
 
-      if (result.success && result.data !== undefined) {
-        showSuccess('Hoàn tiền thành công! ' + (result.data || result.message));
+      if (result.success && result.data !== undefined && result.code === 200) {
+        showSuccess('Hoàn tiền thành công! ' + (result.data));
         // Reload invoice để cập nhật trạng thái
         await fetchInvoiceDetail();
       } else {
-        showError(result.message || 'Hoàn tiền thất bại');
+        showError(result.data || 'Hoàn tiền thất bại');
       }
+      console.log('Refund result:', result);
     } catch (error) {
       console.error('Refund error:', error);
       showError('Có lỗi xảy ra khi xử lý hoàn tiền');
