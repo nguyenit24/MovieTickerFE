@@ -1,11 +1,4 @@
 import React from "react";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Outlet,
-  Navigate,
-} from "react-router-dom";
 
 // --- Import các trang (Pages) ---
 import Home from "./page/Home";
@@ -16,6 +9,12 @@ import ForgotPassword from "./page/ForgotPassword";
 import ResetPassword from "./page/ResetPassword";
 import BookingPage from "./page/BookingPage";
 import TicketsPage from "./page/TicketsPage";
+import Movies from "./page/Movies";
+import About from "./page/About";
+import Blog from "./page/Blogs";
+
+
+
 
 // --- Import các thành phần đặc biệt (Components) ---
 import InvoiceDetail from "./components/ticket/InvoiceDetail";
@@ -29,17 +28,17 @@ import Footer from "./components/Layout/Footer";
 import AdminRoute from "./components/common/AdminRoute";
 import PublicRoute from "./components/common/PublicRoute"; // Giả sử bạn đã tạo file này
 
-import Dashboard from "./components/admin/Dashboard";
-import MovieManagement from "./components/admin/MovieManagement";
-import CategoryManager from "./components/admin/CategoryManager";
-import RoomManager from "./components/admin/RoomManager";
-import ScheduleManager from "./components/admin/ScheduleManager";
-import SeatManager from "./components/admin/SeatManager";
-import UserManager from "./components/admin/UserManager";
-import RevenueManager from "./components/admin/RevenueManager";
-import SettingsManager from "./components/admin/SettingsManager";
-import ServiceManager from "./components/admin/ServiceManager";
-import MovieDetail from "./components/admin/MovieDetail";
+import Dashboard from './components/admin/Dashboard';
+import MovieManagement from './components/admin/MovieManagement';
+import CategoryManager from './components/admin/CategoryManager';
+import RoomManager from './components/admin/RoomManager';
+import ScheduleManager from './components/admin/ScheduleManager';
+import SeatManager from './components/admin/SeatManager';
+import UserManager from './components/admin/UserManager';
+import RevenueManager from './components/admin/RevenueManager';
+import SettingsManager from './components/admin/SettingsManager';
+import ServiceManager from './components/admin/ServiceManager';
+import MovieDetail from './components/admin/MovieDetail';
 import PromotionManager from "./components/admin/PromotionManager.jsx";
 import ReviewManager from "./components/admin/ReviewManager";
 import InvoiceManager from "./components/admin/InvoiceManager";
@@ -66,6 +65,24 @@ const MainLayout = () => (
 const Router = () => (
   <BrowserRouter>
     <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/admin" element={<Admin />}>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="film" element={<MovieManagement />} />
+        <Route path="category" element={<CategoryManager />} />
+        <Route path="room" element={<RoomManager />} />
+        <Route path="schedule" element={<ScheduleManager />} />
+        <Route path="seat" element={<SeatManager />} />
+        <Route path="user" element={<UserManager />} />
+        <Route path="revenue" element={<RevenueManager />} />
+        <Route path="settings" element={<SettingsManager />} />
+        <Route path="service" element={<ServiceManager />} />
+          <Route path="promotion" element={<PromotionManager />} />
+        <Route path="rooms/:roomId/seats" element={<SeatManager />} />
+        <Route path="film/:movieId" element={<MovieDetail />} />
+      </Route>
       {/* --- Tuyến đường có Layout chung (Header & Footer) --- */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
@@ -78,6 +95,10 @@ const Router = () => (
       </Route>
 
       {/* --- Tuyến đường cho người chưa đăng nhập --- */}
+      <Route path="/movies" element={<Movies />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/blogs" element={<Blog />} />
+
       {/* Các trang này thường không cần Header/Footer đầy đủ */}
       <Route element={<PublicRoute />}>
         <Route path="/login" element={<Login />} />

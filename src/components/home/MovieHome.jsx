@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Star, Play, Ticket, Film, Clock, Calendar } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Star, Play, Ticket, Film, Clock, Calendar } from "lucide-react";
 
 const MovieHome = () => {
   const [movies, setMovies] = useState([]);
@@ -13,11 +13,18 @@ const MovieHome = () => {
     const fetchMovies = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get('http://localhost:8080/api/movies');
-        setMovies(response.data);
-        setIsLoading(false);
+        const [nowRes, upcomingRes] = await Promise.all([
+          axios.get("http://localhost:8080/api/phim/dang-chieu"),
+          axios.get("http://localhost:8080/api/phim/sap-chieu"),
+        ]);
+
+        setMovies({
+          showing: nowRes.data.data || [],
+          upcoming: upcomingRes.data.data || [],
+        });
       } catch (err) {
-        setError('Không thể tải danh sách phim. Vui lòng thử lại sau.');
+        setError("Không thể tải danh sách phim. Vui lòng thử lại sau.");
+      } finally {
         setIsLoading(false);
       }
     };
@@ -25,9 +32,9 @@ const MovieHome = () => {
   }, []);
 
   const formatVND = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
     }).format(amount);
   };
 
@@ -69,14 +76,14 @@ const MovieHome = () => {
 
       {/* Hero Section */}
       {movies.length > 0 && (
-        <div 
+        <div
           className="position-relative"
           style={{
-            height: '70vh',
+            height: "70vh",
             background: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url(${movies[0].backdrop})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            marginTop: '56px' // Adjust for fixed navbar
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            marginTop: "56px", // Adjust for fixed navbar
           }}
         >
           <div className="container h-100 d-flex align-items-center">
@@ -86,7 +93,11 @@ const MovieHome = () => {
                 <div className="d-flex align-items-center mb-4 gap-3">
                   <span className="badge bg-primary">{movies[0].genre}</span>
                   <div className="d-flex align-items-center">
-                    <Star className="text-warning me-1" size={20} fill="currentColor" />
+                    <Star
+                      className="text-warning me-1"
+                      size={20}
+                      fill="currentColor"
+                    />
                     <span>{movies[0].rating}</span>
                   </div>
                   <div className="d-flex align-items-center">
@@ -119,7 +130,7 @@ const MovieHome = () => {
               <div className="col-lg-3 col-md-6">
                 <select className="form-select">
                   <option>Chọn phim</option>
-                  {movies.map(movie => (
+                  {movies.map((movie) => (
                     <option key={movie.id}>{movie.title}</option>
                   ))}
                 </select>
@@ -163,21 +174,23 @@ const MovieHome = () => {
             <p className="text-muted">Những bộ phim hot nhất hiện tại</p>
           </div>
           <div className="row g-4">
-            {movies.map(movie => (
+            {movies.map((movie) => (
               <div key={movie.id} className="col-lg-4 col-md-6 col-sm-12">
-                <div 
+                <div
                   className={`card bg-secondary h-100 border-0 shadow-sm movie-card ${
-                    selectedMovie?.id === movie.id ? 'border-primary border-3' : ''
+                    selectedMovie?.id === movie.id
+                      ? "border-primary border-3"
+                      : ""
                   }`}
-                  style={{ transition: 'transform 0.3s' }}
+                  style={{ transition: "transform 0.3s" }}
                   onClick={() => setSelectedMovie(movie)}
                 >
                   <div className="position-relative overflow-hidden">
-                    <img 
-                      src={movie.poster} 
+                    <img
+                      src={movie.poster}
                       className="card-img-top"
                       alt={movie.title}
-                      style={{ height: '350px', objectFit: 'cover' }}
+                      style={{ height: "350px", objectFit: "cover" }}
                     />
                     <div className="position-absolute top-0 end-0 m-2">
                       <span className="badge bg-warning text-dark fw-bold">
@@ -194,7 +207,9 @@ const MovieHome = () => {
                       {movie.duration}p
                     </p>
                     <div className="d-flex justify-content-between align-items-center">
-                      <span className="text-primary fw-bold fs-6">{formatVND(movie.price)}</span>
+                      <span className="text-primary fw-bold fs-6">
+                        {formatVND(movie.price)}
+                      </span>
                       <button className="btn btn-primary btn-sm">
                         <Ticket size={16} className="me-1" />
                         Đặt vé
@@ -210,32 +225,33 @@ const MovieHome = () => {
 
       {/* Movie Detail Modal */}
       {selectedMovie && (
-        <div 
-          className="modal-overlay"
-          onClick={() => setSelectedMovie(null)}
-        >
-          <div 
+        <div className="modal-overlay" onClick={() => setSelectedMovie(null)}>
+          <div
             className="bg-secondary rounded p-4"
-            style={{ maxWidth: '600px', width: '90%' }}
+            style={{ maxWidth: "600px", width: "90%" }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h4 className="text-white mb-0">{selectedMovie.title}</h4>
-              <button 
-                className="btn-close btn-close-white" 
+              <button
+                className="btn-close btn-close-white"
                 onClick={() => setSelectedMovie(null)}
               ></button>
             </div>
-            <img 
-              src={selectedMovie.poster} 
+            <img
+              src={selectedMovie.poster}
               alt={selectedMovie.title}
               className="img-fluid rounded mb-3"
-              style={{ maxHeight: '250px', objectFit: 'cover', width: '100%' }}
+              style={{ maxHeight: "250px", objectFit: "cover", width: "100%" }}
             />
             <div className="d-flex align-items-center mb-3 gap-3">
               <span className="badge bg-primary">{selectedMovie.genre}</span>
               <div className="d-flex align-items-center text-white">
-                <Star className="text-warning me-1" size={16} fill="currentColor" />
+                <Star
+                  className="text-warning me-1"
+                  size={16}
+                  fill="currentColor"
+                />
                 <span>{selectedMovie.rating}</span>
               </div>
               <div className="d-flex align-items-center text-white">
@@ -243,7 +259,9 @@ const MovieHome = () => {
                 <span>{selectedMovie.duration} phút</span>
               </div>
             </div>
-            <p className="text-primary fw-bold fs-5 mb-3">{formatVND(selectedMovie.price)}</p>
+            <p className="text-primary fw-bold fs-5 mb-3">
+              {formatVND(selectedMovie.price)}
+            </p>
             <div className="d-flex gap-2">
               <button className="btn btn-primary flex-fill">
                 <Ticket className="me-1" size={18} />
@@ -265,8 +283,12 @@ const MovieHome = () => {
             <Film className="me-2" size={24} />
             <h5 className="mb-0">CinemaVN</h5>
           </div>
-          <p className="mb-0 opacity-75">Hệ thống rạp chiếu phim hàng đầu Việt Nam</p>
-          <small className="opacity-50">© 2025 CinemaVN. Hotline: 1900 123 456</small>
+          <p className="mb-0 opacity-75">
+            Hệ thống rạp chiếu phim hàng đầu Việt Nam
+          </p>
+          <small className="opacity-50">
+            © 2025 CinemaVN. Hotline: 1900 123 456
+          </small>
         </div>
       </footer>
     </div>

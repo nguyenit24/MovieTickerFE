@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
-import Movie from './Movie';
+import React, { useState } from "react";
+import Movie from "./Movie";
 
-const MovieScreen = ({ movies, onMovieClick }) => {
+const MovieScreen = ({ movies = [], onMovieClick }) => {
+  // ✅ Đảm bảo luôn là mảng, tránh lỗi "movies.slice is not a function"
+  const safeMovies = Array.isArray(movies) ? movies : [];
+
   const [currentPage, setCurrentPage] = useState(0);
-  const moviesPerPage = 8; // 4 phim x 2 dòng = 8 phim mỗi trang
-  
-  const totalPages = Math.ceil(movies.length / moviesPerPage);
+  const moviesPerPage = 4; // 4 phim x 2 dòng = 8 phim mỗi trang
+
+  const totalPages = Math.max(1, Math.ceil(safeMovies.length / moviesPerPage));
   const startIndex = currentPage * moviesPerPage;
   const endIndex = startIndex + moviesPerPage;
-  const currentMovies = movies.slice(startIndex, endIndex);
+  const currentMovies = safeMovies.slice(startIndex, endIndex);
 
   const nextPage = () => {
     setCurrentPage((prev) => (prev + 1) % totalPages);
@@ -25,7 +28,7 @@ const MovieScreen = ({ movies, onMovieClick }) => {
   return (
     <div className="bg-dark min-vh-100 py-5">
       <div className="container-fluid">
-        {/* Header với navigation */}
+        {/* Header */}
         <div className="row mb-5">
           <div className="col-12">
             <div className="d-flex justify-content-between align-items-center">
@@ -33,21 +36,21 @@ const MovieScreen = ({ movies, onMovieClick }) => {
                 <i className="fas fa-film me-3 text-danger"></i>
                 Danh Sách Phim
               </h1>
-              
+
               <div className="d-flex align-items-center gap-3">
                 <span className="text-muted">
                   Trang {currentPage + 1} / {totalPages}
                 </span>
-                
+
                 <div className="btn-group" role="group">
-                  <button 
+                  <button
                     className="btn btn-outline-light"
                     onClick={prevPage}
                     disabled={totalPages <= 1}
                   >
                     <i className="fas fa-chevron-left"></i>
                   </button>
-                  <button 
+                  <button
                     className="btn btn-outline-light"
                     onClick={nextPage}
                     disabled={totalPages <= 1}
@@ -65,20 +68,27 @@ const MovieScreen = ({ movies, onMovieClick }) => {
           <div className="col-12">
             <div className="alert alert-info bg-gradient" role="alert">
               <i className="fas fa-info-circle me-2"></i>
-              Hiển thị {currentMovies.length} phim trong tổng số {movies.length} phim
+              Hiển thị {currentMovies.length} phim trong tổng số{" "}
+              {safeMovies.length} phim
             </div>
           </div>
         </div>
 
-        {/* Grid phim - 4 phim mỗi dòng */}
+        {/* Grid phim */}
         <div className="row">
-          {currentMovies.map((movie) => (
-            <Movie 
-              key={movie.id} 
-              movie={movie} 
-              onClick={onMovieClick} 
-            />
-          ))}
+          {currentMovies.length > 0 ? (
+            currentMovies.map((movie) => (
+              <Movie
+                key={movie.maPhim || movie.id || idx}
+                movie={movie}
+                onClick={onMovieClick}
+              />
+            ))
+          ) : (
+            <div className="text-center text-secondary fs-5">
+              Không có phim nào để hiển thị
+            </div>
+          )}
         </div>
 
         {/* Pagination */}
@@ -87,18 +97,34 @@ const MovieScreen = ({ movies, onMovieClick }) => {
             <div className="col-12">
               <nav aria-label="Phân trang phim">
                 <ul className="pagination justify-content-center pagination-lg">
-                  {/* Previous button */}
-                  <li className={`page-item ${currentPage === 0 ? 'disabled' : ''}`}>
-                    <button className="page-link bg-dark text-white border-secondary" onClick={prevPage}>
+                  {/* Nút Trước */}
+                  <li
+                    className={`page-item ${
+                      currentPage === 0 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link bg-dark text-white border-secondary"
+                      onClick={prevPage}
+                    >
                       <i className="fas fa-angle-left"></i> Trước
                     </button>
                   </li>
 
-                  {/* Page numbers */}
+                  {/* Số trang */}
                   {Array.from({ length: totalPages }, (_, index) => (
-                    <li key={index} className={`page-item ${currentPage === index ? 'active' : ''}`}>
-                      <button 
-                        className={`page-link ${currentPage === index ? 'bg-danger border-danger' : 'bg-dark text-white border-secondary'}`}
+                    <li
+                      key={index}
+                      className={`page-item ${
+                        currentPage === index ? "active" : ""
+                      }`}
+                    >
+                      <button
+                        className={`page-link ${
+                          currentPage === index
+                            ? "bg-danger border-danger"
+                            : "bg-dark text-white border-secondary"
+                        }`}
                         onClick={() => goToPage(index)}
                       >
                         {index + 1}
@@ -106,9 +132,16 @@ const MovieScreen = ({ movies, onMovieClick }) => {
                     </li>
                   ))}
 
-                  {/* Next button */}
-                  <li className={`page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}`}>
-                    <button className="page-link bg-dark text-white border-secondary" onClick={nextPage}>
+                  {/* Nút Sau */}
+                  <li
+                    className={`page-item ${
+                      currentPage === totalPages - 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link bg-dark text-white border-secondary"
+                      onClick={nextPage}
+                    >
                       Sau <i className="fas fa-angle-right"></i>
                     </button>
                   </li>
@@ -118,16 +151,16 @@ const MovieScreen = ({ movies, onMovieClick }) => {
           </div>
         )}
 
-        {/* Pagination dots cho mobile */}
+        {/* Pagination nhỏ cho mobile */}
         <div className="row mt-3 d-md-none">
           <div className="col-12 text-center">
             {Array.from({ length: totalPages }, (_, index) => (
               <button
                 key={index}
                 className={`btn btn-sm rounded-circle mx-1 ${
-                  currentPage === index ? 'btn-danger' : 'btn-outline-secondary'
+                  currentPage === index ? "btn-danger" : "btn-outline-secondary"
                 }`}
-                style={{ width: '40px', height: '40px' }}
+                style={{ width: "40px", height: "40px" }}
                 onClick={() => goToPage(index)}
               >
                 {index + 1}
@@ -136,7 +169,7 @@ const MovieScreen = ({ movies, onMovieClick }) => {
           </div>
         </div>
 
-        {/* Thông tin bổ sung */}
+        {/* Gợi ý */}
         <div className="row mt-5">
           <div className="col-12 text-center">
             <p className="text-muted">
@@ -147,17 +180,18 @@ const MovieScreen = ({ movies, onMovieClick }) => {
         </div>
       </div>
 
-      <style jsx>{`
+      {/* CSS nội tuyến */}
+      <style>{`
         .min-vh-100 {
           min-height: 100vh;
         }
-        
+
         .pagination .page-link:hover {
           background-color: #dc3545 !important;
           border-color: #dc3545 !important;
           color: white !important;
         }
-        
+
         .alert-info {
           background: linear-gradient(45deg, #17a2b8, #138496);
           border: none;

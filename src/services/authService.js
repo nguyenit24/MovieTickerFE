@@ -32,7 +32,6 @@ const login = async (credentials) => {
 
 const register = async (userData) => {
   try {
-    const response = await publicApiClient.post("/auth/register", userData);
     return handleApiResponse(response);
   } catch (error) {
     return handleError(error);
@@ -124,17 +123,6 @@ const loginWithGoogle = async (tokenData) => {
   }
 };
 
-export {
-  login,
-  register,
-  forgotPassword,
-  resetPassword,
-  refreshToken,
-  logout,
-  verifyOtp,
-  resendOtp,
-  loginWithGoogle,
-};
 
 export default {
   login,
