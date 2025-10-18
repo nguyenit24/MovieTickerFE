@@ -31,6 +31,7 @@ const MovieHome = () => {
     fetchMovies();
   }, []);
 
+
   const formatVND = (amount) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -276,7 +277,7 @@ const MovieHome = () => {
         </div>
       )}
 
-      {/* Footer */}
+       Footer
       <footer className="bg-primary py-4 text-center mt-auto">
         <div className="container">
           <div className="d-flex align-items-center justify-content-center mb-2">
