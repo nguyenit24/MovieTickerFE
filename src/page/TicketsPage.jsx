@@ -8,22 +8,32 @@ const TicketsPage = () => {
   const { showError } = useToast();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [movieName, setMovieName] = useState('');
+  const [status, setStatus] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
 
   useEffect(() => {
     fetchUserTickets();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [movieName, status]);
+
   const fetchUserTickets = async () => {
     setLoading(true);
     try {
       const result = await ticketService.getMyInvoices();
-      if (result.success) {
+      if (result.success && result.data !== undefined) {
         // Đảm bảo data là array, nếu không set về array rỗng
         setTickets(Array.isArray(result.data) ? result.data : []);
       } else {
         showError(result.message);
-        setTickets([]); // Set empty array nếu fail
+        console.log('Fetched tickets:', result.message);
+        setTickets([]);
       }
+      console.log('Fetched tickets:', result);
     } catch (error) {
       console.error('Error fetching tickets:', error);
       showError('Có lỗi xảy ra khi tải danh sách vé');
@@ -42,6 +52,8 @@ const TicketsPage = () => {
         return { class: 'bg-danger', text: 'Đã hủy' };
       case 'EXPIRED':
         return { class: 'bg-secondary', text: 'Hết hạn' };
+      case 'REFUNDED':
+        return { class: 'bg-info', text: 'Đã hoàn tiền' };
       default:
         return { class: 'bg-primary', text: 'Chờ xử lý' };
     }
@@ -54,6 +66,17 @@ const TicketsPage = () => {
       time: date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
     };
   };
+
+  // Filter and pagination logic
+  const filteredTickets = tickets.filter(invoice => {
+    const matchesMovie = movieName === '' || invoice.danhSachVe.some(ticket => ticket.tenPhim.toLowerCase().includes(movieName.toLowerCase()));
+    const matchesStatus = status === '' || invoice.trangThai === status;
+    return matchesMovie && matchesStatus;
+  });
+
+  const totalPages = Math.ceil(filteredTickets.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedTickets = filteredTickets.slice(startIndex, startIndex + itemsPerPage);
 
   if (loading) {
     return (
@@ -77,7 +100,7 @@ const TicketsPage = () => {
         <div className="container">
           <div className="row align-items-center">
             <div className="col-md-8">
-              <nav aria-label="breadcrumb">
+              {/* <nav aria-label="breadcrumb">
                 <ol className="breadcrumb mb-2" style={{ backgroundColor: 'transparent' }}>
                   <li className="breadcrumb-item">
                     <a 
@@ -96,7 +119,7 @@ const TicketsPage = () => {
                     Vé của tôi
                   </li>
                 </ol>
-              </nav>
+              </nav> */}
               <h2 className="mb-0">
                 <i className="bi bi-ticket-detailed me-2"></i>
                 Vé của tôi
@@ -109,9 +132,38 @@ const TicketsPage = () => {
         </div>
       </div>
 
+      {/* Search Controls */}
+      <div className="container mb-4">
+        <div className="row g-3">
+          <div className="col-md-6">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Tìm kiếm theo tên phim..."
+              value={movieName}
+              onChange={(e) => setMovieName(e.target.value)}
+            />
+          </div>
+          <div className="col-md-6">
+            <select
+              className="form-select"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <option value="">Tất cả trạng thái</option>
+              <option value="PAID">Đã thanh toán</option>
+              <option value="PROCESSING">Đang xử lý</option>
+              <option value="CANCELLED">Đã hủy</option>
+              <option value="EXPIRED">Hết hạn</option>
+              <option value="REFUNDED">Đã hoàn tiền</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       {/* Main Content */}
       <div className="container">
-        {tickets.length === 0 ? (
+        {filteredTickets.length === 0 ? (
           <div className="row justify-content-center">
             <div className="col-md-6">
               <div className="text-center py-5">
@@ -132,7 +184,7 @@ const TicketsPage = () => {
           </div>
         ) : (
           <div className="row">
-            {tickets.map((invoice) => (
+            {paginatedTickets.map((invoice) => (
               <div key={invoice.maHD} className="col-12 mb-4">
                 <div className="card border-0 shadow-sm">
                   <div className="card-header bg-white py-3">
@@ -269,6 +321,33 @@ const TicketsPage = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="d-flex justify-content-center mt-4">
+            <nav>
+              <ul className="pagination">
+                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                  <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>
+                    Trước
+                  </button>
+                </li>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <li key={page} className={`page-item ${page === currentPage ? 'active' : ''}`}>
+                    <button className="page-link" onClick={() => setCurrentPage(page)}>
+                      {page}
+                    </button>
+                  </li>
+                ))}
+                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                  <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>
+                    Sau
+                  </button>
+                </li>
+              </ul>
+            </nav>
           </div>
         )}
       </div>

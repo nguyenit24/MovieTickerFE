@@ -21,6 +21,7 @@ import TicketsPage from "./page/TicketsPage";
 import InvoiceDetail from "./components/ticket/InvoiceDetail";
 import PaymentReturn from "./components/payment/PaymentReturn";
 import VNPayRedirect from "./components/payment/VNPayRedirect";
+import MoMoRedirect from "./components/payment/MoMoRedirect";
 
 // --- Import Layout và "Người Gác Cổng" (Guards) ---
 import Header from "./components/Layout/Header";
@@ -117,6 +118,8 @@ const Router = () => (
       {/* --- Tuyến đường xử lý Redirect không cần giao diện --- */}
       <Route path="/api/payment/return" element={<VNPayRedirect />} />
       <Route path="/vnpay_return" element={<VNPayRedirect />} />
+      <Route path="/api/payment/momo/return" element={<MoMoRedirect />} />
+      <Route path="/momo_return" element={<MoMoRedirect />} />
     </Routes>
   </BrowserRouter>
 );

@@ -44,6 +44,19 @@ const ticketService = {
     }
   },
 
+  // Tạo thanh toán MoMo
+  createMoMoPayment: async (paymentData) => {
+    try {
+      const response = await apiClient.post(
+        "/payment/momo/create",
+        paymentData
+      );
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
   // Kiểm tra trạng thái thanh toán
   checkPaymentStatus: async (orderId) => {
     try {

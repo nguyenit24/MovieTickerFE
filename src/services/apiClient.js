@@ -30,10 +30,10 @@ const PUBLIC_APIS = [
   '/loaighe',          // API lấy loại ghế
   '/dichvudikem',      // API lấy dịch vụ đi kèm
   '/dichvudikem/',     // API chi tiết dịch vụ
-  '/khuyenmai',        // API khuyến mãi
-  '/khuyenmai/validate',// API kiểm tra khuyến mãi
-  '/khuyenmai/code',   // API lấy thông tin khuyến mãi theo mã
-  '/payment',          // API thanh toán
+  // '/khuyenmai',        // API khuyến mãi
+  // '/khuyenmai/validate',// API kiểm tra khuyến mãi
+  // '/khuyenmai/code',   // API lấy thông tin khuyến mãi theo mã
+  '/payment/vn_pay/create', // API tạo thanh toán VNPay
   '/payment/vn_pay',   // API VNPay
   '/payment/status',   // API kiểm tra trạng thái thanh toán
   '/payment/detail'    // API lấy chi tiết hóa đơn

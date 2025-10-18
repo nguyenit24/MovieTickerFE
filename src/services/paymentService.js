@@ -2,6 +2,7 @@ import apiClient from './apiClient';
 
 const handleApiResponse = (response) => ({
   success: true,
+  code : response.data.code,
   data: response.data.data,
   message: response.data.message,
 });
@@ -48,6 +49,26 @@ const paymentService = {
   getInvoiceDetail: async (maHD) => {
     try {
       const response = await apiClient.get(`/payment/detail/${maHD}`);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  // Hoàn tiền VNPay
+  refundVNPay: async (refundData) => {
+    try {
+      const response = await apiClient.post('/payment/vn_pay/refund', refundData);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  // Hoàn tiền MoMo
+  refundMoMo: async (refundData) => {
+    try {
+      const response = await apiClient.post('/payment/momo/refund', refundData);
       return handleApiResponse(response);
     } catch (error) {
       return handleError(error);

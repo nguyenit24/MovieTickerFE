@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ticketService from '../../services/ticketService';
+import paymentService from '../../services/paymentService';
 import { useToast } from '../common/Toast';
 
 const InvoiceDetail = () => {
   const { invoiceId } = useParams();
   const navigate = useNavigate();
-  const { showError } = useToast();
+  const { showError, showSuccess, showInfo } = useToast();
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refundLoading, setRefundLoading] = useState(false);
+  const [showRefundModal, setShowRefundModal] = useState(false);
 
   useEffect(() => {
     if (invoiceId) {
@@ -41,6 +44,8 @@ const InvoiceDetail = () => {
         return { class: 'bg-danger', text: 'Đã hủy' };
       case 'EXPIRED':
         return { class: 'bg-secondary', text: 'Hết hạn' };
+      case 'REFUNDED':
+        return { class: 'bg-info', text: 'Đã hoàn tiền' };
       default:
         return { class: 'bg-primary', text: 'Chờ xử lý' };
     }
@@ -52,6 +57,74 @@ const InvoiceDetail = () => {
       date: date.toLocaleDateString('vi-VN'),
       time: date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
     };
+  };
+
+  const canRefund = () => {
+    // Chỉ cho phép hoàn tiền nếu đã thanh toán và chưa hoàn tiền
+    if (!invoice) return false;
+    const status = invoice.trangThai?.toUpperCase();
+    return status === 'PAID' || status === 'SUCCESS';
+  };
+
+  const handleRefundRequest = () => {
+    if (!canRefund()) {
+      showError('Không thể hoàn tiền cho hóa đơn này');
+      return;
+    }
+    setShowRefundModal(true);
+  };
+
+  const handleConfirmRefund = async () => {
+    if (!invoice) return;
+
+    setRefundLoading(true);
+    setShowRefundModal(false);
+
+    try {
+      showInfo('Đang xử lý yêu cầu hoàn tiền... Vui lòng chờ trong giây lát.');
+
+      let result;
+      const paymentMethod = invoice.phuongThucThanhToan?.toUpperCase();
+
+      if (paymentMethod === 'VNPAY') {
+        // Hoàn tiền VNPay
+        const refundData = {
+          amount: invoice.tongTien,
+          transId: invoice.transactionNo, 
+          transDate: invoice.transactionDate,
+          orderId: invoice.maHD,
+          transType: "02"
+        };
+        result = await paymentService.refundVNPay(refundData);
+      } else if (paymentMethod === 'MOMO') {
+        // Hoàn tiền MoMo
+        const refundData = {
+          amount: invoice.tongTien,
+          requestId: invoice.requestId, 
+          transId: invoice.transactionNo, 
+          transDate: invoice.transactionDate
+        };
+        result = await paymentService.refundMoMo(refundData);
+      } else {
+        showError('Phương thức thanh toán không hỗ trợ hoàn tiền tự động');
+        setRefundLoading(false);
+        return;
+      }
+
+      if (result.success && result.data !== undefined && result.code === 200) {
+        showSuccess('Hoàn tiền thành công! ' + (result.data));
+        // Reload invoice để cập nhật trạng thái
+        await fetchInvoiceDetail();
+      } else {
+        showError(result.data || 'Hoàn tiền thất bại');
+      }
+      console.log('Refund result:', result);
+    } catch (error) {
+      console.error('Refund error:', error);
+      showError('Có lỗi xảy ra khi xử lý hoàn tiền');
+    } finally {
+      setRefundLoading(false);
+    }
   };
 
   if (loading) {
@@ -100,7 +173,7 @@ const InvoiceDetail = () => {
         <div className="container">
           <div className="row align-items-center">
             <div className="col-md-8">
-              <nav aria-label="breadcrumb">
+              {/* <nav aria-label="breadcrumb">
                 <ol className="breadcrumb mb-2" style={{ backgroundColor: 'transparent' }}>
                   <li className="breadcrumb-item">
                     <a 
@@ -131,7 +204,7 @@ const InvoiceDetail = () => {
                     Chi tiết hóa đơn
                   </li>
                 </ol>
-              </nav>
+              </nav> */}
               <h2 className="mb-0">
                 <i className="bi bi-receipt me-2"></i>
                 Chi tiết hóa đơn #{invoice.maHD}
@@ -352,16 +425,109 @@ const InvoiceDetail = () => {
               </button>
               
               <button 
-                className="btn btn-primary w-100"
+                className="btn btn-primary w-100 mb-2"
                 onClick={() => window.print()}
               >
                 <i className="bi bi-printer me-2"></i>
                 In hóa đơn
               </button>
+
+              {/* Refund Button */}
+              {canRefund() && (
+                <button 
+                  className="btn btn-warning w-100"
+                  onClick={handleRefundRequest}
+                  disabled={refundLoading}
+                >
+                  {refundLoading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2"></span>
+                      Đang xử lý...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-arrow-counterclockwise me-2"></i>
+                      Yêu cầu hoàn tiền
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Refund Confirmation Modal */}
+      {showRefundModal && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header bg-warning">
+                <h5 className="modal-title">
+                  <i className="bi bi-exclamation-triangle me-2"></i>
+                  Xác nhận hoàn tiền
+                </h5>
+                <button 
+                  type="button" 
+                  className="btn-close" 
+                  onClick={() => setShowRefundModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="alert alert-warning">
+                  <i className="bi bi-info-circle me-2"></i>
+                  <strong>Lưu ý:</strong> Quá trình hoàn tiền có thể mất từ vài giây đến vài phút.
+                </div>
+
+                <h6 className="mb-3">Thông tin hoàn tiền:</h6>
+                <table className="table table-sm">
+                  <tbody>
+                    <tr>
+                      <td><strong>Mã hóa đơn:</strong></td>
+                      <td>{invoice.maHD}</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Số tiền:</strong></td>
+                      <td className="text-danger fw-bold">
+                        {invoice.tongTien?.toLocaleString('vi-VN')} VNĐ
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>Phương thức:</strong></td>
+                      <td>
+                        <span className={`badge ${invoice.phuongThucThanhToan?.toUpperCase() === 'MOMO' ? 'bg-danger' : 'bg-primary'}`}>
+                          {invoice.phuongThucThanhToan}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <p className="text-muted small mb-0">
+                  Tiền sẽ được hoàn về tài khoản {invoice.phuongThucThanhToan} của bạn trong vòng 1-3 ngày làm việc.
+                </p>
+              </div>
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  className="btn btn-secondary" 
+                  onClick={() => setShowRefundModal(false)}
+                >
+                  Hủy
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-warning"
+                  onClick={handleConfirmRefund}
+                >
+                  <i className="bi bi-check-circle me-2"></i>
+                  Xác nhận hoàn tiền
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
