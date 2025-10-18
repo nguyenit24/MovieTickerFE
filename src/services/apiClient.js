@@ -1,7 +1,8 @@
 import axios from "axios";
 import { API_CONFIG } from "./config";
-import { refreshToken as refreshTokenService } from "./authService";
+import authService from "./authService";
 import { useAuth } from "../context/AuthContext";
+
 
 // Tạo một public instance của axios
 const publicApiClient = axios.create({
@@ -95,7 +96,7 @@ apiClient.interceptors.response.use(
         }
 
         // Gọi API để lấy cặp token mới
-        const rs = await refreshTokenService({ token: refreshToken });
+        const rs = await authService.refreshToken({ token: refreshToken });
 
         if (rs.success) {
           const { accessToken, refreshToken: newRefreshToken } = rs.data;

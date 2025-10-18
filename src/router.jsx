@@ -1,5 +1,13 @@
 import React from "react";
 
+import {
+    BrowserRouter,
+        Routes,
+        Route,
+        Outlet,
+        Navigate,
+} from "react-router-dom";
+
 // --- Import các trang (Pages) ---
 import Home from "./page/Home";
 import Login from "./page/Login";
