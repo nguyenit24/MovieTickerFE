@@ -32,6 +32,14 @@ const RevenueManager = () => {
     const [prevStartDate, setPrevStartDate] = useState(new Date().toISOString().split('T')[0]);
     const [prevEndDate, setPrevEndDate] = useState(new Date().toISOString().split('T')[0]);
     const [dailyRevenue, setDailyRevenue] = useState([]);
+    const [avgPrevTicketPrice, setAvgPrevTicketPrice] = useState(0);
+    const [totalPrevSchedule, setTotalPrevSchedule] = useState(0);
+    const [totalRevenue, setTotalRevenue] = useState(0);
+    const [totalTickets, setTotalTickets] = useState(0);
+    const [avgTicketPrice, setAvgTicketPrice] = useState(0);
+    const [totalSchedule, setTotalSchedule] = useState(0);
+    const [totalPrevRevenue, setTotalPrevRevenue] = useState(0);
+    const [totalPrevTicket, setTotalPrevTicket] = useState(0);
 
 
     function setToday() {
@@ -40,8 +48,8 @@ const RevenueManager = () => {
         const yesterday = new Date(today);
         yesterday.setDate(today.getDate() - 1);
 
-        const firstday = today.toISOString().split('T')[0];
-        const lastday = yesterday.toISOString().split('T')[0];
+        const firstday = today.toLocaleDateString('en-CA');
+        const lastday = yesterday.toLocaleDateString('en-CA');
 
         setStartDate(firstday);
         setEndDate(firstday);
@@ -52,40 +60,56 @@ const RevenueManager = () => {
 
     function setThisWeek() {
         const curr = new Date();
+
         const first = curr.getDate() - curr.getDay() + 1;
         const last = first + 6;
-        const firstday = new Date(curr.setDate(first)).toISOString().split('T')[0];
-        const lastday = new Date(curr.setDate(last)).toISOString().split('T')[0];
-        setStartDate(firstday);
-        setEndDate(lastday)
 
-        const prevFirst = new Date(curr.setDate(first - 7)).toISOString().split('T')[0];
-        const prevLast = new Date(curr.setDate(last - 7)).toISOString().split('T')[0];
+        const firstDate = new Date(curr);
+        firstDate.setDate(first);
+
+        const lastDate = new Date(curr);
+        lastDate.setDate(last);
+
+        const firstday = firstDate.toLocaleDateString('en-CA');
+        const lastday = lastDate.toLocaleDateString('en-CA');
+
+        setStartDate(firstday);
+        setEndDate(lastday);
+
+        // Tính tuần trước (dựa trên clone, không dùng curr nữa)
+        const prevFirstDate = new Date(firstDate);
+        prevFirstDate.setDate(firstDate.getDate() - 7);
+        const prevLastDate = new Date(lastDate);
+        prevLastDate.setDate(lastDate.getDate() - 7);
+
+        const prevFirst = prevFirstDate.toLocaleDateString('en-CA');
+        const prevLast = prevLastDate.toLocaleDateString('en-CA');
+
         setPrevStartDate(prevFirst);
         setPrevEndDate(prevLast);
     };
 
     function setThisMonth() {
         const curr = new Date();
-        const first = new Date(curr.getFullYear(), curr.getMonth(), 1).toISOString().split('T')[0];
-        const last = new Date(curr.getFullYear(), curr.getMonth() + 1, 0).toISOString().split('T')[0];
+        const first = new Date(curr.getFullYear(), curr.getMonth(), 1).toLocaleDateString('en-CA');
+        const last = new Date(curr.getFullYear(), curr.getMonth() + 1, 0).toLocaleDateString('en-CA');
         setStartDate(first);
         setEndDate(last);
 
-        const prevFirst = new Date(curr.getFullYear(), curr.getMonth() - 1, 1).toISOString().split('T')[0];
-        const prevLast = new Date(curr.getFullYear(), curr.getMonth(), 0).toISOString().split('T')[0];
+        const prevFirst = new Date(curr.getFullYear(), curr.getMonth() - 1, 1).toLocaleDateString('en-CA');
+        const prevLast = new Date(curr.getFullYear(), curr.getMonth(), 0).toLocaleDateString('en-CA');
         setPrevStartDate(prevFirst);
         setPrevEndDate(prevLast);
     };
 
     function setThisYear() {
         const curr = new Date();
-        const first = new Date(curr.getFullYear(), 0, 1).toISOString().split('T')[0];
-        const last = new Date(curr.getFullYear(), 11, 31).toISOString().split('T')[0];
+        const first = new Date(curr.getFullYear(), 0, 1).toLocaleDateString('en-CA');
+        const last = new Date(curr.getFullYear(), 11, 31).toLocaleDateString('en-CA');
         setStartDate(first);
         setEndDate(last);
-        const prevFirst = new Date(curr.getFullYear() - 1, 0, 1).toISOString().split('T')[0];
-        const prevLast = new Date(curr.getFullYear() - 1, 11, 31).toISOString().split('T')[0];
+        const prevFirst = new Date(curr.getFullYear() - 1, 0, 1).toLocaleDateString('en-CA');
+        const prevLast = new Date(curr.getFullYear() - 1, 11, 31).toLocaleDateString('en-CA');
         setPrevStartDate(prevFirst);
         setPrevEndDate(prevLast);
     };
@@ -100,7 +124,7 @@ const RevenueManager = () => {
             for (let i = 6; i >= 0; i--) {
                 const d = new Date(today);
                 d.setDate(today.getDate() - i);
-                range.push(d.toISOString().split("T")[0]); // yyyy-mm-dd
+                range.push(d.toLocaleDateString('en-CA')); // yyyy-mm-dd
             }
         }
 
@@ -110,7 +134,7 @@ const RevenueManager = () => {
             for (let i = 0; i < 7; i++) {
                 const d = new Date(today);
                 d.setDate(first + i);
-                range.push(d.toISOString().split("T")[0]);
+                range.push(d.toLocaleDateString('en-CA'));
             }
         }
 
@@ -122,7 +146,7 @@ const RevenueManager = () => {
 
             for (let i = 1; i <= daysInMonth; i++) {
                 const d = new Date(year, month, i);
-                range.push(d.toISOString().split("T")[0]);
+                range.push(d.toLocaleDateString('en-CA'));
             }
         }
 
@@ -131,6 +155,14 @@ const RevenueManager = () => {
             const year = today.getFullYear();
             for (let i = 0; i < 12; i++) {
                 range.push(`${year}-${String(i + 1).padStart(2, "0")}`);
+            }
+        }
+
+        else if (type === "custom") {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                range.push(d.toLocaleDateString('en-CA'));
             }
         }
 
@@ -150,8 +182,8 @@ const RevenueManager = () => {
         prevEndDt.setDate(startDt.getDate() - 1);
         const prevStartDt = new Date(prevEndDt);
         prevStartDt.setDate(prevEndDt.getDate() - diffDays + 1);
-        setPrevStartDate(prevStartDt.toISOString().split('T')[0]);
-        setPrevEndDate(prevEndDt.toISOString().split('T')[0]);
+        setPrevStartDate(prevStartDt.toLocaleDateString('en-CA'));
+        setPrevEndDate(prevEndDt.toLocaleDateString('en-CA'));
     };
 
     useEffect(() => {
@@ -170,28 +202,21 @@ const RevenueManager = () => {
         else {
             setCustomDateRange(startDate, endDate)
         }
-        setDailyRevenue(calcDailyRevenue(dateRange))
     }, [dateRange]);
 
 
     useEffect(() => {
-        setCustomDateRange(startDate, endDate);
-        fetchInvoice(startDate, endDate, prevStartDate, prevEndDate);
-        fetchPhim(startDate, endDate, prevStartDate, prevEndDate);
+        const fetchData = async () => {
+            console.log(startDate, endDate);
+            await fetchInvoice(startDate, endDate, prevStartDate, prevEndDate);
+            await fetchPhim(startDate, endDate, prevStartDate, prevEndDate);
+        };
+        fetchData();
     }, [startDate, endDate]);
-
-    useEffect(() => {
-        setToday()
-        fetchInvoice(startDate, endDate, prevStartDate, prevEndDate);
-        fetchPhim(startDate, endDate, prevStartDate, prevEndDate);
-        setDailyRevenue(calcDailyRevenue("today"))
-
-    }, []);
 
 
     useEffect(() => {
         if (invoice.length > 0) {
-            console.log(invoice);
             const roomGroup = invoice.reduce((acc, curr) => {
                 const room = curr.tenPhong;
                 if (!acc[room]) acc[room] = { name: room, revenue: 0, tickets: 0 };
@@ -207,20 +232,42 @@ const RevenueManager = () => {
             }));
 
             setRoomRevenue(roomRevenueResult);
+            setDailyRevenue(calcDailyRevenue(dateRange))
         }
         if (invoice.length === 0) setRoomRevenue([]);
+        setDailyRevenue(calcDailyRevenue(dateRange))
+
+        setTotalRevenue(invoice.reduce((sum, day) => sum + day.tongTien, 0) || 0)
+        setTotalTickets(invoice.reduce((sum, day) => sum + day.soLuongVe, 0) || 0)
+
+        console.log(totalRevenue, totalTickets);
+        setTotalSchedule(new Set(
+            invoice.map(item => item.thoiGianBatDau)
+        ).size || 0)
+
+        setTotalPrevRevenue(prevRevenue.reduce((sum, day) => sum + day.tongTien, 0))
+        setTotalPrevTicket(prevRevenue.reduce((sum, day) => sum + day.soLuongVe,0))
+        setTotalPrevSchedule(new Set(
+            prevRevenue.map(item => item.thoiGianBatDau)
+        ).size || 0)
+
     },[invoice])
+
+    useEffect(() => {
+        setAvgTicketPrice((totalRevenue / totalTickets) || 0)
+        setAvgPrevTicketPrice((totalPrevRevenue / totalPrevTicket) || 0)
+    }, [totalRevenue, totalTickets]);
 
 
     const fetchInvoice = async (ngayBD, ngayKT, ngayTruocBD, ngayTruocKT) => {
         const result = await invoiceService.getAllInvoice(ngayBD, ngayKT);
         if (result.success) {
             setInvoice(result.data);
+            console.log(result.data);
         }
         else showError(result.data)
 
         const resultPrev = await invoiceService.getAllInvoice(ngayTruocBD, ngayTruocKT);
-        console.log(resultPrev)
         if (resultPrev.success) {
             setPrevRevenue(resultPrev.data);
         }
@@ -229,30 +276,18 @@ const RevenueManager = () => {
 
     const fetchPhim = async(NgayBD, NgayKT, NgayTruocBD, NgayTruocKT) => {
         const result = await invoiceService.getAllPhimInvoice(NgayBD, NgayKT);
+        console.log(result.data);
         if (result.success) {
             setMovie(result.data.slice(0,5));
         }
         else showError(result.data)
 
         const resultPrev = await invoiceService.getAllPhimInvoice(NgayTruocBD, NgayTruocKT);
-        console.log(resultPrev)
         if (resultPrev.success) {
             setPrevMovie(result.data);
         }
         else showError(resultPrev.data)
     }
-
-    // Doanh thu theo khung giờ
-    // const timeSlotRevenue = [
-    //     { time: '08-10h', revenue: 25000000, percentage: 8 },
-    //     { time: '10-12h', revenue: 42000000, percentage: 13 },
-    //     { time: '12-14h', revenue: 58000000, percentage: 18 },
-    //     { time: '14-16h', revenue: 45000000, percentage: 14 },
-    //     { time: '16-18h', revenue: 38000000, percentage: 12 },
-    //     { time: '18-20h', revenue: 72000000, percentage: 22 },
-    //     { time: '20-22h', revenue: 68000000, percentage: 21 },
-    //     { time: '22-24h', revenue: 32000000, percentage: 10 },
-    // ];
 
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
@@ -273,20 +308,6 @@ const RevenueManager = () => {
         return (((end - start) / (start)) * 100)
     }
 
-    const totalPrevRevenue = prevRevenue.reduce((sum, day) => sum + day.tongTien, 0);
-    const totalPrevTicket = prevRevenue.reduce((sum, day) => sum + day.soLuongVe,0);
-    const avgPrevTicketPrice = (totalPrevRevenue / totalPrevTicket) || 0;
-    const totalPrevSchedule = new Set(
-        prevRevenue.map(item => item.thoiGianBatDau)
-    ).size;
-
-    const totalRevenue = invoice.reduce((sum, day) => sum + day.tongTien, 0) || 0;
-    const totalTickets = invoice.reduce((sum, day) => sum + day.soLuongVe, 0) || 0;
-    const avgTicketPrice = (totalRevenue / totalTickets) || 0;
-    const totalSchedule = new Set(
-        invoice.map(item => item.thoiGianBatDau)
-    ).size || 0;
-
     const movieTrend = movies.map(item => {
         const prev = prevMovie.find(p => p.tenPhim === item.tenPhim);
         const prevRevenue = prev ? prev.tongDoanhThu : 0;
@@ -305,7 +326,6 @@ const RevenueManager = () => {
         return range.map(date => {
             const invoicesInDate = invoice.filter(i => i.ngayLap.startsWith(date));
             const total = invoicesInDate.reduce((sum, i) => sum + i.tongTien, 0);
-            console.log(date)
             const [year, month, day] = date.split('-');
             let formattedDate = `${day}-${month}`;
             if (day === undefined) {
@@ -671,7 +691,7 @@ const RevenueManager = () => {
                                             </thead>
                                             <tbody>
                                             {movieTrend.map((movie, index) => (
-                                                <tr key={movie.id}>
+                                                <tr key={movie.tenPhim}>
                                                     <td className="ps-3 fw-bold">{index + 1}</td>
                                                     <td>
                                                         <div className="fw-semibold">{movie.tenPhim}</div>
@@ -695,9 +715,8 @@ const RevenueManager = () => {
                                                             <span className="badge bg-danger bg-opacity-25 text-danger">
                                   <ChevronDown size={14} style={{ verticalAlign: 'middle' }} />
                                                                 {Math.abs(movie.thayDoi)}%
-                                </span> ) : ( <span className="badge bg-secondary bg-opacity-25 text-secondary">
-                                  <Minus size={14} style={{ verticalAlign: 'middle' }} />
-                                                                {Math.abs(movie.thayDoi)}%
+                                </span> ) : ( <span className="badge bg-primary bg-opacity-25 text-primary">
+                                                                mới
                                 </span> )
                                                         )}
                                                     </td>

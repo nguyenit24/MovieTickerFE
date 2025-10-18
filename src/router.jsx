@@ -45,6 +45,7 @@ import InvoiceManager from "./components/admin/InvoiceManager";
 import TicketManager from "./components/admin/TicketManager";
 import InvoiceDetailAdmin from "./components/admin/InvoiceDetailAdmin";
 import TicketDetailAdmin from "./components/admin/TicketDetailAdmin";
+import SeatTypeManager from "./components/admin/SeatTypeManager.jsx";
 
 /**
  * Component Layout chính cho các trang người dùng
@@ -97,6 +98,7 @@ const Router = () => (
                 <Route path="room" element={<RoomManager />} />
                 <Route path="schedule" element={<ScheduleManager />} />
                 <Route path="seat" element={<SeatManager />} />
+                <Route path="seattype" element={<SeatTypeManager />} />
                 <Route path="user" element={<UserManager />} />
                 <Route path="revenue" element={<RevenueManager />} />
                 <Route path="invoices" element={<InvoiceManager />} />
