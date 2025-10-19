@@ -17,6 +17,7 @@ import {
 } from 'recharts';
 import invoiceService from "../../services/invoiceService.js";
 import {useToast} from "../common/Toast.jsx";
+import * as XLSX from "xlsx-js-style";
 
 const RevenueManager = () => {
     const [dateRange, setDateRange] = useState('today');
@@ -41,7 +42,656 @@ const RevenueManager = () => {
     const [totalPrevRevenue, setTotalPrevRevenue] = useState(0);
     const [totalPrevTicket, setTotalPrevTicket] = useState(0);
 
-
+    const [exportType, setExportType] = useState('full');
+    const exportToExcel = async () => {
+        try {
+            // Lấy dữ liệu dựa trên exportType
+            let exportData = [];
+            let sheetName = '';
+            
+            // Tạo workbook
+            const wb = XLSX.utils.book_new();
+            
+            const cinemaName = 'RẠP CHIẾU PHIM CINEMA';
+            const reportTitle = 'BÁO CÁO DOANH THU';
+            const periodText = dateRange === 'today' ? 'Hôm nay' : 
+                            dateRange === 'week' ? 'Tuần này' :
+                            dateRange === 'month' ? 'Tháng này' :
+                            dateRange === 'year' ? 'Năm nay' :
+                            `Từ ${startDate} đến ${endDate}`;
+            const exportDate = `Ngày xuất: ${new Date().toLocaleDateString('vi-VN')} ${new Date().toLocaleTimeString('vi-VN')}`;
+            
+            // === SHEET 1: TỔNG QUAN ===
+            if (exportType === 'full' || exportType === 'summary') {
+                const ws1Data = [
+                    [cinemaName],
+                    [reportTitle],
+                    [`Kỳ báo cáo: ${periodText}`],
+                    [exportDate],
+                    [],
+                    ['CHỈ TIÊU', 'GIÁ TRỊ HIỆN TẠI', 'GIÁ TRỊ KỲ TRƯỚC', 'THAY ĐỔI (%)'],
+                    ['Tổng doanh thu', totalRevenue, totalPrevRevenue, trend(totalPrevRevenue, totalRevenue).toFixed(2)],
+                    ['Vé đã bán', totalTickets, totalPrevTicket, trend(totalPrevTicket, totalTickets).toFixed(2)],
+                    ['Giá vé trung bình', avgTicketPrice, avgPrevTicketPrice, trend(avgPrevTicketPrice, avgTicketPrice).toFixed(2)],
+                    ['Số suất chiếu', totalSchedule, totalPrevSchedule, trend(totalPrevSchedule, totalSchedule).toFixed(2)]
+                ];
+                
+                const ws1 = XLSX.utils.aoa_to_sheet(ws1Data);
+                
+                // Merge cells
+                ws1['!merges'] = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
+                    { s: { r: 1, c: 0 }, e: { r: 1, c: 3 } },
+                    { s: { r: 2, c: 0 }, e: { r: 2, c: 3 } },
+                    { s: { r: 3, c: 0 }, e: { r: 3, c: 3 } }
+                ];
+                
+                // Style tiêu đề
+                ws1.A1.s = {
+                    font: { bold: true, sz: 18, color: { rgb: "667eea" } },
+                    alignment: { horizontal: "center", vertical: "center" },
+                    fill: { fgColor: { rgb: "E8EAF6" } }
+                };
+                
+                ws1.A2.s = {
+                    font: { bold: true, sz: 14, color: { rgb: "764ba2" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+                
+                ws1.A3.s = {
+                    font: { sz: 11, italic: true, color: { rgb: "666666" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+                
+                ws1.A4.s = {
+                    font: { sz: 10, italic: true, color: { rgb: "999999" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+                
+                // Style header
+                const headerStyle = {
+                    fill: { fgColor: { rgb: "667eea" } },
+                    font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
+                    alignment: { horizontal: "center", vertical: "center" },
+                    border: {
+                        top: { style: "thin", color: { rgb: "000000" } },
+                        bottom: { style: "thin", color: { rgb: "000000" } },
+                        left: { style: "thin", color: { rgb: "000000" } },
+                        right: { style: "thin", color: { rgb: "000000" } }
+                    }
+                };
+                
+                for (let C = 0; C <= 3; C++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: 5, c: C });
+                    if (!ws1[cellAddress]) ws1[cellAddress] = { t: 's', v: '' };
+                    ws1[cellAddress].s = headerStyle;
+                }
+                
+                // Style data rows
+                for (let R = 6; R <= 9; R++) {
+                    for (let C = 0; C <= 3; C++) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+                        if (!ws1[cellAddress]) continue;
+                        
+                        ws1[cellAddress].s = {
+                            alignment: { horizontal: C === 0 ? "left" : "center", vertical: "center" },
+                            border: {
+                                top: { style: "thin", color: { rgb: "CCCCCC" } },
+                                bottom: { style: "thin", color: { rgb: "CCCCCC" } },
+                                left: { style: "thin", color: { rgb: "CCCCCC" } },
+                                right: { style: "thin", color: { rgb: "CCCCCC" } }
+                            }
+                        };
+                        
+                        if (R % 2 === 0) {
+                            ws1[cellAddress].s.fill = { fgColor: { rgb: "F5F5F5" } };
+                        }
+                        
+                        // Format số
+                        if (C >= 1 && C <= 2) {
+                            ws1[cellAddress].t = 'n';
+                            ws1[cellAddress].z = '#,##0';
+                        }
+                        
+                        // Màu cho % thay đổi
+                        if (C === 3) {
+                            const value = parseFloat(ws1[cellAddress].v);
+                            ws1[cellAddress].s.font = {
+                                bold: true,
+                                color: { rgb: value >= 0 ? "28a745" : "dc3545" }
+                            };
+                        }
+                    }
+                }
+                
+                ws1['!cols'] = [
+                    { wch: 25 },
+                    { wch: 20 },
+                    { wch: 20 },
+                    { wch: 15 }
+                ];
+                
+                ws1['!rows'] = [
+                    { hpt: 25 },
+                    { hpt: 20 },
+                    { hpt: 16 },
+                    { hpt: 16 },
+                    { hpt: 10 },
+                    { hpt: 20 }
+                ];
+                
+                XLSX.utils.book_append_sheet(wb, ws1, 'Tổng quan');
+            }
+            
+            // === SHEET 2: TOP PHIM ===
+            if (exportType === 'full' || exportType === 'movies') {
+                const ws2Data = [
+                    [cinemaName],
+                    ['TOP 5 PHIM DOANH THU CAO NHẤT'],
+                    [`Kỳ báo cáo: ${periodText}`],
+                    [exportDate],
+                    [],
+                    ['STT', 'Tên phim', 'Doanh thu (VND)', 'Vé bán', 'Suất chiếu', 'Xu hướng'],
+                    ...movieTrend.map((movie, index) => [
+                        index + 1,
+                        movie.tenPhim,
+                        movie.tongDoanhThu,
+                        movie.soLuongVeDaBan,
+                        movie.soLuongSuatChieu,
+                        movie.xuHuong === 'up' ? `↑ ${movie.thayDoi}%` : 
+                        movie.xuHuong === 'down' ? `↓ ${movie.thayDoi}%` : 'Mới'
+                    ])
+                ];
+                
+                const ws2 = XLSX.utils.aoa_to_sheet(ws2Data);
+                
+                ws2['!merges'] = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
+                    { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } },
+                    { s: { r: 2, c: 0 }, e: { r: 2, c: 5 } },
+                    { s: { r: 3, c: 0 }, e: { r: 3, c: 5 } }
+                ];
+                
+                // Style tiêu đề
+                ws2.A1.s = {
+                    font: { bold: true, sz: 18, color: { rgb: "667eea" } },
+                    alignment: { horizontal: "center", vertical: "center" },
+                    fill: { fgColor: { rgb: "E8EAF6" } }
+                };
+                
+                ws2.A2.s = {
+                    font: { bold: true, sz: 14, color: { rgb: "764ba2" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+                
+                ws2.A3.s = {
+                    font: { sz: 11, italic: true, color: { rgb: "666666" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+                
+                ws2.A4.s = {
+                    font: { sz: 10, italic: true, color: { rgb: "999999" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+                
+                // Style header
+                for (let C = 0; C <= 5; C++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: 5, c: C });
+                    if (!ws2[cellAddress]) ws2[cellAddress] = { t: 's', v: '' };
+                    ws2[cellAddress].s = {
+                        fill: { fgColor: { rgb: "667eea" } },
+                        font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
+                        alignment: { horizontal: "center", vertical: "center" },
+                        border: {
+                            top: { style: "thin", color: { rgb: "000000" } },
+                            bottom: { style: "thin", color: { rgb: "000000" } },
+                            left: { style: "thin", color: { rgb: "000000" } },
+                            right: { style: "thin", color: { rgb: "000000" } }
+                        }
+                    };
+                }
+                
+                // Style data rows
+                for (let R = 6; R < 6 + movieTrend.length; R++) {
+                    for (let C = 0; C <= 5; C++) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+                        if (!ws2[cellAddress]) continue;
+                        
+                        ws2[cellAddress].s = {
+                            alignment: { horizontal: C === 1 ? "left" : "center", vertical: "center" },
+                            border: {
+                                top: { style: "thin", color: { rgb: "CCCCCC" } },
+                                bottom: { style: "thin", color: { rgb: "CCCCCC" } },
+                                left: { style: "thin", color: { rgb: "CCCCCC" } },
+                                right: { style: "thin", color: { rgb: "CCCCCC" } }
+                            }
+                        };
+                        
+                        if (R % 2 === 0) {
+                            ws2[cellAddress].s.fill = { fgColor: { rgb: "F5F5F5" } };
+                        }
+                        
+                        // Format số tiền
+                        if (C === 2) {
+                            ws2[cellAddress].t = 'n';
+                            ws2[cellAddress].z = '#,##0';
+                            ws2[cellAddress].s.font = { bold: true, color: { rgb: "28a745" } };
+                        }
+                        
+                        // Format xu hướng
+                        if (C === 5) {
+                            const text = ws2[cellAddress].v;
+                            if (text.includes('↑')) {
+                                ws2[cellAddress].s.font = { bold: true, color: { rgb: "28a745" } };
+                            } else if (text.includes('↓')) {
+                                ws2[cellAddress].s.font = { bold: true, color: { rgb: "dc3545" } };
+                            }
+                        }
+                    }
+                }
+                
+                ws2['!cols'] = [
+                    { wch: 6 },
+                    { wch: 30 },
+                    { wch: 18 },
+                    { wch: 12 },
+                    { wch: 12 },
+                    { wch: 15 }
+                ];
+                
+                XLSX.utils.book_append_sheet(wb, ws2, 'Top phim');
+            }
+            
+            // === SHEET 3: DOANH THU THEO PHÒNG ===
+            if (exportType === 'full' || exportType === 'rooms') {
+                const ws3Data = [
+                    [cinemaName],
+                    ['DOANH THU THEO PHÒNG CHIẾU'],
+                    [`Kỳ báo cáo: ${periodText}`],
+                    [exportDate],
+                    [],
+                    ['Tên phòng', 'Doanh thu (VND)', 'Vé bán', 'Giá TB/vé', 'Tỷ trọng (%)'],
+                    ...roomRevenue.map(room => [
+                        room.name,
+                        room.revenue,
+                        room.tickets,
+                        room.revenue / room.tickets,
+                        room.percentage
+                    ]),
+                    [],
+                    ['TỔNG CỘNG', totalRevenue, totalTickets, avgTicketPrice, '100.00']
+                ];
+                
+                const ws3 = XLSX.utils.aoa_to_sheet(ws3Data);
+                
+                ws3['!merges'] = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } },
+                    { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } },
+                    { s: { r: 2, c: 0 }, e: { r: 2, c: 4 } },
+                    { s: { r: 3, c: 0 }, e: { r: 3, c: 4 } }
+                ];
+                
+                // Style tiêu đề
+                ws3.A1.s = {
+                    font: { bold: true, sz: 18, color: { rgb: "667eea" } },
+                    alignment: { horizontal: "center", vertical: "center" },
+                    fill: { fgColor: { rgb: "E8EAF6" } }
+                };
+                
+                ws3.A2.s = {
+                    font: { bold: true, sz: 14, color: { rgb: "764ba2" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+                
+                ws3.A3.s = {
+                    font: { sz: 11, italic: true, color: { rgb: "666666" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+                
+                ws3.A4.s = {
+                    font: { sz: 10, italic: true, color: { rgb: "999999" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+                
+                // Style header
+                for (let C = 0; C <= 4; C++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: 5, c: C });
+                    if (!ws3[cellAddress]) ws3[cellAddress] = { t: 's', v: '' };
+                    ws3[cellAddress].s = {
+                        fill: { fgColor: { rgb: "667eea" } },
+                        font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
+                        alignment: { horizontal: "center", vertical: "center" },
+                        border: {
+                            top: { style: "thin", color: { rgb: "000000" } },
+                            bottom: { style: "thin", color: { rgb: "000000" } },
+                            left: { style: "thin", color: { rgb: "000000" } },
+                            right: { style: "thin", color: { rgb: "000000" } }
+                        }
+                    };
+                }
+                
+                // Style data rows
+                for (let R = 6; R < 6 + roomRevenue.length; R++) {
+                    for (let C = 0; C <= 4; C++) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+                        if (!ws3[cellAddress]) continue;
+                        
+                        ws3[cellAddress].s = {
+                            alignment: { horizontal: C === 0 ? "left" : "center", vertical: "center" },
+                            border: {
+                                top: { style: "thin", color: { rgb: "CCCCCC" } },
+                                bottom: { style: "thin", color: { rgb: "CCCCCC" } },
+                                left: { style: "thin", color: { rgb: "CCCCCC" } },
+                                right: { style: "thin", color: { rgb: "CCCCCC" } }
+                            }
+                        };
+                        
+                        if (R % 2 === 0) {
+                            ws3[cellAddress].s.fill = { fgColor: { rgb: "F5F5F5" } };
+                        }
+                        
+                        // Format số
+                        if (C >= 1) {
+                            ws3[cellAddress].t = 'n';
+                            ws3[cellAddress].z = '#,##0';
+                        }
+                    }
+                }
+                
+                // Style tổng cộng
+                const summaryRow = 6 + roomRevenue.length + 1;
+                for (let C = 0; C <= 4; C++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: summaryRow, c: C });
+                    if (!ws3[cellAddress]) continue;
+                    ws3[cellAddress].s = {
+                        font: { bold: true, sz: 12, color: { rgb: "FFFFFF" } },
+                        fill: { fgColor: { rgb: "28a745" } },
+                        alignment: { horizontal: "center", vertical: "center" },
+                        border: {
+                            top: { style: "medium", color: { rgb: "000000" } },
+                            bottom: { style: "medium", color: { rgb: "000000" } },
+                            left: { style: "medium", color: { rgb: "000000" } },
+                            right: { style: "medium", color: { rgb: "000000" } }
+                        }
+                    };
+                    if (C >= 1) {
+                        ws3[cellAddress].t = 'n';
+                        ws3[cellAddress].z = '#,##0';
+                    }
+                }
+                
+                ws3['!cols'] = [
+                    { wch: 20 },
+                    { wch: 18 },
+                    { wch: 12 },
+                    { wch: 15 },
+                    { wch: 15 }
+                ];
+                
+                XLSX.utils.book_append_sheet(wb, ws3, 'Theo phòng');
+            }
+            
+            // === SHEET 4: DOANH THU THEO KHUNG GIỜ ===
+            if (exportType === 'full' || exportType === 'timeslot') {
+                const totalTimeSlot = timeSlotRevenue.reduce((sum, slot) => sum + slot.doanhThu, 0);
+                
+                const ws4Data = [
+                    [cinemaName],
+                    ['DOANH THU THEO KHUNG GIỜ'],
+                    [`Kỳ báo cáo: ${periodText}`],
+                    [exportDate],
+                    [],
+                    ['Khung giờ', 'Doanh thu (VND)', 'Tỷ trọng (%)'],
+                    ...timeSlotRevenue.map(slot => [
+                        slot.time,
+                        slot.doanhThu,
+                        totalTimeSlot > 0 ? ((slot.doanhThu / totalTimeSlot) * 100).toFixed(2) : 0
+                    ]),
+                    [],
+                    ['TỔNG CỘNG', totalTimeSlot, '100.00']
+                ];
+                
+                const ws4 = XLSX.utils.aoa_to_sheet(ws4Data);
+                
+                ws4['!merges'] = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 2 } },
+                    { s: { r: 1, c: 0 }, e: { r: 1, c: 2 } },
+                    { s: { r: 2, c: 0 }, e: { r: 2, c: 2 } },
+                    { s: { r: 3, c: 0 }, e: { r: 3, c: 2 } }
+                ];
+                
+                // Style giống các sheet trên
+                ws4.A1.s = {
+                    font: { bold: true, sz: 18, color: { rgb: "667eea" } },
+                    alignment: { horizontal: "center", vertical: "center" },
+                    fill: { fgColor: { rgb: "E8EAF6" } }
+                };
+                
+                ws4.A2.s = {
+                    font: { bold: true, sz: 14, color: { rgb: "764ba2" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+                
+                ws4.A3.s = {
+                    font: { sz: 11, italic: true, color: { rgb: "666666" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+                
+                ws4.A4.s = {
+                    font: { sz: 10, italic: true, color: { rgb: "999999" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+                
+                // Style header và data
+                for (let C = 0; C <= 2; C++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: 5, c: C });
+                    if (!ws4[cellAddress]) ws4[cellAddress] = { t: 's', v: '' };
+                    ws4[cellAddress].s = {
+                        fill: { fgColor: { rgb: "667eea" } },
+                        font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
+                        alignment: { horizontal: "center", vertical: "center" },
+                        border: {
+                            top: { style: "thin", color: { rgb: "000000" } },
+                            bottom: { style: "thin", color: { rgb: "000000" } },
+                            left: { style: "thin", color: { rgb: "000000" } },
+                            right: { style: "thin", color: { rgb: "000000" } }
+                        }
+                    };
+                }
+                
+                for (let R = 6; R < 6 + timeSlotRevenue.length; R++) {
+                    for (let C = 0; C <= 2; C++) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+                        if (!ws4[cellAddress]) continue;
+                        
+                        ws4[cellAddress].s = {
+                            alignment: { horizontal: "center", vertical: "center" },
+                            border: {
+                                top: { style: "thin", color: { rgb: "CCCCCC" } },
+                                bottom: { style: "thin", color: { rgb: "CCCCCC" } },
+                                left: { style: "thin", color: { rgb: "CCCCCC" } },
+                                right: { style: "thin", color: { rgb: "CCCCCC" } }
+                            }
+                        };
+                        
+                        if (R % 2 === 0) {
+                            ws4[cellAddress].s.fill = { fgColor: { rgb: "F5F5F5" } };
+                        }
+                        
+                        if (C >= 1) {
+                            ws4[cellAddress].t = 'n';
+                            ws4[cellAddress].z = '#,##0';
+                        }
+                    }
+                }
+                
+                // Style tổng cộng
+                const summaryRow = 6 + timeSlotRevenue.length + 1;
+                for (let C = 0; C <= 2; C++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: summaryRow, c: C });
+                    if (!ws4[cellAddress]) continue;
+                    ws4[cellAddress].s = {
+                        font: { bold: true, sz: 12, color: { rgb: "FFFFFF" } },
+                        fill: { fgColor: { rgb: "28a745" } },
+                        alignment: { horizontal: "center", vertical: "center" },
+                        border: {
+                            top: { style: "medium", color: { rgb: "000000" } },
+                            bottom: { style: "medium", color: { rgb: "000000" } },
+                            left: { style: "medium", color: { rgb: "000000" } },
+                            right: { style: "medium", color: { rgb: "000000" } }
+                        }
+                    };
+                    if (C >= 1) {
+                        ws4[cellAddress].t = 'n';
+                        ws4[cellAddress].z = '#,##0';
+                    }
+                }
+                
+                ws4['!cols'] = [
+                    { wch: 15 },
+                    { wch: 20 },
+                    { wch: 15 }
+                ];
+                
+                XLSX.utils.book_append_sheet(wb, ws4, 'Theo khung giờ');
+            }
+            
+            // === SHEET 5: DOANH THU THEO NGÀY ===
+            if (exportType === 'full' || exportType === 'daily') {
+                const totalDaily = dailyRevenue.reduce((sum, day) => sum + day.tongTien, 0);
+                
+                const ws5Data = [
+                    [cinemaName],
+                    ['DOANH THU THEO NGÀY'],
+                    [`Kỳ báo cáo: ${periodText}`],
+                    [exportDate],
+                    [],
+                    ['Ngày', 'Doanh thu (VND)', 'Tỷ trọng (%)'],
+                    ...dailyRevenue.map(day => [
+                        day.date,
+                        day.tongTien,
+                        totalDaily > 0 ? ((day.tongTien / totalDaily) * 100).toFixed(2) : 0
+                    ]),
+                    [],
+                    ['TỔNG CỘNG', totalDaily, '100.00']
+                ];
+                
+                const ws5 = XLSX.utils.aoa_to_sheet(ws5Data);
+                
+                ws5['!merges'] = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 2 } },
+                    { s: { r: 1, c: 0 }, e: { r: 1, c: 2 } },
+                    { s: { r: 2, c: 0 }, e: { r: 2, c: 2 } },
+                    { s: { r: 3, c: 0 }, e: { r: 3, c: 2 } }
+                ];
+                
+                // Style giống các sheet trên
+                ws5.A1.s = {
+                    font: { bold: true, sz: 18, color: { rgb: "667eea" } },
+                    alignment: { horizontal: "center", vertical: "center" },
+                    fill: { fgColor: { rgb: "E8EAF6" } }
+                };
+                
+                ws5.A2.s = {
+                    font: { bold: true, sz: 14, color: { rgb: "764ba2" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+                
+                ws5.A3.s = {
+                    font: { sz: 11, italic: true, color: { rgb: "666666" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+                
+                ws5.A4.s = {
+                    font: { sz: 10, italic: true, color: { rgb: "999999" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+                
+                // Style header và data
+                for (let C = 0; C <= 2; C++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: 5, c: C });
+                    if (!ws5[cellAddress]) ws5[cellAddress] = { t: 's', v: '' };
+                    ws5[cellAddress].s = {
+                        fill: { fgColor: { rgb: "667eea" } },
+                        font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
+                        alignment: { horizontal: "center", vertical: "center" },
+                        border: {
+                            top: { style: "thin", color: { rgb: "000000" } },
+                            bottom: { style: "thin", color: { rgb: "000000" } },
+                            left: { style: "thin", color: { rgb: "000000" } },
+                            right: { style: "thin", color: { rgb: "000000" } }
+                        }
+                    };
+                }
+                
+                for (let R = 6; R < 6 + dailyRevenue.length; R++) {
+                    for (let C = 0; C <= 2; C++) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+                        if (!ws5[cellAddress]) continue;
+                        
+                        ws5[cellAddress].s = {
+                            alignment: { horizontal: "center", vertical: "center" },
+                            border: {
+                                top: { style: "thin", color: { rgb: "CCCCCC" } },
+                                bottom: { style: "thin", color: { rgb: "CCCCCC" } },
+                                left: { style: "thin", color: { rgb: "CCCCCC" } },
+                                right: { style: "thin", color: { rgb: "CCCCCC" } }
+                            }
+                        };
+                        
+                        if (R % 2 === 0) {
+                            ws5[cellAddress].s.fill = { fgColor: { rgb: "F5F5F5" } };
+                            }
+                        
+                        if (C >= 1) {
+                            ws5[cellAddress].t = 'n';
+                            ws5[cellAddress].z = '#,##0';
+                        }
+                    }
+                }
+                
+                // Style tổng cộng
+                const summaryRow = 6 + dailyRevenue.length + 1;
+                for (let C = 0; C <= 2; C++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: summaryRow, c: C });
+                    if (!ws5[cellAddress]) continue;
+                    ws5[cellAddress].s = {
+                        font: { bold: true, sz: 12, color: { rgb: "FFFFFF" } },
+                        fill: { fgColor: { rgb: "28a745" } },
+                        alignment: { horizontal: "center", vertical: "center" },
+                        border: {
+                            top: { style: "medium", color: { rgb: "000000" } },
+                            bottom: { style: "medium", color: { rgb: "000000" } },
+                            left: { style: "medium", color: { rgb: "000000" } },
+                            right: { style: "medium", color: { rgb: "000000" } }
+                        }
+                    };
+                    if (C >= 1) {
+                        ws5[cellAddress].t = 'n';
+                        ws5[cellAddress].z = '#,##0';
+                    }
+                }
+                
+                ws5['!cols'] = [
+                    { wch: 15 },
+                    { wch: 20 },
+                    { wch: 15 }
+                ];
+                
+                XLSX.utils.book_append_sheet(wb, ws5, 'Theo ngày');
+            }
+            
+            // Xuất file Excel
+            const fileName = `BaoCaoDoanhThu_${periodText.replace(/ /g, '_')}_${new Date().getTime()}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            
+            showSuccess('Xuất báo cáo Excel thành công!');
+            
+        } catch (error) {
+            console.error('Error exporting:', error);
+            showError('Lỗi khi xuất Excel');
+        }
+    };
     function setToday() {
         const today = new Date();
 
@@ -57,6 +707,7 @@ const RevenueManager = () => {
         setPrevStartDate(lastday);
         setPrevEndDate(lastday);
     };
+    
 
     function setThisWeek() {
         const curr = new Date();
@@ -421,11 +1072,28 @@ const RevenueManager = () => {
                                             placeholder="Ngày kết thúc"
                                         />
                                     </div>) : (<></>)}
-                                    <button className="btn btn-primary"
-                                            style={{
-                                                height: 40,
-                                                width: 150
-                                            }}
+                                    <div >
+                                        <select
+                                            className="form-select"
+                                            style={{ height: 40, width: 250 }}
+                                            value={exportType}
+                                            onChange={(e) => setExportType(e.target.value)}
+                                        >
+                                            <option value="full">📊 Báo cáo đầy đủ</option>
+                                            <option value="summary">📈 Báo cáo Tổng quan</option>
+                                            <option value="movies">🎬 Báo cáo Top phim</option>
+                                            <option value="rooms">🏢 Báo cáo Theo phòng</option>
+                                            <option value="timeslot">⏰ Báo cáo Theo giờ</option>
+                                            <option value="daily">📅 Báo cáo Theo ngày</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <button 
+                                        className="btn btn-success"
+                                        style={{
+                                            height: 40,
+                                        }}
+                                        onClick={exportToExcel}
                                     >
                                         <Download size={20} className="me-2" /> Xuất Excel
                                     </button>

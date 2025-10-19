@@ -128,26 +128,6 @@ const BookingPage = () => {
         <div className="container-fluid">
           <div className="row align-items-center">
             <div className="col-md-8">
-              <nav aria-label="breadcrumb">
-                <ol className="breadcrumb mb-2" style={{ backgroundColor: 'transparent' }}>
-                  <li className="breadcrumb-item">
-                    <a 
-                      href="/" 
-                      className="text-white text-decoration-none"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        navigate('/');
-                      }}
-                    >
-                      <i className="bi bi-house me-1"></i>
-                      Trang chủ
-                    </a>
-                  </li>
-                  <li className="breadcrumb-item active text-white" aria-current="page">
-                    Đặt vé
-                  </li>
-                </ol>
-              </nav>
               <h2 className="mb-0">
                 <i className="bi bi-ticket-perforated me-2"></i>
                 Đặt vé xem phim
