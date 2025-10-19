@@ -1,433 +1,509 @@
-import React, { useState } from 'react';
-import { Search, Plus, Edit2, Trash2, Lock, Unlock, Mail, Phone, Calendar } from 'lucide-react';
-import StatCard from "./StatCard.jsx";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Search,
+  Plus,
+  Edit2,
+  Trash2,
+  Lock,
+  Unlock,
+  Mail,
+  Phone,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import userService from "../../services/userService";
+import { useToast } from "../common/Toast";
+
+const UserModal = ({ show, mode, userData, onClose, onSave }) => {
+  const [formData, setFormData] = useState({});
+
+  useEffect(() => {
+    const defaultData = {
+      hoTen: "",
+      email: "",
+      sdt: "",
+      ngaySinh: "",
+      tenDangNhap: "",
+      matKhau: "",
+      tenVaiTro: "USER", // Luôn là USER
+    };
+    setFormData(
+      mode === "edit" && userData
+        ? { ...userData, tenVaiTro: "USER" }
+        : defaultData
+    );
+  }, [show, mode, userData]);
+
+  if (!show) return null;
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <div
+      className="modal show d-block"
+      tabIndex="-1"
+      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+    >
+      <div className="modal-dialog modal-dialog-centered">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title">
+              {mode === "add" ? "Thêm User Mới" : "Chỉnh Sửa Thông Tin User"}
+            </h5>
+            <button
+              type="button"
+              className="btn-close"
+              onClick={onClose}
+            ></button>
+          </div>
+          <div className="modal-body">
+            <form onSubmit={handleSubmit}>
+              <div className="mb-3">
+                <label className="form-label">Họ và Tên</label>
+                <input
+                  type="text"
+                  name="hoTen"
+                  value={formData.hoTen || ""}
+                  onChange={handleChange}
+                  className="form-control"
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email || ""}
+                  onChange={handleChange}
+                  className="form-control"
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Số Điện Thoại</label>
+                <input
+                  type="tel"
+                  name="sdt"
+                  value={formData.sdt || ""}
+                  onChange={handleChange}
+                  className="form-control"
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Ngày Sinh</label>
+                <input
+                  type="date"
+                  name="ngaySinh"
+                  value={formData.ngaySinh || ""}
+                  onChange={handleChange}
+                  className="form-control"
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Tên Đăng Nhập</label>
+                <input
+                  type="text"
+                  name="tenDangNhap"
+                  value={formData.tenDangNhap || ""}
+                  onChange={handleChange}
+                  className="form-control"
+                  required
+                  disabled={mode === "edit"}
+                />
+              </div>
+              {mode === "add" && (
+                <div className="mb-3">
+                  <label className="form-label">Mật Khẩu</label>
+                  <input
+                    type="password"
+                    name="matKhau"
+                    value={formData.matKhau || ""}
+                    onChange={handleChange}
+                    className="form-control"
+                    required
+                  />
+                </div>
+              )}
+              {/* Đã ẩn trường chọn Vai Trò */}
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={onClose}
+                >
+                  Hủy
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  Lưu Thay Đổi
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const UserManagement = () => {
-    const [users, setUsers] = useState([
-        {
-            id: 1,
-            name: 'Nguyễn Văn A',
-            email: 'nguyenvana@example.com',
-            phone: '0901234567',
-            role: 'Admin',
-            status: 'active',
-            createdAt: '2024-01-15'
-        },
-        {
-            id: 2,
-            name: 'Trần Thị B',
-            email: 'tranthib@example.com',
-            phone: '0912345678',
-            role: 'User',
-            status: 'active',
-            createdAt: '2024-02-20'
-        },
-        {
-            id: 3,
-            name: 'Lê Văn C',
-            email: 'levanc@example.com',
-            phone: '0923456789',
-            role: 'User',
-            status: 'inactive',
-            createdAt: '2024-03-10'
-        },
-        {
-            id: 4,
-            name: 'Phạm Thị D',
-            email: 'phamthid@example.com',
-            phone: '0934567890',
-            role: 'Moderator',
-            status: 'active',
-            createdAt: '2024-04-05'
-        }
-    ]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { showSuccess, showError } = useToast();
 
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterRole, setFilterRole] = useState('all');
-    const [filterStatus, setFilterStatus] = useState('all');
-    const [showModal, setShowModal] = useState(false);
-    const [modalMode, setModalMode] = useState('add');
-    const [currentUser, setCurrentUser] = useState({
-        id: null,
-        name: '',
-        email: '',
-        phone: '',
-        role: 'User',
-        status: 'active'
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 10,
+    totalPages: 1,
+    totalElements: 0,
+  });
+  const [filters, setFilters] = useState({
+    keyword: "",
+    role: "USER",
+    status: "all",
+  }); // Mặc định role là USER
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState("add");
+  const [currentUser, setCurrentUser] = useState(null);
+
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    const result = await userService.searchUsers({
+      ...filters,
+      page: pagination.page,
+      size: pagination.size,
     });
+    if (result.success && result.data) {
+      setUsers(result.data.content);
+      setPagination((prev) => ({
+        ...prev,
+        totalPages: result.data.totalPages,
+        totalElements: result.data.totalElements,
+      }));
+    } else {
+      showError(result.message || "Không thể tải danh sách người dùng.");
+    }
+    setLoading(false);
+  }, [filters, pagination.page, pagination.size, showError]);
 
-    const filteredUsers = users.filter(user => {
-        const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesRole = filterRole === 'all' || user.role === filterRole;
-        const matchesStatus = filterStatus === 'all' || user.status === filterStatus;
-        return matchesSearch && matchesRole && matchesStatus;
-    });
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
-    const handleAddUser = () => {
-        setModalMode('add');
-        setCurrentUser({
-            id: null,
-            name: '',
-            email: '',
-            phone: '',
-            role: 'User',
-            status: 'active'
-        });
-        setShowModal(true);
-    };
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+    setPagination((prev) => ({ ...prev, page: 0 }));
+  };
 
-    const handleEditUser = (user) => {
-        setModalMode('edit');
-        setCurrentUser(user);
-        setShowModal(true);
-    };
+  const handleSearchInputChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
 
-    const handleDeleteUser = (id) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
-            setUsers(users.filter(user => user.id !== id));
-        }
-    };
+  const handleSearch = () => {
+    setFilters((prev) => ({ ...prev, keyword: searchTerm }));
+    setPagination((prev) => ({ ...prev, page: 0 }));
+  };
 
-    const handleToggleStatus = (id) => {
-        setUsers(users.map(user =>
-            user.id === id
-                ? { ...user, status: user.status === 'active' ? 'inactive' : 'active' }
-                : user
-        ));
-    };
+  const handleToggleStatus = async (username, currentStatus) => {
+    const action = currentStatus ? "khóa" : "mở khóa";
+    if (window.confirm(`Bạn có chắc muốn ${action} tài khoản '${username}'?`)) {
+      const result = await userService.updateUserStatus(
+        username,
+        !currentStatus
+      );
+      if (result.success) {
+        showSuccess(`Đã ${action} tài khoản thành công!`);
+        fetchUsers();
+      } else {
+        showError(result.message || `Lỗi khi ${action} tài khoản.`);
+      }
+    }
+  };
 
-    const handleSaveUser = () => {
-        if (modalMode === 'add') {
-            const newUser = {
-                ...currentUser,
-                id: Math.max(...users.map(u => u.id)) + 1,
-                createdAt: new Date().toISOString().split('T')[0]
-            };
-            setUsers([...users, newUser]);
-        } else {
-            setUsers(users.map(user => user.id === currentUser.id ? currentUser : user));
-        }
-        setShowModal(false);
-    };
+  const handleDeleteUser = async (userId, userName) => {
+    if (
+      window.confirm(`Bạn có chắc muốn xóa vĩnh viễn người dùng '${userName}'?`)
+    ) {
+      const result = await userService.deleteUser(userId);
+      if (result.success) {
+        showSuccess("Xóa người dùng thành công!");
+        fetchUsers();
+      } else {
+        showError(result.message || "Lỗi khi xóa người dùng.");
+      }
+    }
+  };
 
-    return (
-        <>
-            <link
-                href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-                rel="stylesheet"
-            />
+  const handleAddUserClick = () => {
+    setModalMode("add");
+    setCurrentUser(null);
+    setIsModalOpen(true);
+  };
 
-            <div className="min-vh-100 bg-light">
-                {/* Header */}
-                <nav className="navbar navbar-dark bg-primary shadow-sm">
-                    <div className="container-fluid">
-            <span className="navbar-brand mb-0 h1">
-              <i className="bi bi-speedometer2 me-2"></i>
-              Admin Dashboard
-            </span>
-                    </div>
-                </nav>
+  const handleEditUserClick = (user) => {
+    setModalMode("edit");
+    setCurrentUser(user);
+    setIsModalOpen(true);
+  };
 
-                <div className="container-fluid py-4">
-                    <div className="row">
-                        {/* Sidebar */}
-                        <div className="col-md-2">
-                            <div className="list-group">
-                                <a href="#" className="list-group-item list-group-item-action active">
-                                    Quản lý người dùng
-                                </a>
-                                <a href="#" className="list-group-item list-group-item-action">
-                                    Cài đặt
-                                </a>
-                                <a href="#" className="list-group-item list-group-item-action">
-                                    Báo cáo
-                                </a>
-                            </div>
-                        </div>
+  const handleSaveUser = async (formData) => {
+    let result;
+    if (modalMode === "add") {
+      result = await userService.createUser(formData);
+    } else {
+      result = await userService.updateUser(currentUser.maUser, formData);
+    }
 
-                        {/* Main Content */}
-                        <div className="col-md-10">
-                            <div className="card shadow-sm">
-                                <div className="card-header bg-white py-3">
-                                    <div className="row align-items-center">
-                                        <div className="col">
-                                            <h4 className="mb-0">Quản Lý Tài Khoản Người Dùng</h4>
-                                        </div>
-                                        <div className="col-auto">
-                                            <button
-                                                className="btn btn-primary"
-                                                onClick={handleAddUser}
-                                            >
-                                                <Plus size={18} className="me-2" />
-                                                Thêm người dùng
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+    if (result.success) {
+      showSuccess(
+        modalMode === "add"
+          ? "Thêm người dùng thành công!"
+          : "Cập nhật thành công!"
+      );
+      setIsModalOpen(false);
+      fetchUsers();
+    } else {
+      showError(result.message || "Đã có lỗi xảy ra.");
+    }
+  };
 
-                                <div className="card-body">
-                                    {/* Filters */}
-                                    <div className="row g-3 mb-4">
-                                        <div className="col-md-5">
-                                            <div className="input-group">
-                        <span className="input-group-text bg-white">
-                          <Search size={18} />
-                        </span>
-                                                <input
-                                                    type="text"
-                                                    className="form-control"
-                                                    placeholder="Tìm kiếm theo tên hoặc email..."
-                                                    value={searchTerm}
-                                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="col-md-3">
-                                            <select
-                                                className="form-select"
-                                                value={filterRole}
-                                                onChange={(e) => setFilterRole(e.target.value)}
-                                            >
-                                                <option value="all">Tất cả vai trò</option>
-                                                <option value="Admin">Admin</option>
-                                                <option value="Moderator">Moderator</option>
-                                                <option value="User">User</option>
-                                            </select>
-                                        </div>
-                                        <div className="col-md-3">
-                                            <select
-                                                className="form-select"
-                                                value={filterStatus}
-                                                onChange={(e) => setFilterStatus(e.target.value)}
-                                            >
-                                                <option value="all">Tất cả trạng thái</option>
-                                                <option value="active">Hoạt động</option>
-                                                <option value="inactive">Không hoạt động</option>
-                                            </select>
-                                        </div>
-                                    </div>
+  const handlePageChange = (newPage) => {
+    if (newPage >= 0 && newPage < pagination.totalPages) {
+      setPagination((prev) => ({ ...prev, page: newPage }));
+    }
+  };
 
-                                    {/* Stats */}
-                                    <div className="row g-3 mb-4">
-                                        <div className="col-md-3">
-                                            <div className="card bg-primary text-white">
-                                                <div className="card-body">
-                                                    <h6 className="card-title">Tổng số</h6>
-                                                    <h3 className="mb-0">{users.length}</h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="col-md-3">
-                                            <div className="card bg-success text-white">
-                                                <div className="card-body">
-                                                    <h6 className="card-title">Hoạt động</h6>
-                                                    <h3 className="mb-0">{users.filter(u => u.status === 'active').length}</h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="col-md-3">
-                                            <div className="card bg-warning text-white">
-                                                <div className="card-body">
-                                                    <h6 className="card-title">Không hoạt động</h6>
-                                                    <h3 className="mb-0">{users.filter(u => u.status === 'inactive').length}</h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="col-md-3">
-                                            <div className="card bg-info text-white">
-                                                <div className="card-body">
-                                                    <h6 className="card-title">Admin</h6>
-                                                    <h3 className="mb-0">{users.filter(u => u.role === 'Admin').length}</h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+  return (
+    <div className="container-fluid p-4">
+      <h2 className="mb-4" style={{ color: "white" }}>
+        Quản lý User
+      </h2>
 
-                                    {/* Users Table */}
-                                    <div className="table-responsive">
-                                        <table className="table table-hover">
-                                            <thead className="table-light">
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Họ tên</th>
-                                                <th>Email</th>
-                                                <th>Số điện thoại</th>
-                                                <th>Vai trò</th>
-                                                <th>Trạng thái</th>
-                                                <th>Ngày tạo</th>
-                                                <th className="text-center">Thao tác</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {filteredUsers.map(user => (
-                                                <tr key={user.id}>
-                                                    <td>{user.id}</td>
-                                                    <td>
-                                                        <div className="fw-bold">{user.name}</div>
-                                                    </td>
-                                                    <td>
-                                                        <Mail size={14} className="me-1 text-muted" />
-                                                        {user.email}
-                                                    </td>
-                                                    <td>
-                                                        <Phone size={14} className="me-1 text-muted" />
-                                                        {user.phone}
-                                                    </td>
-                                                    <td>
-                              <span className={`badge ${
-                                  user.role === 'Admin' ? 'bg-danger' :
-                                      user.role === 'Moderator' ? 'bg-warning' :
-                                          'bg-secondary'
-                              }`}>
-                                {user.role}
-                              </span>
-                                                    </td>
-                                                    <td>
-                              <span className={`badge ${
-                                  user.status === 'active' ? 'bg-success' : 'bg-secondary'
-                              }`}>
-                                {user.status === 'active' ? 'Hoạt động' : 'Không hoạt động'}
-                              </span>
-                                                    </td>
-                                                    <td>
-                                                        <Calendar size={14} className="me-1 text-muted" />
-                                                        {user.createdAt}
-                                                    </td>
-                                                    <td>
-                                                        <div className="btn-group btn-group-sm" role="group">
-                                                            <button
-                                                                className="btn btn-outline-primary"
-                                                                onClick={() => handleEditUser(user)}
-                                                                title="Chỉnh sửa"
-                                                            >
-                                                                <Edit2 size={14} />
-                                                            </button>
-                                                            <button
-                                                                className={`btn ${user.status === 'active' ? 'btn-outline-warning' : 'btn-outline-success'}`}
-                                                                onClick={() => handleToggleStatus(user.id)}
-                                                                title={user.status === 'active' ? 'Khóa' : 'Mở khóa'}
-                                                            >
-                                                                {user.status === 'active' ? <Lock size={14} /> : <Unlock size={14} />}
-                                                            </button>
-                                                            <button
-                                                                className="btn btn-outline-danger"
-                                                                onClick={() => handleDeleteUser(user.id)}
-                                                                title="Xóa"
-                                                            >
-                                                                <Trash2 size={14} />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    {filteredUsers.length === 0 && (
-                                        <div className="text-center py-5 text-muted">
-                                            <p>Không tìm thấy người dùng nào</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="row g-3 align-items-center">
+            <div className="col-lg-6">
+              <div className="input-group">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Tìm kiếm theo tên, email..."
+                  value={searchTerm}
+                  onChange={handleSearchInputChange}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                />
+                <button
+                  className="btn btn-outline-primary"
+                  type="button"
+                  onClick={handleSearch}
+                >
+                  <Search size={18} />
+                </button>
+              </div>
             </div>
+            <div className="col-lg-4">
+              <select
+                className="form-select"
+                name="status"
+                value={filters.status}
+                onChange={handleFilterChange}
+              >
+                <option value="all">Tất cả trạng thái</option>
+                <option value="active">Hoạt động</option>
+                <option value="inactive">Bị khóa</option>
+              </select>
+            </div>
+            <div className="col-lg-2 text-end">
+              <button className="btn btn-primary" onClick={handleAddUserClick}>
+                <Plus size={18} className="me-1" /> Thêm mới
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Modal */}
-            {showModal && (
-                <div className="modal show d-block" tabIndex="-1" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
-                    <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">
-                                    {modalMode === 'add' ? 'Thêm người dùng mới' : 'Chỉnh sửa người dùng'}
-                                </h5>
-                                <button
-                                    type="button"
-                                    className="btn-close"
-                                    onClick={() => setShowModal(false)}
-                                ></button>
-                            </div>
-                            <div className="modal-body">
-                                <div>
-                                    <div className="mb-3">
-                                        <label className="form-label">Họ tên</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            value={currentUser.name}
-                                            onChange={(e) => setCurrentUser({...currentUser, name: e.target.value})}
-                                        />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label className="form-label">Email</label>
-                                        <input
-                                            type="email"
-                                            className="form-control"
-                                            value={currentUser.email}
-                                            onChange={(e) => setCurrentUser({...currentUser, email: e.target.value})}
-                                        />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label className="form-label">Số điện thoại</label>
-                                        <input
-                                            type="tel"
-                                            className="form-control"
-                                            value={currentUser.phone}
-                                            onChange={(e) => setCurrentUser({...currentUser, phone: e.target.value})}
-                                        />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label className="form-label">Vai trò</label>
-                                        <select
-                                            className="form-select"
-                                            value={currentUser.role}
-                                            onChange={(e) => setCurrentUser({...currentUser, role: e.target.value})}
-                                        >
-                                            <option value="User">User</option>
-                                            <option value="Moderator">Moderator</option>
-                                            <option value="Admin">Admin</option>
-                                        </select>
-                                    </div>
-                                    <div className="mb-3">
-                                        <label className="form-label">Trạng thái</label>
-                                        <select
-                                            className="form-select"
-                                            value={currentUser.status}
-                                            onChange={(e) => setCurrentUser({...currentUser, status: e.target.value})}
-                                        >
-                                            <option value="active">Hoạt động</option>
-                                            <option value="inactive">Không hoạt động</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="modal-footer">
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={() => setShowModal(false)}
-                                >
-                                    Hủy
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-primary"
-                                    onClick={handleSaveUser}
-                                >
-                                    {modalMode === 'add' ? 'Thêm' : 'Cập nhật'}
-                                </button>
-                            </div>
+      <div className="card">
+        <div className="card-body">
+          <div className="table-responsive">
+            <table className="table table-hover align-middle">
+              <thead className="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Họ Tên</th>
+                  <th>Email / SĐT</th>
+                  <th>Vai Trò</th>
+                  <th>Trạng Thái</th>
+                  <th>Ngày Sinh</th>
+                  <th className="text-center">Hành Động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan="7" className="text-center p-5">
+                      🌀 Đang tải dữ liệu...
+                    </td>
+                  </tr>
+                ) : users.length > 0 ? (
+                  users.map((user) => (
+                    <tr key={user.maUser}>
+                      <td>{user.maUser}</td>
+                      <td>
+                        <div className="fw-bold">{user.hoTen}</div>
+                        <small className="text-muted">{user.tenDangNhap}</small>
+                      </td>
+                      <td>
+                        <div>
+                          <Mail size={14} className="me-2 text-muted" />
+                          {user.email}
                         </div>
-                    </div>
-                </div>
-            )}
-        </>
-    );
-}
+                        <div>
+                          <Phone size={14} className="me-2 text-muted" />
+                          {user.sdt}
+                        </div>
+                      </td>
+                      <td>
+                        <span className="badge bg-secondary-soft text-secondary">
+                          {user.tenVaiTro}
+                        </span>
+                      </td>
+                      <td>
+                        <span
+                          className={`badge ${
+                            user.trangThai
+                              ? "bg-success-soft text-success"
+                              : "bg-warning-soft text-warning"
+                          }`}
+                        >
+                          {user.trangThai ? "Hoạt động" : "Bị khóa"}
+                        </span>
+                      </td>
+                      <td>
+                        {user.ngaySinh ? (
+                          <>
+                            <Calendar size={14} className="me-1 text-muted" />
+                            {new Date(user.ngaySinh).toLocaleDateString(
+                              "vi-VN"
+                            )}
+                          </>
+                        ) : (
+                          "Chưa có"
+                        )}
+                      </td>
+                      <td className="text-center">
+                        <div className="btn-group btn-group-sm" role="group">
+                          <button
+                            className="btn btn-outline-primary"
+                            onClick={() => handleEditUserClick(user)}
+                            title="Chỉnh sửa"
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                          <button
+                            className={`btn ${
+                              user.trangThai
+                                ? "btn-outline-warning"
+                                : "btn-outline-success"
+                            }`}
+                            onClick={() =>
+                              handleToggleStatus(
+                                user.tenDangNhap,
+                                user.trangThai
+                              )
+                            }
+                            title={user.trangThai ? "Khóa" : "Mở khóa"}
+                          >
+                            {user.trangThai ? (
+                              <Lock size={14} />
+                            ) : (
+                              <Unlock size={14} />
+                            )}
+                          </button>
+                          <button
+                            className="btn btn-outline-danger"
+                            onClick={() =>
+                              handleDeleteUser(user.maUser, user.hoTen)
+                            }
+                            title="Xóa"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="7" className="text-center p-5">
+                      Không tìm thấy người dùng nào phù hợp.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="card-footer d-flex justify-content-between align-items-center">
+          <div>
+            Hiển thị <strong>{users.length}</strong> trên tổng số{" "}
+            <strong>{pagination.totalElements}</strong> kết quả
+          </div>
+          <nav>
+            <ul className="pagination mb-0">
+              <li
+                className={`page-item ${
+                  pagination.page === 0 ? "disabled" : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+              </li>
+              <li className="page-item active">
+                <span className="page-link">
+                  {pagination.page + 1} / {pagination.totalPages}
+                </span>
+              </li>
+              <li
+                className={`page-item ${
+                  pagination.page >= pagination.totalPages - 1 ? "disabled" : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+      <UserModal
+        show={isModalOpen}
+        mode={modalMode}
+        userData={currentUser}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveUser}
+      />
+    </div>
+  );
+};
 
 export default UserManagement;

@@ -1,15 +1,12 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Ticket, Info, Clock, Star, Film, Play, CalendarCheck } from "lucide-react";
-import {useToast} from "../common/Toast.jsx";
+import { Ticket, Info, Clock, Calendar, Film } from "lucide-react";
 
 const Movie = ({ movie, onClick = () => {} }) => {
-  const navigate = useNavigate()
-    const [showModal, setShowModal] = React.useState(false);
-    const {showError, showSuccess} = useToast();
+  const navigate = useNavigate();
 
   const handleBookTicket = (e) => {
-    e?.stopPropagation();
+    e.stopPropagation();
     navigate(`/booking/${movie.maPhim || movie.id}`);
   };
 
@@ -17,7 +14,6 @@ const Movie = ({ movie, onClick = () => {} }) => {
   const ratingBadge = (tuoi) => {
     if (!tuoi) return { color: "bg-secondary", text: "P" };
     if (tuoi >= 18) return { color: "bg-danger", text: "18+" };
-    if (tuoi >= 16) return { color: "bg-warning", text: "16+" };
     if (tuoi >= 13) return { color: "bg-primary", text: "13+" };
     return { color: "bg-success", text: "P" };
   };
@@ -29,32 +25,11 @@ const Movie = ({ movie, onClick = () => {} }) => {
       ? movie.listTheLoai.map((t) => t.tenTheLoai).join(", ")
       : "Không rõ";
 
-  const danhGiaText = () => {
-      let avgRating = 0;
-      if (movie.danhGiaPhims && movie.danhGiaPhims.length > 0) {
-          movie.danhGiaPhims.map((d) => {
-              avgRating += d.rating;
-          })
-          avgRating = avgRating / movie.danhGiaPhims.length;
-          return `${avgRating.toFixed(1)}/5`;
-      }
-      return "Chưa có đánh giá";
-    }
-
-    const handleTrailer = (e) => {
-        e.stopPropagation();
-        console.log("hello")
-        const url = movie.trailerURL || movie.trailerurl || movie.trailerUrl;
-        if (url) setShowModal(true);
-        else showError("Phim này chưa có trailer.");
-    };
-
   return (
     <div className="movie-card-wrapper d-flex justify-content-center">
       <div
         className="card movie-card shadow-sm border-0"
-        onClick={handleBookTicket}
-        style={{ cursor: 'pointer' }}
+        onClick={() => onClick(movie)}
       >
         {/* Poster */}
         <div className="poster-wrapper position-relative">
@@ -64,18 +39,12 @@ const Movie = ({ movie, onClick = () => {} }) => {
             className="poster-img"
           />
           <span className={`badge ${badge.color} age-badge`}>{badge.text}</span>
-            <div className="d-flex align-items-center rating-badge">
-                <Star size={14} className="me-1 text-warning" fill="#ffc107" stroke="#ffc107" />
-                <span>
-                {danhGiaText()}
-              </span>
-            </div>
         </div>
 
         {/* Nội dung */}
         <div className="card-body d-flex flex-column justify-content-between">
           <h5
-            className="movie-title fw-bold text-truncate mb-2 mt-0"
+            className="movie-title fw-bold text-truncate mb-2"
             title={movie.tenPhim || movie.title}
           >
             {movie.tenPhim || movie.title}
@@ -91,78 +60,46 @@ const Movie = ({ movie, onClick = () => {} }) => {
 
             {/* Thời lượng */}
             <div className="d-flex align-items-center mb-1">
-              <Clock size={14} className="me-1 text-info" />
+              <Clock size={14} className="me-1 text-warning" />
               <span>{movie.thoiLuong ? `${movie.thoiLuong} phút` : "Đang cập nhật"}</span>
             </div>
 
-              <div className="d-flex align-items-center mb-1">
-                  <CalendarCheck size={14} className="me-1 text-warning" />
-                  <span>
-                        {movie.ngayKhoiChieu ? `${new Date(movie.ngayKhoiChieu).toLocaleDateString('vi-VN')}` : "Đang cập nhật"}
-                  </span>
-              </div>
+            {/* Ngày khởi chiếu */}
+            <div className="d-flex align-items-center">
+              <Calendar size={14} className="me-1 text-info" />
+              <span>
+                {movie.ngayKhoiChieu
+                  ? new Date(movie.ngayKhoiChieu).toLocaleDateString("vi-VN")
+                  : "Chưa có lịch"}
+              </span>
+            </div>
           </div>
 
           {/* --- Nút thao tác --- */}
           <div className="d-flex gap-2">
-            <button
-              className="btn btn-book flex-fill"
-              onClick={handleBookTicket}
-            >
+            <button className="btn btn-book flex-fill" onClick={handleBookTicket}>
               <Ticket size={16} className="me-1" />
               Đặt vé
             </button>
             <button
-              className="btn btn-detail flex-fill d-flex justify-content-center align-items-center"
-              onClick={handleTrailer}
+              className="btn btn-detail flex-fill"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClick(movie);
+              }}
             >
-              <Play size={16} className="me-1" />
-              Xem trailer
+              <Info size={16} className="me-1" />
+              Chi tiết
             </button>
           </div>
         </div>
       </div>
 
-      {showModal && (
-            <div
-                className="modal fade show"
-                style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.6)' }}
-                onClick={() => setShowModal(false)}
-            >
-                <div
-                    className="modal-dialog modal-dialog-centered modal-xl"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">
-                                Trailer: {movie.tenPhim}
-                            </h5>
-                            <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
-                        </div>
-                        <div className="modal-body p-0">
-                            <div className="ratio ratio-16x9">
-                                <iframe width="560" height="315"
-                                        src={
-                                            movie.trailerURL?.replace("watch?v=", "embed/") + "&autoplay=1" ||
-                                            "https://www.youtube.com/embed/dQw4w9WgXcQ"
-                                        }
-                                        title="Trailer"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                        referrerPolicy="strict-origin-when-cross-origin"
-                                ></iframe>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )}
-
       {/* CSS nội tuyến */}
       <style>{`
         .movie-card {
           width: 100%;
-          max-width: 300px;
+          max-width: 250px;
           border-radius: 14px;
           background: #1e2128;
           color: #fff;
@@ -203,17 +140,6 @@ const Movie = ({ movie, onClick = () => {} }) => {
           padding: 6px 10px;
           border-radius: 6px;
         }
-        
-        .rating-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            color: #fff;
-            }
 
         .movie-title {
           font-size: 1rem;

@@ -20,25 +20,6 @@ class SettingService {
         }
     }
 
-    async getAllPhimBanner() {
-        try {
-            const response = await apiClient.get("/setting/phim");
-            return handleApiResponse(response);
-        } catch (error) {
-            return handleError(error);
-        }
-    }
-
-
-    async getAllKhuyenMaiBanner() {
-        try {
-            const response = await apiClient.get("/setting/khuyenmai");
-            return handleApiResponse(response);
-        } catch (error) {
-            return handleError(error);
-        }
-    }
-
     async creatSetting(settingData) {
         try {
             const response = await apiClient.post("/setting", settingData);
