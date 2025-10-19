@@ -1,56 +1,23 @@
 import React, { useEffect, useState } from "react";
-import settingService from "../../services/settingService.js";
-import {movieService} from "../../services/index.js";
-import serviceService from "../../services/serviceService.js";
-import promotionService from "../../services/promotionService.js";
-import { Gift } from "lucide-react";
 
 const PromotionSection = () => {
-    const [promotions, setPromotions] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [banners, setBanners] = useState([]);
+  const [promotions, setPromotions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchPromotions = async () => {
-            try {
-                const res = await settingService.getAllKhuyenMaiBanner();
-                if (res.success) {
-                    const promotion = res.data || [];
-                    console.log(promotion);
-                    setPromotions(promotion);
-                } else throw Error(res.data);
-            } catch (err) {
-                console.error("❌ Lỗi khi tải khuyến mãi:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchPromotions();
-    }, []);
-
-    useEffect(() => {
-        const fetchSlider = async () => {
-            const result = await Promise.all(
-                promotions.map(async (item) => {
-                    const match = item.tenCauHinh.split('-');
-                    const id = match ? match[1].trim() : null;
-                    const service = (item.loai === 'Khuyến mãi') ? await promotionService.getPromotionById(id) : await serviceService.getServiceById(id)
-                    return {
-                        id: item.maCauHinh,
-                        tieuDe: match[0].trim(),
-                        hinhAnh: item.giaTri,
-                        details: service?.data,
-                        loai: item.loai,
-                        moTa: service?.data?.moTa,
-                        ngayBatDau: service?.data?.ngayBatDau,
-                        ngayKetThuc: service?.data?.ngayKetThuc,
-                    }
-                })
-            );
-            setBanners(result);
-        };
-        fetchSlider()
-    }, [promotions]);
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      try {
+        const res = await fetch("http://localhost:8080/api/khuyenmai/valid");
+        const data = await res.json();
+        setPromotions(data.data || []);
+      } catch (err) {
+        console.error("❌ Lỗi khi tải khuyến mãi:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPromotions();
+  }, []);
 
   if (loading)
     return (
@@ -139,22 +106,31 @@ const PromotionSection = () => {
   return (
     <section className="mt-5">
       <div className="d-flex align-items-center justify-content-between mb-4">
-        <h2 className="mb-0 fw-semibold d-flex" style={{ color: "#ff4b2b" }}>
-            <Gift size={36} className="me-2" />
-            Khuyến mãi
+        <h2 className="mb-0 fw-semibold" style={{ color: "#ff4b2b" }}>
+          <i className="fas fa-gift me-2"></i>Khuyến mãi
         </h2>
+        <a
+          href="/promotions"
+          className="btn btn-sm border text-white"
+          style={{
+            borderColor: "#ff4b2b",
+            color: "#ff4b2b",
+          }}
+        >
+          Xem tất cả <i className="fas fa-chevron-right ms-1"></i>
+        </a>
       </div>
 
       <div className="row g-4">
-        {banners.map((km) => (
-          <div key={km.maCauHinh} className="col-md-4 col-sm-6">
+        {promotions.map((km) => (
+          <div key={km.maKm} className="col-md-4 col-sm-6">
             <div
               className="card h-100 border-0 shadow-sm"
               style={{ background: "#20232a", color: "#fff" }}
             >
               <img
                 src={km.hinhAnh || "/default-promo.jpg"}
-                alt={km.tieuDe}
+                alt={km.tenKm}
                 className="card-img-top"
                 style={{
                   height: "200px",
@@ -165,24 +141,23 @@ const PromotionSection = () => {
               <div className="card-body">
                 <h5
                   className="card-title fw-semibold"
-                  style={{
-                      color: "#ff4b2b",
-                      textAlign: "center"
-                  }}
+                  style={{ color: "#ff4b2b" }}
                 >
-                  {km.tieuDe}
+                  {km.tenKm}
                 </h5>
                 <p
-                  className="card-text text-secondary"
-                  style={{
-                      fontSize: "0.9rem",
-                      textAlign: "center"
-                  }}
+                  className="card-text text-muted"
+                  style={{ fontSize: "0.9rem" }}
                 >
                   {km.moTa?.length > 100
                     ? km.moTa.substring(0, 100) + "..."
                     : km.moTa}
                 </p>
+              </div>
+              <div className="card-footer border-0 bg-transparent">
+                <small className="text-secondary">
+                  ⏳ {km.ngayBatDau} → {km.ngayKetThuc}
+                </small>
               </div>
             </div>
           </div>

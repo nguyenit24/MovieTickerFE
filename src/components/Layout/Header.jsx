@@ -20,82 +20,55 @@ const Header = () => {
   return (
     <header className="p-3 bg-dark text-white">
       <div className="container">
-        <div className="d-flex flex-wrap align-items-center justify-content-between">
+        <div className="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+          {/* Logo */}
           <Link
             to="/"
-            className="d-flex align-items-center text-decoration-none"
+            className="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none"
           >
             <img
               src="/images/cinema_logo.png"
               alt="Logo"
-              width="60px"
-              height="60px"
-              className="me-3"
+              width="40"
+              height="32"
             />
-            <span className="fs-3 fw-bold text-warning">CineTickets</span>
+            <span className="fs-4 ms-2">MovieTicker</span>
           </Link>
 
-          {/* Menu - ở giữa */}
-          <ul className="nav mb-2 justify-content-center mb-md-0">
+          {/* Menu */}
+          <ul className="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
             <li>
-              <NavLink
-                to="/"
-                className={({ isActive }) =>
-                  `nav-link px-3 ${isActive ? "text-warning" : "text-white"}`
-                }
-              >
+              <NavLink to="/" className="nav-link px-2 text-white">
                 Trang chủ
               </NavLink>
             </li>
             <li>
-              <NavLink
-                to="/movies"
-                className={({ isActive }) =>
-                  `nav-link px-3 ${isActive ? "text-warning" : "text-white"}`
-                }
-              >
+              <NavLink to="/movies" className="nav-link px-2 text-white">
                 Phim
               </NavLink>
             </li>
             {user && (
               <li>
-                <NavLink
-                  to="/tickets"
-                  className={({ isActive }) =>
-                    `nav-link px-3 ${isActive ? "text-warning" : "text-white"}`
-                  }
-                >
+                <NavLink to="/tickets" className="nav-link px-2 text-white">
                   Vé của tôi
                 </NavLink>
               </li>
             )}
             <li>
-              <NavLink
-                to="/contact"
-                className={({ isActive }) =>
-                  `nav-link px-3 ${isActive ? "text-warning" : "text-white"}`
-                }
-              >
+              <NavLink to="/contact" className="nav-link px-2 text-white">
                 Liên hệ
               </NavLink>
             </li>
             {user && user.roles.includes("ROLE_ADMIN") && (
               <li>
-                <NavLink
-                  to="/admin"
-                  className={({ isActive }) =>
-                    `nav-link px-3 ${
-                      isActive ? "text-warning fw-bold" : "text-warning"
-                    }`
-                  }
-                >
+                <NavLink to="/admin" className="nav-link px-2 text-warning">
                   Quản trị
                 </NavLink>
               </li>
             )}
           </ul>
 
-          {/* Khu vực Đăng nhập / Người dùng - bên phải */}
+          {/* Khu vực Đăng nhập / Người dùng */}
           <div className="text-end">
             {user ? (
               // Giao diện khi đã đăng nhập
@@ -106,19 +79,23 @@ const Header = () => {
                   id="dropdownUser1"
                   onClick={toggleDropdown}
                 >
-                  <i className="bi bi-person-circle me-2"></i>
-                  Chào,{" "}
-                  <span className="text-warning">{user.username}</span>
+                  Chào, {user.username}
                 </a>
                 <ul
-                  className={`dropdown-menu dropdown-menu-end text-small ${
+                  className={`dropdown-menu text-small ${
                     isDropdownOpen ? "show" : ""
                   }`}
                   aria-labelledby="dropdownUser1"
                 >
                   <li>
-                    <Link to="/tickets" className="dropdown-item">
-                      <i className="bi bi-ticket-perforated me-2"></i>
+                    <Link className="dropdown-item" to="/profile">
+                      <i className="bi bi-person-circle me-2"></i>
+                      Quản lý tài khoản
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="dropdown-item" to="/tickets">
+                      <i className="bi bi-ticket-detailed me-2"></i>
                       Lịch sử đặt vé
                     </Link>
                   </li>
@@ -147,25 +124,6 @@ const Header = () => {
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .logo-brand {
-          transition: transform 0.2s ease;
-        }
-        .logo-brand:hover {
-          transform: scale(1.05);
-        }
-        .logo-brand img {
-          filter: drop-shadow(0 0 8px rgba(255, 193, 7, 0.3));
-        }
-        .nav-link {
-          font-weight: 500;
-          transition: all 0.2s ease;
-        }
-        .nav-link:hover {
-          transform: translateY(-2px);
-        }
-      `}</style>
     </header>
   );
 };

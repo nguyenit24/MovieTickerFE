@@ -10,7 +10,7 @@ const MovieSlider = ({ movies = [], title, onMovieClick }) => {
       {title && (
         <h3
           className="text-center mb-4"
-          style={{ fontWeight: 700 }}
+          style={{ color: "#ff4b2b", fontWeight: 700 }}
         >
           {title}
         </h3>
