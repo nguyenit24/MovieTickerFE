@@ -6,7 +6,7 @@ import MovieSlider from "../components/home/MovieSlider";
 import PromotionSection from "../components/home/PromotionSection";
 import {settingService} from "../services/index.js";
 import {useToast} from "../components/common/Toast.jsx"
-import {Flame, CalendarClock, ChevronRight, Info} from "lucide-react";
+import {Flame, CalendarClock, ChevronRight, Info, Mail, Phone} from "lucide-react";
 
 
 const Home = () => {
@@ -15,6 +15,8 @@ const Home = () => {
     const [movieBanners, setMovieBanners] = useState([]);
     const [loading, setLoading] = useState(true);
     const {showError, showSuccess} = useToast();
+    const [Email, setEmail] = useState("");
+    const [PhoneNumber, setPhoneNumber] = useState("");
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -36,7 +38,40 @@ const Home = () => {
       }
     };
     fetchMovies();
+    email()
+    phone()
   }, []);
+
+    const email = async () => {
+        try {
+            const result = await settingService.getSettingByKey("EMAIL_SUPPORT");
+            if (result.success) {
+                setEmail(result.data.giaTri);
+            } else {
+                showError(result.data?.data || "Lỗi khi lấy email hỗ trợ");
+                return "";
+            }
+        } catch (error) {
+            showError(error?.message || "Đã xảy ra lỗi trong quá trình gọi API");
+            return "";
+        }
+    };
+    const phone = async () =>  {
+        try {
+            const result = await settingService.getSettingByKey("HOT_LINE");
+            if (result.success) {
+                setPhoneNumber(result.data.giaTri);
+            }
+            else {
+                showError(result.data.data);
+                return "";
+            }
+        } catch (error)    {
+            showError(error?.message || "Đã xảy ra lỗi trong quá trình gọi API");
+            return "";
+        }
+    };
+
 
   return (
     <div
@@ -65,7 +100,7 @@ const Home = () => {
           ) : (
             <>
               {/* PHIM ĐANG CHIẾU */}
-              <section className="mb-5">
+              <section className="mb-5" id="now-showing-section">
                 <div className="d-flex align-items-center justify-content-between mb-4">
                   <h2
                     className="mb-0 fw-semibold d-flex align-items-center"
@@ -85,7 +120,7 @@ const Home = () => {
               </section>
 
               {/* PHIM SẮP RA MẮT */}
-              <section className="mb-5">
+              <section className="mb-5" id="coming-soon-section">
                 <div className="d-flex align-items-center justify-content-between mb-4">
                   <h2
                     className="mb-0 fw-semibold d-flex align-items-center"
@@ -108,7 +143,7 @@ const Home = () => {
               <PromotionSection />
 
               {/* THÔNG TIN RẠP CHIẾU */}
-              <section className="mb-5 mt-5">
+              <section className="mb-5 mt-5" id="cinema-info-section">
                 <div className="d-flex align-items-center justify-content-between mb-4">
                   <h2
                     className="mb-0 fw-semibold d-flex align-items-center"
@@ -185,6 +220,23 @@ const Home = () => {
                             <p>Quầy bắp rang bơ, nước giải khát và nhiều món ăn nhẹ hấp dẫn</p>
                           </div>
                         </div>
+                          <div className="feature-item mt-4">
+                              <div>
+                                  <><strong>Thông tin liên hệ</strong></>
+                                  <div className="d-flex align-items-center mb-2 justify-content-center ms-5">
+                                      <strong>
+                                          <Mail className = "me-2"/>
+                                      </strong>
+                                      <p className="mb-1">{Email}</p>
+                                  </div>
+                                  <div className="d-flex align-items-center mb-2 justify-content-center">
+                                      <strong>
+                                          <Phone className = "me-2"/>
+                                      </strong>
+                                      <p className="mb-1">{PhoneNumber}</p>
+                                  </div>
+                              </div>
+                          </div>
                       </div>
                     </div>
                   </div>

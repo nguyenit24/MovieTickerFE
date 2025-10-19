@@ -66,6 +66,15 @@ class SettingService {
             return handleError(error);
         }
     }
+
+    async getSettingByKey(key) {
+        try {
+            const response = await apiClient.get(`/setting/${key}`);
+            return handleApiResponse(response);
+        } catch (error) {
+            return handleError(error);
+        }
+    }
 }
 
 export default new SettingService();

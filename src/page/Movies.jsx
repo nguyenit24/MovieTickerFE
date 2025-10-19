@@ -87,6 +87,42 @@ const Movies = () => {
       {/* ✅ Banner vẫn giữ nguyên khi đổi filter */}
       <Banner movies={bannerMovies.length ? bannerMovies : movies} />
 
+        <div className="bg-primary text-white py-4 mb-4">
+            <div className="container">
+                <div className="row align-items-center">
+                    <div className="col-md-8">
+                        {/* <nav aria-label="breadcrumb">
+                <ol className="breadcrumb mb-2" style={{ backgroundColor: 'transparent' }}>
+                  <li className="breadcrumb-item">
+                    <a
+                      href="/"
+                      className="text-white text-decoration-none"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate('/');
+                      }}
+                    >
+                      <i className="bi bi-house me-1"></i>
+                      Trang chủ
+                    </a>
+                  </li>
+                  <li className="breadcrumb-item active text-white" aria-current="page">
+                    Vé của tôi
+                  </li>
+                </ol>
+              </nav> */}
+                        <h2 className="mb-0">
+                            <i className="bi bi-film me-2"></i>
+                            Phim
+                        </h2>
+                        <p className="mb-0 opacity-75">
+                            Quản lý và xem thông tin phim
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
       {/* Bộ lọc phim */}
       <section className="py-4" style={{ background: "#101114" }}>
         <div className="container d-flex flex-wrap align-items-center justify-content-between gap-3">

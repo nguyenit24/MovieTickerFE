@@ -16,10 +16,6 @@ const Footer = () => {
               />
               <span className="fw-bold fs-4" style={{ color: '#FFC107' }}>CineTickets</span>
             </div>
-            {/*<p className="text-secondary small">*/}
-            {/*  CineTickets – hệ thống đặt vé xem phim trực tuyến hàng đầu,*/}
-            {/*  mang đến cho bạn trải nghiệm điện ảnh tiện lợi và đẳng cấp.*/}
-            {/*</p>*/}
             <div className="d-flex gap-2 mt-3 media align-items-center justify-content-center">
               <a href="#" className="btn text-light d-flex align-items-center justify-content-center" style={{
                 background: 'rgba(255,255,255,0.1)',
@@ -55,8 +51,8 @@ const Footer = () => {
           <div className="col-md-3">
             <h6 className="fw-bold mb-4" style={{ color: '#ff4b2b' }}>PHIM</h6>
             <ul className="list-unstyled">
-              <li className="mb-2"><a href="#" className="text-light text-decoration-none small">Phim đang chiếu</a></li>
-              <li className="mb-2"><a href="#" className="text-light text-decoration-none small">Phim sắp chiếu</a></li>
+              <li className="mb-2"><a href="#now-showing-section" className="text-light text-decoration-none small">Phim đang chiếu</a></li>
+              <li className="mb-2"><a href="#coming-soon-section" className="text-light text-decoration-none small">Phim sắp chiếu</a></li>
               <li className="mb-2"><a href="#" className="text-light text-decoration-none small">Suất chiếu đặc biệt</a></li>
             </ul>
           </div>
@@ -77,7 +73,7 @@ const Footer = () => {
             <ul className="list-unstyled">
               <li className="mb-2"><a href="#" className="text-light text-decoration-none small">Hướng dẫn đặt vé</a></li>
               <li className="mb-2"><a href="#" className="text-light text-decoration-none small">Chính sách hoàn vé</a></li>
-              <li className="mb-2"><a href="#" className="text-light text-decoration-none small">Liên hệ</a></li>
+              <li className="mb-2"><a href="#cinema-info-section" className="text-light text-decoration-none small">Liên hệ</a></li>
             </ul>
           </div>
         </div>

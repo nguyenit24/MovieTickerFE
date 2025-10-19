@@ -8,7 +8,6 @@ const Movie = ({ movie, onClick = () => {} }) => {
     const [showModal, setShowModal] = React.useState(false);
     const {showError, showSuccess} = useToast();
 
-  console.log(movie)
   const handleBookTicket = (e) => {
     e?.stopPropagation();
     navigate(`/booking/${movie.maPhim || movie.id}`);
