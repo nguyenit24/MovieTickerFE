@@ -4,7 +4,8 @@ import movieService from '../../services/movieService';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { useNavigate } from "react-router-dom";
-import categoryService from "../../services/categoryService.js"; // nhớ import ở đầu file
+import categoryService from "../../services/categoryService.js";
+import {useToast} from "../common/Toast.jsx"; // nhớ import ở đầu file
 
 
 
@@ -16,6 +17,7 @@ const MovieDetail = () => {
     const [showModal, setShowModal] = useState(false);
     const [modalType, setModalType] = useState('');
     const [categories, setCategories] = useState([]);
+    const {showError, showSuccess} = useToast();
     const [formData, setFormData] = useState({
         tenPhim: '',
         moTa: '',
@@ -45,9 +47,8 @@ const MovieDetail = () => {
             if (result.success) {
                 setMovie(result.data);
             }
-            console.log(result.data);
         } catch (error) {
-            console.error('Lỗi khi tải phim:', error);
+            showError(error);
         } finally {
             setLoading(false);
         }
@@ -71,15 +72,14 @@ const MovieDetail = () => {
         try {
             const result = await movieService.updateMovie(movie.maPhim, submitData);
             if (result.success) {
-                alert('Cập nhật phim thành công!');
+                showSuccess('Cập nhật phim thành công!');
                 closeModal();
                 await fetchMovie();
             } else {
-                alert('Lỗi: ' + result.message);
+                showError(result.data);
             }
         } catch (error) {
-            console.error('Error submitting form:', error);
-            alert('Có lỗi xảy ra');
+            showError(error.message);
         }
     };
 

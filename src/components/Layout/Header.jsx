@@ -70,14 +70,6 @@ const Header = () => {
               </li>
             )}
             <li>
-              <NavLink
-                to="/contact"
-                className={({ isActive }) =>
-                  `nav-link px-3 ${isActive ? "text-warning" : "text-white"}`
-                }
-              >
-                Liên hệ
-              </NavLink>
             </li>
             {user && user.roles.includes("ROLE_ADMIN") && (
               <li>

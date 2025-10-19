@@ -108,7 +108,7 @@ const SettingsManager = () => {
         setShowModal(true)
         setFormStyle(style)
         let id = null
-        if (item.loai === 'Phim') {
+        if (item.Loai === 'Phim') {
             const match = item.tenCauHinh.match(/[0-9a-fA-F-]{36}/);
             id = match ? match[0] : null;
         }
@@ -198,7 +198,14 @@ const SettingsManager = () => {
 
     const closeModal = () => {
         setShowModal(false);
-        // setFormStyle('');
+        setFormStyle('');
+        setFormData({
+            maCauHinh: '',
+            tieuDe: '',
+            urlHinh: '',
+            DoiTuong: '',
+            Loai: 'Phim'
+        })
         // setActiveTab("slider")
     };
 
@@ -209,19 +216,17 @@ const SettingsManager = () => {
         // // }
         let DoiTuong = {};
         if (formData.Loai !== 'Phim') {
-            console.log("hello");
-            let DoiTuong = {};
+            console.log(formData);
             if (formData.Loai === 'Khuyến mãi') {
-                DoiTuong = promotion.find(p => p.maKm = formData.DoiTuong)
-            } else DoiTuong = service.find(p => p.maDv = formData.DoiTuong)
-            console.log(DoiTuong)
+                DoiTuong = promotion.find(p => p.maKm === formData.DoiTuong.trim())
+            } else DoiTuong = service.find(p => p.maDv === parseInt(formData.DoiTuong.trim()))
         }
-        console.log(promotion);
-        console.log(formData);
+        console.log(service)
+        console.log(DoiTuong)
         const slider = {
             maCauHinh: formData.maCauHinh,
             tenCauHinh: formData.tieuDe + ' - ' + formData.DoiTuong,
-            giaTri: DoiTuong.urlHinh || formData.urlHinh,
+            giaTri: DoiTuong?.urlHinh || formData.DoiTuong,
             loai: formData.Loai,
         }
         let result;
