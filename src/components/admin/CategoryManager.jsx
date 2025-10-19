@@ -97,7 +97,6 @@ const CategoryManager = () =>
                         </div>
                         <div>
                             <h1 className="mb-0 h3">Quản Lý thể loại phim</h1>
-                            <p className="text-muted mb-0">Hệ thống quản lý rạp chiếu phim</p>
                         </div>
                     </div>
                     <button
@@ -105,7 +104,7 @@ const CategoryManager = () =>
                         onClick={() => openModal('add', null)}
                     >
                         <Plus size={20} className="me-2" style={{verticalAlign: 'middle'}}/>
-                        Thêm Suất Chiếu
+                        Thêm thể loại
                     </button>
                 </div>
             </div>

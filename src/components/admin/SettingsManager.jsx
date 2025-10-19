@@ -37,20 +37,6 @@ const SettingsManager = () => {
         fetchService()
     },[])
 
-    useEffect(() => {
-        if (formData.Loai !== 'Phim' && formData.DoiTuong) {
-            let DoiTuong = {}
-            if (formData.Loai === 'Khuyến mãi') {
-                DoiTuong = promotion.find(p => p.maKm = formData.DoiTuong)
-            }
-            else DoiTuong = service.find(p => p.maDv = formData.DoiTuong)
-
-            setFormData(prev => ({
-                ...prev,
-                urlHinh: DoiTuong.urlHinh
-            }));
-        }
-    }, [formData.Loai, formData.DoiTuong]);
 
     const fetchSettings = async () => {
         const caiDatHeThong = await settingService.getAllSetting();
@@ -121,8 +107,12 @@ const SettingsManager = () => {
     const openModal = (style, item = null) => {
         setShowModal(true)
         setFormStyle(style)
-        const match = item.tenCauHinh.match(/[0-9a-fA-F-]{36}/);
-        const id = match ? match[0] : null;
+        let id = null
+        if (item.loai === 'Phim') {
+            const match = item.tenCauHinh.match(/[0-9a-fA-F-]{36}/);
+            id = match ? match[0] : null;
+        }
+        else id = item.tenCauHinh.split("-")[1].trim();
         setFormData(item ? {
             maCauHinh: item.maCauHinh,
             tieuDe: item.tenCauHinh.split("-")[0].trim(),
@@ -136,9 +126,12 @@ const SettingsManager = () => {
             DoiTuong: '',
             Loai: ''
         });
-        console.log(item)
         setShowModal(true);
     };
+
+    useEffect(() => {
+        console.log(formData);
+    }, [formData])
 
     const handleInputChange = (key, value) => {
         setSettings(prev =>
@@ -152,11 +145,22 @@ const SettingsManager = () => {
 
     const handleInputFormDataChange = (e) => {
         const {name, value} = e.target;
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
+        console.log(name);
+        console.log(value)
+        if (e.target.name === 'Loai') {
+            setFormData(prev => ({
+                ...prev,
+                Loai: e.target.value,
+                DoiTuong: '', // reset khi đổi loại
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [e.target.name]: e.target.value
+            }));
+        }
     };
+
 
 
 
@@ -194,15 +198,30 @@ const SettingsManager = () => {
 
     const closeModal = () => {
         setShowModal(false);
-        setFormStyle('');
-        setActiveTab("slider")
+        // setFormStyle('');
+        // setActiveTab("slider")
     };
 
-    const handleImageSubmit = async () => {
+    const handleImageSubmit = async (e) => {
+        e.preventDefault();
+        // let DoiTuong = {
+        //     urlHinh: formData.urlHinh
+        // // }
+        let DoiTuong = {};
+        if (formData.Loai !== 'Phim') {
+            console.log("hello");
+            let DoiTuong = {};
+            if (formData.Loai === 'Khuyến mãi') {
+                DoiTuong = promotion.find(p => p.maKm = formData.DoiTuong)
+            } else DoiTuong = service.find(p => p.maDv = formData.DoiTuong)
+            console.log(DoiTuong)
+        }
+        console.log(promotion);
+        console.log(formData);
         const slider = {
             maCauHinh: formData.maCauHinh,
             tenCauHinh: formData.tieuDe + ' - ' + formData.DoiTuong,
-            giaTri: formData.urlHinh,
+            giaTri: DoiTuong.urlHinh || formData.urlHinh,
             loai: formData.Loai,
         }
         let result;
@@ -215,12 +234,10 @@ const SettingsManager = () => {
             if (result.success) {
                 showSuccess(`Đã lưu ${formData.maCauHinh} thành công`);
                 fetchSettings();
-                setActiveTab("slider");
             } else {
                 showError(`Đã có lỗi xảy ra ${result.data}`);
             }
             closeModal();
-            setActiveTab("slider");
         } catch (err) {
             showError(`Đã có lỗi xảy ra ${result.data}`);
             closeModal();
@@ -446,8 +463,9 @@ const SettingsManager = () => {
                                             <select
                                                 className="form-select"
                                                 id="loai"
+                                                name="Loai"
                                                 value={formData.Loai || ''}   // đảm bảo có default value
-                                                onChange={e => setFormData({ ...formData, Loai: e.target.value })}
+                                                onChange={handleInputFormDataChange}
                                                 required
                                             >
                                                 <option value="">-- Chọn loại quảng cáo --</option>
@@ -468,21 +486,16 @@ const SettingsManager = () => {
                                         <select
                                             className="form-select"
                                             id="phim"
-                                            value={formData.DoiTuong || ''}   // đảm bảo có default value
-                                            onChange={e => setFormData({ ...formData, DoiTuong: e.target.value })}
+                                            name="DoiTuong"
+                                            value={formData.DoiTuong}   // đảm bảo có default value
+                                            onChange={handleInputFormDataChange}
                                             required
                                         >
-                                            {/*<option value="">*/}
-                                            {/*    {formData.Loai === 'Phim' ?*/}
-                                            {/*        '-- Chọn phim --' :*/}
-                                            {/*        formData.Loai === 'Dịch vụ' ?*/}
-                                            {/*            '-- Chọn dịch vụ --' : '-- Chọn khuyến mãi --'*/}
-                                            {/*    }*/}
-                                            {/*</option>*/}
                                             {formData.Loai === 'Phim' ?
                                                 movie.map(m => (
                                                         <option key={m.maPhim} value={m.maPhim}>{m.tenPhim}</option>
-                                                    )) :
+                                                    ))
+                                                :
                                                 formData.Loai === 'Dịch vụ' ?
                                                     service.map(s => (
                                                         <option key={s.maDv} value={s.maDv}>{s.tenDv}</option>
@@ -494,6 +507,7 @@ const SettingsManager = () => {
                                         </select>
                                     </div>)}
 
+                                    {formData.Loai === 'Phim' ?
                                     <div className="mb-3">
                                         <label htmlFor="urlHinh" className="form-label">Hình ảnh *</label>
                                         <input
@@ -502,17 +516,15 @@ const SettingsManager = () => {
                                             id="urlHinh"
                                             name="urlHinh"
                                             value={formData.urlHinh}
-                                            onChange={handleInputChange}
                                             placeholder="https://example.com/image.jpg"
                                             required
                                             //readOnly= {formData.Loai === 'Phim'}
                                         />
-                                    </div>
-
+                                    </div> : <></> }
                                 </div>
                                 <div className="modal-footer">
                                     <button type="button" className="btn btn-secondary" onClick={closeModal}>Hủy</button>
-                                    <button type="submit" className="btn btn-primary">
+                                    <button type="submit" className="btn btn-primary" onClick={handleImageSubmit}>
                                         Cập nhật
                                     </button>
                                 </div>

@@ -57,6 +57,31 @@ const Movies = () => {
 
   return (
     <div className="d-flex flex-column min-vh-100" style={{ background: "#181a20" }}>
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+            rel="stylesheet"
+        />
+        <style>
+          {`
+            .search-input::placeholder {
+              color: #fff;
+              opacity: 1;
+            }
+            .search-input::-webkit-input-placeholder {
+              color: #888;
+            }
+            .search-input::-moz-placeholder {
+              color: #888;
+            }
+            .search-input:-ms-input-placeholder {
+              color: #888;
+            }
+          `}
+        </style>
       <Header />
 
       {/* ✅ Banner vẫn giữ nguyên khi đổi filter */}
@@ -66,65 +91,157 @@ const Movies = () => {
       <section className="py-4" style={{ background: "#101114" }}>
         <div className="container d-flex flex-wrap align-items-center justify-content-between gap-3">
           {/* Nút lọc trạng thái */}
-          <div className="btn-group" role="group">
+          <div className="d-flex gap-3" role="group">
             {[
-              { key: "all", label: "Tất cả" },
-              { key: "dangchieu", label: "Đang chiếu" },
-              { key: "sapchieu", label: "Sắp chiếu" },
+              { key: "all", label: "Tất cả", icon: "fas fa-list" },
+              { key: "dangchieu", label: "Đang chiếu", icon: "fas fa-play-circle" },
+              { key: "sapchieu", label: "Sắp chiếu", icon: "fas fa-clock" },
             ].map((btn) => (
               <button
                 key={btn.key}
                 className={`btn ${
-                  statusFilter === btn.key ? "btn-danger" : "btn-outline-light"
+                  statusFilter === btn.key ? "btn-active" : "btn-inactive"
                 }`}
                 style={{
-                  borderRadius: "20px",
-                  padding: "6px 18px",
-                  fontWeight: "500",
-                  borderColor: "#ff4b2b",
+                  background: statusFilter === btn.key
+                    ? "linear-gradient(135deg, #ff4b2b 0%, #ff6b4a 100%)"
+                    : "linear-gradient(135deg, #1a1d29 0%, #252837 100%)",
+                  border: statusFilter === btn.key ? "2px solid #ff6b4a" : "2px solid #3a3d4a",
+                  borderRadius: "25px",
+                  padding: "10px 24px",
+                  fontWeight: "600",
                   color: statusFilter === btn.key ? "#fff" : "#ccc",
+                  transition: "all 0.3s ease",
+                  boxShadow: statusFilter === btn.key
+                    ? "0 6px 20px rgba(255, 75, 43, 0.4)"
+                    : "0 2px 8px rgba(0, 0, 0, 0.2)",
+                  transform: statusFilter === btn.key ? "translateY(-2px)" : "translateY(0)",
+                  fontSize: "14px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px"
                 }}
                 onClick={() => {
                   setStatusFilter(btn.key);
                   setPage(1);
                 }}
+                onMouseEnter={(e) => {
+                  if (statusFilter !== btn.key) {
+                    e.target.style.borderColor = "#ff4b2b";
+                    e.target.style.color = "#fff";
+                    e.target.style.transform = "translateY(-2px)";
+                    e.target.style.boxShadow = "0 4px 15px rgba(255, 75, 43, 0.3)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (statusFilter !== btn.key) {
+                    e.target.style.borderColor = "#3a3d4a";
+                    e.target.style.color = "#ccc";
+                    e.target.style.transform = "translateY(0)";
+                    e.target.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.2)";
+                  }
+                }}
               >
+                <i className={btn.icon}></i>
                 {btn.label}
               </button>
             ))}
           </div>
 
           {/* Ô tìm kiếm */}
-          <div
-            className="d-flex align-items-center"
-            style={{
-              background: "#e0e3e8ff",
-              borderRadius: "25px",
-              padding: "6px 14px",
-              border: "1px solid #ff4b2b",
-              width: "260px",
-            }}
-          >
-            <i className="fas fa-search text-light me-2"></i>
-            <input
-              type="text"
-              className="form-control bg-transparent border-0 text-white"
-              placeholder="Tìm kiếm tên phim..."
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+          <div className="position-relative" style={{ width: "280px" }}>
+            <div
+              className="input-group"
               style={{
-                outline: "none",
-                boxShadow: "none",
-                fontSize: "14px",
-                color: "#fff",
+                background: "linear-gradient(135deg, #1a1d29 0%, #252837 100%)",
+                borderRadius: "25px",
+                padding: "2px",
+                border: "2px solid #ff4b2b",
+                transition: "all 0.3s ease",
+                boxShadow: "0 4px 15px rgba(255, 75, 43, 0.2)"
               }}
-            />
+            >
+              <span
+                className="input-group-text border-0"
+                style={{
+                  background: "transparent",
+                  paddingLeft: "18px",
+                  paddingRight: "8px"
+                }}
+              >
+                <i
+                  className="fas fa-search"
+                  style={{
+                    color: "#ff4b2b",
+                    fontSize: "16px"
+                  }}
+                ></i>
+              </span>
+              <input
+                type="text"
+                className="form-control border-0 search-input"
+                placeholder="Tìm kiếm phim..."
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                style={{
+                  background: "transparent",
+                  color: "#fff",
+                  outline: "none",
+                  boxShadow: "none",
+                  fontSize: "14px",
+                  paddingRight: keyword ? "40px" : "18px"
+                }}
+                onFocus={(e) => {
+                  e.target.parentElement.parentElement.style.borderColor = "#ff6b4a";
+                  e.target.parentElement.parentElement.style.boxShadow = "0 6px 20px rgba(255, 75, 43, 0.4)";
+                  e.target.parentElement.parentElement.style.transform = "translateY(-2px)";
+                }}
+                onBlur={(e) => {
+                  e.target.parentElement.parentElement.style.borderColor = "#ff4b2b";
+                  e.target.parentElement.parentElement.style.boxShadow = "0 4px 15px rgba(255, 75, 43, 0.2)";
+                  e.target.parentElement.parentElement.style.transform = "translateY(0)";
+                }}
+              />
+              {keyword && (
+                <span
+                  className="position-absolute"
+                  style={{
+                    right: "18px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    cursor: "pointer",
+                    zIndex: 10,
+                    transition: "all 0.2s"
+                  }}
+                  onClick={() => setKeyword("")}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = "translateY(-50%) scale(1.2)";
+                    e.target.querySelector('i').style.color = "#ff2b2b";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = "translateY(-50%) scale(1)";
+                    e.target.querySelector('i').style.color = "#999";
+                  }}
+                >
+                  <i
+                    className="fas fa-times-circle"
+                    style={{
+                      color: "#999",
+                      fontSize: "16px",
+                      transition: "color 0.2s"
+                    }}
+                  ></i>
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Danh sách phim */}
-      <main className="flex-grow-1 py-5 text-white">
+      <main className="flex-grow-1 py-5 text-white" style={{
+        background: "#fff",
+      }}>
         <div className="container">
           {loading ? (
             <div className="text-center py-5">

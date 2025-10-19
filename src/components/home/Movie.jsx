@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Ticket, Info, Clock, Star, Film, Play } from "lucide-react";
+import { Ticket, Info, Clock, Star, Film, Play, CalendarCheck } from "lucide-react";
 import {useToast} from "../common/Toast.jsx";
 
 const Movie = ({ movie, onClick = () => {} }) => {
@@ -95,6 +95,13 @@ const Movie = ({ movie, onClick = () => {} }) => {
               <Clock size={14} className="me-1 text-info" />
               <span>{movie.thoiLuong ? `${movie.thoiLuong} phút` : "Đang cập nhật"}</span>
             </div>
+
+              <div className="d-flex align-items-center mb-1">
+                  <CalendarCheck size={14} className="me-1 text-warning" />
+                  <span>
+                        {movie.ngayKhoiChieu ? `${new Date(movie.ngayKhoiChieu).toLocaleDateString('vi-VN')}` : "Đang cập nhật"}
+                  </span>
+              </div>
           </div>
 
           {/* --- Nút thao tác --- */}

@@ -163,13 +163,15 @@ const Banner = ({ movies = []}) => {
                   <div className="meta-divider"></div>
                   <div className="meta-item">
                     <Calendar size={18} />
-                    <span>{movie.ngayKhoiChieu || new Date().getFullYear()}</span>
+                    <span>{new Date(movie.ngayKhoiChieu).toLocaleDateString("vi-VN") || new Date().getFullYear()}</span>
                   </div>
                 </div>
 
                 {/* Genre Tags */}
                 {movie.theLoai && (
-                  <div className="genre-tags">
+                  <div className="genre-tags" style={{
+                      cursor: 'default'
+                  }}>
                       {movie?.theLoai?.slice(0, 3).map((genre, idx) => (
                           <span key={genre.maTheLoai || idx} className="genre-tag">
                             {genre.tenTheLoai.trim()}
