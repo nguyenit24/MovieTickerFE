@@ -5,12 +5,12 @@ import {movieService} from "../../services/index.js";
 import {useToast} from "../common/Toast.jsx";
 
 const Banner = ({ movies = []}) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoPlay, setIsAutoPlay] = useState(true);
-  const navigate = useNavigate();
-  const [SliderMovies, setSliderMovies] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const {showError, showSuccess} = useToast()
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isAutoPlay, setIsAutoPlay] = useState(true);
+    const navigate = useNavigate();
+    const [SliderMovies, setSliderMovies] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const {showError, showSuccess} = useToast()
     const [selectedMovie, setSelectedMovie] = useState(null);
 
     const safeMovies = Array.isArray(movies) ? movies : [];
@@ -56,94 +56,94 @@ const Banner = ({ movies = []}) => {
 
 
     // Auto slide 4s
-  useEffect(() => {
-    setCurrentIndex(0);
-  }, [SliderMovies.length]);
+    useEffect(() => {
+        setCurrentIndex(0);
+    }, [SliderMovies.length]);
 
-  // Auto slide 4s (based on slides length)
-  useEffect(() => {
-    if (!isAutoPlay || SliderMovies.length === 0) return;
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % SliderMovies.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, [isAutoPlay, currentIndex, SliderMovies.length]);
+    // Auto slide 4s (based on slides length)
+    useEffect(() => {
+        if (!isAutoPlay || SliderMovies.length === 0) return;
+        const timer = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % SliderMovies.length);
+        }, 4000);
+        return () => clearInterval(timer);
+    }, [isAutoPlay, currentIndex, SliderMovies.length]);
 
-  const handlePrev = () => {
-    if (SliderMovies.length === 0) return;
-    setCurrentIndex((prev) => (prev - 1 + SliderMovies.length) % SliderMovies.length);
-    setIsAutoPlay(false);
-    setTimeout(() => setIsAutoPlay(true), 6000);
-  };
+    const handlePrev = () => {
+        if (SliderMovies.length === 0) return;
+        setCurrentIndex((prev) => (prev - 1 + SliderMovies.length) % SliderMovies.length);
+        setIsAutoPlay(false);
+        setTimeout(() => setIsAutoPlay(true), 6000);
+    };
 
-  const handleNext = () => {
-    if (SliderMovies.length === 0) return;
-    setCurrentIndex((prev) => (prev + 1) % SliderMovies.length);
-    setIsAutoPlay(false);
-    setTimeout(() => setIsAutoPlay(true), 6000);
-  };
+    const handleNext = () => {
+        if (SliderMovies.length === 0) return;
+        setCurrentIndex((prev) => (prev + 1) % SliderMovies.length);
+        setIsAutoPlay(false);
+        setTimeout(() => setIsAutoPlay(true), 6000);
+    };
 
-  const goToSlide = (index) => {
-    if (SliderMovies.length === 0) return;
-    setCurrentIndex(index);
-    setIsAutoPlay(false);
-    setTimeout(() => setIsAutoPlay(true), 6000);
-  };
+    const goToSlide = (index) => {
+        if (SliderMovies.length === 0) return;
+        setCurrentIndex(index);
+        setIsAutoPlay(false);
+        setTimeout(() => setIsAutoPlay(true), 6000);
+    };
 
-  const movie = SliderMovies[currentIndex];
-  if (!movie) return null;
+    const movie = SliderMovies[currentIndex];
+    if (!movie) return null;
 
-  const handleBooking = () => {
-    navigate(`/booking/${movie.maPhim || movie.id}`);
-  };
+    const handleBooking = () => {
+        navigate(`/booking/${movie.maPhim || movie.id}`);
+    };
 
-  const handleTrailer = () => {
-    const url = movie.trailerURL || movie.trailerurl || movie.trailerUrl || movie.trailerUrl;
-    setSelectedMovie(movie);
-    if (url) setShowModal(true);
-    else showError("Phim này chưa có trailer.");
-  };
+    const handleTrailer = () => {
+        const url = movie.trailerURL || movie.trailerurl || movie.trailerUrl || movie.trailerUrl;
+        setSelectedMovie(movie);
+        if (url) setShowModal(true);
+        else showError("Phim này chưa có trailer.");
+    };
 
-  const handleCloseModal = () => {
-      setShowModal(false)
-  }
+    const handleCloseModal = () => {
+        setShowModal(false)
+    }
 
-  return (
-    <section className="movie-banner">
-      {/* Background with gradient overlay */}
-      <div className="banner-wrapper">
-        <div
-          className="banner-bg"
-          key={currentIndex}
-          style={{
-            backgroundImage: `url(${movie.hinhAnh})`,
-          }}
-        />
-        <div className="banner-gradient" />
-      </div>
+    return (
+        <section className="movie-banner">
+            {/* Background with gradient overlay */}
+            <div className="banner-wrapper">
+                <div
+                    className="banner-bg"
+                    key={currentIndex}
+                    style={{
+                        backgroundImage: `url(${movie.hinhAnh})`,
+                    }}
+                />
+                <div className="banner-gradient" />
+            </div>
 
-      {/* Content Container */}
-      <div className="banner-content-wrapper">
-        <div className="container">
-          <div className="row align-items-center h-100">
-            <div className="col-lg-7">
-              <div className="banner-content">
-                {/* Badge */}
-                <div className="mb-3">
+            {/* Content Container */}
+            <div className="banner-content-wrapper">
+                <div className="container">
+                    <div className="row align-items-center h-100">
+                        <div className="col-lg-7">
+                            <div className="banner-content">
+                                {/* Badge */}
+                                <div className="mb-3">
                   <span className="movie-badge">
                     <span className="badge-dot"></span>
-                    {movie.trangThai.toString().toUpperCase()}
+                      {movie.trangThai.toString().toUpperCase()}
                   </span>
-                </div>
+                                </div>
 
-                {/* Title with animation */}
-                <h1 className="movie-title">{movie.tenPhim || "Tên phim"}</h1>
+                                {/* Title with animation */}
+                                <h1 className="movie-title">{movie.tenPhim || "Tên phim"}</h1>
 
-                {/* Movie Info */}
-                <div className="movie-meta">
-                  <div className="meta-item">
-                    <Star size={18} fill="#ffc107" stroke="#ffc107" />
-                    <span>
+                                {/* Movie Info */}
+                                <div className="movie-meta">
+                                    <div className="meta-item">
+                                        <Star size={18} fill="#ffc107" stroke="#ffc107" />
+                                        <span>
                         {
                             (movie.rating > 0) ? (
                                 <>
@@ -154,120 +154,120 @@ const Banner = ({ movies = []}) => {
                             )
                         }
                     </span>
-                  </div>
-                  <div className="meta-divider"></div>
-                  <div className="meta-item">
-                    <Clock size={18} />
-                    <span>{movie.thoiLuong || "120"} phút</span>
-                  </div>
-                  <div className="meta-divider"></div>
-                  <div className="meta-item">
-                    <Calendar size={18} />
-                    <span>{new Date(movie.ngayKhoiChieu).toLocaleDateString("vi-VN") || new Date().getFullYear()}</span>
-                  </div>
-                </div>
+                                    </div>
+                                    <div className="meta-divider"></div>
+                                    <div className="meta-item">
+                                        <Clock size={18} />
+                                        <span>{movie.thoiLuong || "120"} phút</span>
+                                    </div>
+                                    <div className="meta-divider"></div>
+                                    <div className="meta-item">
+                                        <Calendar size={18} />
+                                        <span>{new Date(movie.ngayKhoiChieu).toLocaleDateString("vi-VN") || new Date().getFullYear()}</span>
+                                    </div>
+                                </div>
 
-                {/* Genre Tags */}
-                {movie.theLoai && (
-                  <div className="genre-tags" style={{
-                      cursor: 'default'
-                  }}>
-                      {movie?.theLoai?.slice(0, 3).map((genre, idx) => (
-                          <span key={genre.maTheLoai || idx} className="genre-tag">
+                                {/* Genre Tags */}
+                                {movie.theLoai && (
+                                    <div className="genre-tags" style={{
+                                        cursor: 'default'
+                                    }}>
+                                        {movie?.theLoai?.slice(0, 3).map((genre, idx) => (
+                                            <span key={genre.maTheLoai || idx} className="genre-tag">
                             {genre.tenTheLoai.trim()}
                           </span>
-                      ))}
+                                        ))}
 
-                  </div>
-                )}
+                                    </div>
+                                )}
 
-                {/* Description */}
-                <p className="movie-description">
-                  {movie.moTa?.length > 200
-                    ? movie.moTa.slice(0, 200) + "..."
-                    : movie.moTa || "Một bộ phim đầy cảm xúc và hấp dẫn, mang đến trải nghiệm điện ảnh tuyệt vời cho khán giả."}
-                </p>
+                                {/* Description */}
+                                <p className="movie-description">
+                                    {movie.moTa?.length > 200
+                                        ? movie.moTa.slice(0, 200) + "..."
+                                        : movie.moTa || "Một bộ phim đầy cảm xúc và hấp dẫn, mang đến trải nghiệm điện ảnh tuyệt vời cho khán giả."}
+                                </p>
 
-                {/* Action Buttons */}
-                <div className="banner-actions">
-                  <button className="btn-primary-action" onClick={handleBooking}>
-                    <Play size={20} fill="white" />
-                    <span>Đặt vé ngay</span>
-                  </button>
-                  <button className="btn-secondary-action" onClick={handleTrailer}>
-                    <Play size={20} />
-                    <span>Xem trailer</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation Controls */}
-      <button className="banner-nav banner-nav-left" onClick={handlePrev} aria-label="Previous">
-        <ChevronLeft size={32} />
-      </button>
-      <button className="banner-nav banner-nav-right" onClick={handleNext} aria-label="Next">
-        <ChevronRight size={32} />
-      </button>
-
-      {/* Indicators */}
-      <div className="banner-indicators">
-        {SliderMovies.map((_, idx) => (
-          <button
-            key={idx}
-            className={`indicator ${idx === currentIndex ? "active" : ""}`}
-            onClick={() => goToSlide(idx)}
-            aria-label={`Slide ${idx + 1}`}
-          />
-        ))}
-      </div>
-
-        {/* Modal for Trailer can be implemented here} */}
-        {showModal ? (
-            <div
-                className="modal fade show"
-                style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.6)' }}
-                onClick={handleCloseModal}
-            >
-                <div
-                    className="modal-dialog modal-dialog-centered modal-xl"
-                    onClick={(e) => e.stopPropagation()} // tránh click đóng khi bấm trong modal
-                >
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">
-                                Trailer: {selectedMovie.tenPhim}
-                            </h5>
-                            <button type="button" className="btn-close" onClick={handleCloseModal}></button>
+                                {/* Action Buttons */}
+                                <div className="banner-actions">
+                                    <button className="btn-primary-action" onClick={handleBooking}>
+                                        <Play size={20} fill="white" />
+                                        <span>Đặt vé ngay</span>
+                                    </button>
+                                    <button className="btn-secondary-action" onClick={handleTrailer}>
+                                        <Play size={20} />
+                                        <span>Xem trailer</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                <div className="modal-body p-0">
-                    <div className="ratio ratio-16x9">
-                        {/*<iframe width="560" height="315"*/}
-                        {/*        src="https://www.youtube.com/embed/4Fhs9-B9IHo?si=ruqFtIo4MsLQL9t3&autoplay=1"*/}
-                        {/*        title="YouTube video player" frameBorder="0"*/}
-                        {/*        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"*/}
-                        {/*        referrerPolicy="strict-origin-when-cross-origin"*/}
-                        {/*        allowFullScreen></iframe>*/}
-                        <iframe width="560" height="315"
-                                src={
-                                    selectedMovie.trailerURL?.replace("watch?v=", "embed/") + "&autoplay=1" ||
-                                    "https://www.youtube.com/embed/dQw4w9WgXcQ"
-                                }
-                                title="Trailer"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                referrerPolicy="strict-origin-when-cross-origin"
-                        ></iframe>
                     </div>
                 </div>
-                </div>
             </div>
-        </div>
-                    ) : null
-        }
-      <style>{`
+
+            {/* Navigation Controls */}
+            <button className="banner-nav banner-nav-left" onClick={handlePrev} aria-label="Previous">
+                <ChevronLeft size={32} />
+            </button>
+            <button className="banner-nav banner-nav-right" onClick={handleNext} aria-label="Next">
+                <ChevronRight size={32} />
+            </button>
+
+            {/* Indicators */}
+            <div className="banner-indicators">
+                {SliderMovies.map((_, idx) => (
+                    <button
+                        key={idx}
+                        className={`indicator ${idx === currentIndex ? "active" : ""}`}
+                        onClick={() => goToSlide(idx)}
+                        aria-label={`Slide ${idx + 1}`}
+                    />
+                ))}
+            </div>
+
+            {/* Modal for Trailer can be implemented here} */}
+            {showModal ? (
+                <div
+                    className="modal fade show"
+                    style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.6)' }}
+                    onClick={handleCloseModal}
+                >
+                    <div
+                        className="modal-dialog modal-dialog-centered modal-xl"
+                        onClick={(e) => e.stopPropagation()} // tránh click đóng khi bấm trong modal
+                    >
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">
+                                    Trailer: {selectedMovie.tenPhim}
+                                </h5>
+                                <button type="button" className="btn-close" onClick={handleCloseModal}></button>
+                            </div>
+                            <div className="modal-body p-0">
+                                <div className="ratio ratio-16x9">
+                                    {/*<iframe width="560" height="315"*/}
+                                    {/*        src="https://www.youtube.com/embed/4Fhs9-B9IHo?si=ruqFtIo4MsLQL9t3&autoplay=1"*/}
+                                    {/*        title="YouTube video player" frameBorder="0"*/}
+                                    {/*        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"*/}
+                                    {/*        referrerPolicy="strict-origin-when-cross-origin"*/}
+                                    {/*        allowFullScreen></iframe>*/}
+                                    <iframe width="560" height="315"
+                                            src={
+                                                selectedMovie.trailerURL?.replace("watch?v=", "embed/") + "&autoplay=1" ||
+                                                "https://www.youtube.com/embed/dQw4w9WgXcQ"
+                                            }
+                                            title="Trailer"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                            referrerPolicy="strict-origin-when-cross-origin"
+                                    ></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ) : null
+            }
+            <style>{`
         .movie-banner {
           position: relative;
           height: 600px;
@@ -619,8 +619,8 @@ const Banner = ({ movies = []}) => {
           }
         }
       `}</style>
-    </section>
-  );
+        </section>
+    );
 };
 
 export default Banner;

@@ -2,39 +2,39 @@ import React from "react";
 import Movie from "./Movie";
 
 const MovieSlider = ({ movies = [], title, onMovieClick }) => {
-  const safeMovies = Array.isArray(movies) ? movies : [];
+    const safeMovies = Array.isArray(movies) ? movies : [];
 
-  return (
-    <div className="movie-slider-container py-4">
-      {/* Tiêu đề khu vực */}
-      {title && (
-        <h3
-          className="text-center mb-4"
-          style={{ fontWeight: 700 }}
-        >
-          {title}
-        </h3>
-      )}
+    return (
+        <div className="movie-slider-container py-4">
+            {/* Tiêu đề khu vực */}
+            {title && (
+                <h3
+                    className="text-center mb-4"
+                    style={{ fontWeight: 700 }}
+                >
+                    {title}
+                </h3>
+            )}
 
-      {/* Danh sách phim hiển thị theo hàng */}
-      <div className="movie-grid">
-        {safeMovies.length > 0 ? (
-          safeMovies.slice(0, 4).map((movie, idx) => (
-            <Movie
-              key={movie.maPhim || movie.id || idx}
-              movie={movie}
-              onClick={onMovieClick}
-            />
-          ))
-        ) : (
-          <div className="text-center text-secondary fs-5 w-100">
-            Không có phim nào để hiển thị
-          </div>
-        )}
-      </div>
+            {/* Danh sách phim hiển thị theo hàng */}
+            <div className="movie-grid">
+                {safeMovies.length > 0 ? (
+                    safeMovies.slice(0, 4).map((movie, idx) => (
+                        <Movie
+                            key={movie.maPhim || movie.id || idx}
+                            movie={movie}
+                            onClick={onMovieClick}
+                        />
+                    ))
+                ) : (
+                    <div className="text-center text-secondary fs-5 w-100">
+                        Không có phim nào để hiển thị
+                    </div>
+                )}
+            </div>
 
-      {/* CSS inline */}
-      <style>{`
+            {/* CSS inline */}
+            <style>{`
         .movie-grid {
           display: flex;
           flex-wrap: wrap;
@@ -67,8 +67,8 @@ const MovieSlider = ({ movies = [], title, onMovieClick }) => {
           }
         }
       `}</style>
-    </div>
-  );
+        </div>
+    );
 };
 
 export default MovieSlider;
