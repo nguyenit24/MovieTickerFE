@@ -266,7 +266,7 @@ const SettingsManager = () => {
                         </div>
                     </div>
                 </div>
-        </div>
+            </div>
             <div className="container-fluid p-4">
                 <div className="card border-1 shadow-sm">
                     <div className="card-header bg-white border-1 pt-3">
@@ -353,7 +353,7 @@ const SettingsManager = () => {
                                         </div>
                                         <div className="col-12">
                                             <button className="btn btn-primary mt-3"
-                                            onClick={() => handleSaveChange()}
+                                                    onClick={() => handleSaveChange()}
                                             >
                                                 <Save size={16}/> Lưu cấu hình
                                             </button>
@@ -369,7 +369,7 @@ const SettingsManager = () => {
                                     <div className="d-flex justify-content-between align-items-center mb-3">
                                         <h5 className="fw-bold mb-0">Danh Sách Banner</h5>
                                         <button className="btn btn-primary d-flex align-items-center gap-2"
-                                        onClick={() => openModal('add', null)}
+                                                onClick={() => openModal('add', null)}
                                         >
                                             <Plus size={18} /> Thêm Mới
                                         </button>
@@ -420,7 +420,7 @@ const SettingsManager = () => {
                                                     </td>
                                                     <td className="text-center">
                                                         <button className="btn btn-outline-primary btn-sm me-2"
-                                                        onClick={() => openModal('update', slider)}
+                                                                onClick={() => openModal('update', slider)}
                                                         >
                                                             <Pencil size={16} />
                                                         </button>
@@ -463,69 +463,69 @@ const SettingsManager = () => {
                                         />
                                     </div>
 
-                                        <div className="mb-3">
-                                            <label htmlFor="loai" className="form-label">Loại quảng cáo *</label>
-                                            <select
-                                                className="form-select"
-                                                id="loai"
-                                                name="Loai"
-                                                value={formData.Loai || ''}   // đảm bảo có default value
-                                                onChange={handleInputFormDataChange}
-                                                required
-                                            >
-                                                <option value="">-- Chọn loại quảng cáo --</option>
-                                                {categories.map(cat => (
-                                                    <option key={cat.id} value={cat.name}>{cat.name}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    {formData.Loai && (
                                     <div className="mb-3">
-                                        <label htmlFor="phim" className="form-label">
-                                            {formData.Loai === 'Phim' ?
-                                                'Phim *' :
-                                                formData.Loai === 'Dịch vụ' ?
-                                                'Dịch vụ *' : 'Khuyến mãi *'
-                                            }
-                                        </label>
+                                        <label htmlFor="loai" className="form-label">Loại quảng cáo *</label>
                                         <select
                                             className="form-select"
-                                            id="phim"
-                                            name="DoiTuong"
-                                            value={formData.DoiTuong}   // đảm bảo có default value
+                                            id="loai"
+                                            name="Loai"
+                                            value={formData.Loai || ''}   // đảm bảo có default value
                                             onChange={handleInputFormDataChange}
                                             required
                                         >
-                                            {formData.Loai === 'Phim' ?
-                                                movie.map(m => (
+                                            <option value="">-- Chọn loại quảng cáo --</option>
+                                            {categories.map(cat => (
+                                                <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    {formData.Loai && (
+                                        <div className="mb-3">
+                                            <label htmlFor="phim" className="form-label">
+                                                {formData.Loai === 'Phim' ?
+                                                    'Phim *' :
+                                                    formData.Loai === 'Dịch vụ' ?
+                                                        'Dịch vụ *' : 'Khuyến mãi *'
+                                                }
+                                            </label>
+                                            <select
+                                                className="form-select"
+                                                id="phim"
+                                                name="DoiTuong"
+                                                value={formData.DoiTuong}   // đảm bảo có default value
+                                                onChange={handleInputFormDataChange}
+                                                required
+                                            >
+                                                {formData.Loai === 'Phim' ?
+                                                    movie.map(m => (
                                                         <option key={m.maPhim} value={m.maPhim}>{m.tenPhim}</option>
                                                     ))
-                                                :
-                                                formData.Loai === 'Dịch vụ' ?
-                                                    service.map(s => (
-                                                        <option key={s.maDv} value={s.maDv}>{s.tenDv}</option>
-                                                    )) :
-                                                    promotion.map(p => (
-                                                        <option key={p.maKm} value={p.maKm}>{p.maCode}</option>
-                                                    ))
-                                            }
-                                        </select>
-                                    </div>)}
+                                                    :
+                                                    formData.Loai === 'Dịch vụ' ?
+                                                        service.map(s => (
+                                                            <option key={s.maDv} value={s.maDv}>{s.tenDv}</option>
+                                                        )) :
+                                                        promotion.map(p => (
+                                                            <option key={p.maKm} value={p.maKm}>{p.maCode}</option>
+                                                        ))
+                                                }
+                                            </select>
+                                        </div>)}
 
                                     {formData.Loai === 'Phim' ?
-                                    <div className="mb-3">
-                                        <label htmlFor="urlHinh" className="form-label">Hình ảnh *</label>
-                                        <input
-                                            type="url"
-                                            className="form-control"
-                                            id="urlHinh"
-                                            name="urlHinh"
-                                            value={formData.urlHinh}
-                                            placeholder="https://example.com/image.jpg"
-                                            required
-                                            //readOnly= {formData.Loai === 'Phim'}
-                                        />
-                                    </div> : <></> }
+                                        <div className="mb-3">
+                                            <label htmlFor="urlHinh" className="form-label">Hình ảnh *</label>
+                                            <input
+                                                type="url"
+                                                className="form-control"
+                                                id="urlHinh"
+                                                name="urlHinh"
+                                                value={formData.urlHinh}
+                                                placeholder="https://example.com/image.jpg"
+                                                required
+                                                //readOnly= {formData.Loai === 'Phim'}
+                                            />
+                                        </div> : <></> }
                                 </div>
                                 <div className="modal-footer">
                                     <button type="button" className="btn btn-secondary" onClick={closeModal}>Hủy</button>
