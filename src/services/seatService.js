@@ -24,7 +24,7 @@ class SeatService {
     // Lấy loại ghế theo phòng (nếu cần)
     async getSeatTypesByRoom(roomId) {
             try {
-                const response = await apiClient.get(`/loaighe/?phong=${roomId}`);
+                const response = await apiClient.get(`/loaighe?phong=${roomId}`);
                 return handleApiResponse(response);
             } catch (error) {
                 return handleError(error);

@@ -17,7 +17,9 @@ const SeatSelection = ({ scheduleData, onSeatsSelect, selectedSeats = [] }) => {
   const fetchSeatData = async () => {
     setLoading(true);
     console.log('Fetching seat type data...');
-    const result = await seatService.getAllSeatTypes();
+    console.log('Schedule Data:', scheduleData);
+    const result = await seatService.getSeatTypesByRoom(scheduleData.phongChieu.maPhongChieu
+);
     if (result.success) {
       console.log('Seat Types retrieved:', result.data);
       setSeatTypes(result.data);
@@ -247,57 +249,89 @@ const SeatSelection = ({ scheduleData, onSeatsSelect, selectedSeats = [] }) => {
           </div>
           
           {/* Legend */}
-          <div className="card border-0 shadow-sm mt-3">
-            <div className="card-body">
-              <h6>Ghi chú:</h6>
-              <div className="row">
-                <div className="col-md-3 col-6 mb-2">
-                  <div className="d-flex align-items-center">
-                    <div 
-                      className="seat-legend me-2" 
-                      style={{ backgroundColor: '#6c757d', color: '#fff' }}
-                    >
-                      A01
-                    </div>
-                    <small>Thường</small>
-                  </div>
-                </div>
-                <div className="col-md-3 col-6 mb-2">
-                  <div className="d-flex align-items-center">
-                    <div 
-                      className="seat-legend me-2" 
-                      style={{ backgroundColor: '#ffc107', color: '#212529' }}
-                    >
-                      A01
-                    </div>
-                    <small>VIP</small>
-                  </div>
-                </div>
-                <div className="col-md-3 col-6 mb-2">
-                  <div className="d-flex align-items-center">
-                    <div 
-                      className="seat-legend me-2" 
-                      style={{ backgroundColor: '#dc3545', color: '#fff' }}
-                    >
-                      A01
-                    </div>
-                    <small>Couple</small>
-                  </div>
-                </div>
-                <div className="col-md-3 col-6 mb-2">
-                  <div className="d-flex align-items-center">
-                    <div 
-                      className="seat-legend me-2" 
-                      style={{ backgroundColor: '#28a745', color: '#fff' }}
-                    >
-                      A01
-                    </div>
-                    <small>Đã chọn</small>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Legend */}
+<div className="card border-0 shadow-sm mt-3">
+  <div className="card-body">
+    <h6>Chú thích:</h6>
+    <div className="row g-3">
+      <div className="col-md-3 col-6">
+        <div className="d-flex align-items-center">
+          <div 
+            className="seat-legend me-2" 
+            style={{ backgroundColor: '#6c757d', color: '#fff' }}
+          >
+            A01
           </div>
+          <small>Ghế thường</small>
+        </div>
+      </div>
+      <div className="col-md-3 col-6">
+        <div className="d-flex align-items-center">
+          <div 
+            className="seat-legend me-2" 
+            style={{ backgroundColor: '#ffc107', color: '#212529' }}
+          >
+            A01
+          </div>
+          <small>Ghế VIP</small>
+        </div>
+      </div>
+      <div className="col-md-3 col-6">
+        <div className="d-flex align-items-center">
+          <div 
+            className="seat-legend me-2" 
+            style={{ backgroundColor: '#dc3545', color: '#fff' }}
+          >
+            <i className="bi bi-heart-fill" style={{ fontSize: '12px' }}></i>
+          </div>
+          <small>Ghế Couple</small>
+        </div>
+      </div>
+      <div className="col-md-3 col-6">
+        <div className="d-flex align-items-center">
+          <div 
+            className="seat-legend me-2" 
+            style={{ backgroundColor: '#28a745', color: '#fff' }}
+          >
+            A01
+          </div>
+          <small>Đang chọn</small>
+        </div>
+      </div>
+      <div className="col-md-3 col-6">
+        <div className="d-flex align-items-center">
+          <div 
+            className="seat-legend me-2" 
+            style={{ 
+              backgroundColor: '#dc3545', 
+              color: '#fff',
+              opacity: 0.6,
+              cursor: 'not-allowed'
+            }}
+          >
+            A01
+          </div>
+          <small>Đã đặt</small>
+        </div>
+      </div>
+      <div className="col-md-3 col-6">
+        <div className="d-flex align-items-center">
+          <div 
+            className="seat-legend me-2" 
+            style={{ 
+              backgroundColor: '#f8f9fa', 
+              color: '#6c757d',
+              border: '1px dashed #adb5bd'
+            }}
+          >
+            A01
+          </div>
+          <small>Chưa có ghế</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
         </div>
 
         {/* Selected Seats Summary */}
