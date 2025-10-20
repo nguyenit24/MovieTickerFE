@@ -58,6 +58,7 @@ const Header = () => {
               </NavLink>
             </li>
             {user && (
+              <>
               <li>
                 <NavLink
                   to="/tickets"
@@ -68,6 +69,17 @@ const Header = () => {
                   Vé của tôi
                 </NavLink>
               </li>
+                <li>
+                <NavLink
+                  to="/my-reviews"
+                  className={({ isActive }) =>
+                    `nav-link px-3 ${isActive ? "text-warning" : "text-white"}`
+                  }
+                >
+                  Lịch sử đánh giá
+                </NavLink>
+              </li>
+              </>
             )}
             <li>
 
@@ -141,7 +153,7 @@ const Header = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style jsx  >{`
         .logo-brand {
           transition: transform 0.2s ease;
         }

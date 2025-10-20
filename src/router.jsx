@@ -20,6 +20,7 @@ import TicketsPage from "./page/TicketsPage";
 import Movies from "./page/Movies";
 import About from "./page/About";
 import Blog from "./page/Blogs";
+import MyReviews from "./page/MyReviews.jsx";
 
 // --- Import các thành phần đặc biệt (Components) ---
 import InvoiceDetail from "./components/ticket/InvoiceDetail";
@@ -78,6 +79,7 @@ const Router = () => (
         <Route path="/payment/return" element={<PaymentReturn />} />
         <Route path="/payment/result" element={<PaymentReturn />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/my-reviews" element={<MyReviews />} />
         {/* Bạn có thể thêm các trang người dùng khác vào đây */}
       </Route>
 

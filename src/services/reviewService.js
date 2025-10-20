@@ -76,6 +76,15 @@ const reviewService = {
     }
   },
 
+  getMyReviews: async () => {
+    try {
+      const response = await apiClient.get("/danhgiaphim/myreviews");
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
   // Xóa đánh giá
   deleteReview: async (id) => {
     try {
