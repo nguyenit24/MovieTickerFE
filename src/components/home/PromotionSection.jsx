@@ -85,195 +85,195 @@ const PromotionSection = () => {
         setCurrentPage((prev) => (prev + 1) % totalPages);
     };
 
-  if (loading)
-    return (
-      <div className="text-center py-4">
-        <div className="spinner-border text-danger" role="status">
-          <span className="visually-hidden">Đang tải...</span>
-        </div>
-      </div>
-    );
-
-  if (promotions.length === 0)
-    return (
-      <section className="mt-5">
-        <div className="d-flex align-items-center justify-content-between mb-4">
-          <h2 className="mb-0 fw-semibold" style={{ color: "#ff4b2b" }}>
-            <i className="fas fa-gift me-2"></i>Khuyến mãi
-          </h2>
-        </div>
-
-        <div className="row g-4">
-          {[
-            {
-              tenKm: "Ưu đãi thành viên SuperMovie",
-              moTa: "Giảm giá 30% cho tất cả suất chiếu vào Thứ 4 hàng tuần.",
-              hinhAnh:
-                "https://api-website.cinestar.com.vn/media/wysiwyg/CMSPage/Promotions/HSSV-2.jpg",
-              ngayBatDau: "01/10/2025",
-              ngayKetThuc: "31/12/2025",
-            },
-            {
-              tenKm: "Happy Day - Vé chỉ 45.000đ",
-              moTa: "Áp dụng cho học sinh, sinh viên tại các rạp SuperMovie toàn quốc.",
-              hinhAnh: "https://media.lottecinemavn.com/Media/Event/60cb72826642494ab62b80df02cbeb22.jpg",
-              ngayBatDau: "05/10/2025",
-              ngayKetThuc: "31/12/2025",
-            },
-            {
-              tenKm: "Combo bắp nước chỉ 45.000đ",
-              moTa: "Combo bắp nước chỉ 45.000đ",
-              hinhAnh: "https://media.lottecinemavn.com/Media/Event/5bb61105185d44158c2e50326cdfa05e.jpg",
-              ngayBatDau: "10/10/2025",
-              ngayKetThuc: "31/12/2025",
-            },
-          ].map((km, i) => (
-            <div key={i} className="col-md-4 col-sm-6">
-              <div
-                className="card h-100 border-0 shadow-sm"
-                style={{ background: "#20232a", color: "#fff" }}
-              >
-                <img
-                  src={km.hinhAnh}
-                  alt={km.tenKm}
-                  className="card-img-top"
-                  style={{
-                    height: "200px",
-                    objectFit: "cover",
-                    borderRadius: "4px 4px 0 0",
-                  }}
-                />
-                <div className="card-body">
-                  <h5
-                    className="card-title fw-semibold"
-                    style={{ color: "#ff4b2b" }}
-                  >
-                    {km.tenKm}
-                  </h5>
-                  <p
-                    className="card-text text-muted"
-                    style={{
-                        fontSize: "0.9rem",
-                        color: "#fff"
-                  }}
-                  >
-                    {km.moTa}
-                  </p>
+    if (loading)
+        return (
+            <div className="text-center py-4">
+                <div className="spinner-border text-danger" role="status">
+                    <span className="visually-hidden">Đang tải...</span>
                 </div>
-              </div>
             </div>
-          ))}
-        </div>
-      </section>
-    );
+        );
 
-  return (
-    <section className="mt-5">
-      <div className="d-flex align-items-center justify-content-between mb-4">
-        <h2 className="mb-0 fw-semibold d-flex" style={{ color: "#ff4b2b" }}>
-            <Gift size={36} className="me-2" />
-            Khuyến mãi
-        </h2>
-      </div>
-
-      {/* Promotion Cards với Animation */}
-      <div className="position-relative">
-        <div className="row g-4">
-          {currentBanners.map((km, index) => (
-            <div
-              key={km.id}
-              className="col-md-4 col-sm-6"
-              style={{
-                animation: "fadeIn 0.5s ease-in",
-              }}
-            >
-              <div
-                className="card h-100 border-0 shadow-sm"
-                style={{
-                  background: "#20232a",
-                  color: "#fff",
-                  transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                  cursor: "default",
-                }}
-              >
-                <img
-                  src={km.hinhAnh || "/default-promo.jpg"}
-                  alt={km.tieuDe}
-                  className="card-img-top"
-                  style={{
-                    height: "200px",
-                    objectFit: "cover",
-                    borderRadius: "4px 4px 0 0",
-                  }}
-                />
-                <div className="card-body">
-                  <h5
-                    className="card-title fw-bold"
-                    style={{
-                        color: "#ff4b2b",
-                        textAlign: "center"
-                    }}
-                  >
-                    {km.tieuDe}
-                  </h5>
-                  <p
-                    className="card-text"
-                    style={{
-                        fontSize: "0.9rem",
-                        textAlign: "center",
-                        color: "#fff"
-                    }}
-                  >
-                    {km.moTa?.length > 100
-                      ? km.moTa.substring(0, 100) + "..."
-                      : km.moTa}
-                  </p>
+    if (promotions.length === 0)
+        return (
+            <section className="mt-5">
+                <div className="d-flex align-items-center justify-content-between mb-4">
+                    <h2 className="mb-0 fw-semibold" style={{ color: "#ff4b2b" }}>
+                        <i className="fas fa-gift me-2"></i>Khuyến mãi
+                    </h2>
                 </div>
-              </div>
+
+                <div className="row g-4">
+                    {[
+                        {
+                            tenKm: "Ưu đãi thành viên SuperMovie",
+                            moTa: "Giảm giá 30% cho tất cả suất chiếu vào Thứ 4 hàng tuần.",
+                            hinhAnh:
+                                "https://api-website.cinestar.com.vn/media/wysiwyg/CMSPage/Promotions/HSSV-2.jpg",
+                            ngayBatDau: "01/10/2025",
+                            ngayKetThuc: "31/12/2025",
+                        },
+                        {
+                            tenKm: "Happy Day - Vé chỉ 45.000đ",
+                            moTa: "Áp dụng cho học sinh, sinh viên tại các rạp SuperMovie toàn quốc.",
+                            hinhAnh: "https://media.lottecinemavn.com/Media/Event/60cb72826642494ab62b80df02cbeb22.jpg",
+                            ngayBatDau: "05/10/2025",
+                            ngayKetThuc: "31/12/2025",
+                        },
+                        {
+                            tenKm: "Combo bắp nước chỉ 45.000đ",
+                            moTa: "Combo bắp nước chỉ 45.000đ",
+                            hinhAnh: "https://media.lottecinemavn.com/Media/Event/5bb61105185d44158c2e50326cdfa05e.jpg",
+                            ngayBatDau: "10/10/2025",
+                            ngayKetThuc: "31/12/2025",
+                        },
+                    ].map((km, i) => (
+                        <div key={i} className="col-md-4 col-sm-6">
+                            <div
+                                className="card h-100 border-0 shadow-sm"
+                                style={{ background: "#20232a", color: "#fff" }}
+                            >
+                                <img
+                                    src={km.hinhAnh}
+                                    alt={km.tenKm}
+                                    className="card-img-top"
+                                    style={{
+                                        height: "200px",
+                                        objectFit: "cover",
+                                        borderRadius: "4px 4px 0 0",
+                                    }}
+                                />
+                                <div className="card-body">
+                                    <h5
+                                        className="card-title fw-semibold"
+                                        style={{ color: "#ff4b2b" }}
+                                    >
+                                        {km.tenKm}
+                                    </h5>
+                                    <p
+                                        className="card-text text-muted"
+                                        style={{
+                                            fontSize: "0.9rem",
+                                            color: "#fff"
+                                        }}
+                                    >
+                                        {km.moTa}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+        );
+
+    return (
+        <section className="mt-5">
+            <div className="d-flex align-items-center justify-content-between mb-4">
+                <h2 className="mb-0 fw-semibold d-flex" style={{ color: "#ff4b2b" }}>
+                    <Gift size={36} className="me-2" />
+                    Khuyến mãi
+                </h2>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Pagination Dots - Only show if more than itemsPerPage */}
-      {banners.length > itemsPerPage && (
-        <div className="d-flex justify-content-center align-items-center gap-2 mt-4">
-          {Array.from({ length: totalPages }).map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToPage(index)}
-              style={{
-                width: currentPage === index ? "30px" : "10px",
-                height: "10px",
-                borderRadius: "5px",
-                border: "none",
-                background: currentPage === index
-                  ? "linear-gradient(135deg, #ff4b2b 0%, #ff6b4a 100%)"
-                  : "#3a3d4a",
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-                boxShadow: currentPage === index
-                  ? "0 2px 8px rgba(255, 75, 43, 0.4)"
-                  : "none"
-              }}
-              onMouseEnter={(e) => {
-                if (currentPage !== index) {
-                  e.target.style.background = "#5a5d6a";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (currentPage !== index) {
-                  e.target.style.background = "#3a3d4a";
-                }
-              }}
-            />
-          ))}
-        </div>
-      )}
+            {/* Promotion Cards với Animation */}
+            <div className="position-relative">
+                <div className="row g-4">
+                    {currentBanners.map((km, index) => (
+                        <div
+                            key={km.id}
+                            className="col-md-4 col-sm-6"
+                            style={{
+                                animation: "fadeIn 0.5s ease-in",
+                            }}
+                        >
+                            <div
+                                className="card h-100 border-0 shadow-sm"
+                                style={{
+                                    background: "#20232a",
+                                    color: "#fff",
+                                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                                    cursor: "default",
+                                }}
+                            >
+                                <img
+                                    src={km.hinhAnh || "/default-promo.jpg"}
+                                    alt={km.tieuDe}
+                                    className="card-img-top"
+                                    style={{
+                                        height: "200px",
+                                        objectFit: "cover",
+                                        borderRadius: "4px 4px 0 0",
+                                    }}
+                                />
+                                <div className="card-body">
+                                    <h5
+                                        className="card-title fw-bold"
+                                        style={{
+                                            color: "#ff4b2b",
+                                            textAlign: "center"
+                                        }}
+                                    >
+                                        {km.tieuDe}
+                                    </h5>
+                                    <p
+                                        className="card-text"
+                                        style={{
+                                            fontSize: "0.9rem",
+                                            textAlign: "center",
+                                            color: "#fff"
+                                        }}
+                                    >
+                                        {km.moTa?.length > 100
+                                            ? km.moTa.substring(0, 100) + "..."
+                                            : km.moTa}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
 
-      {/* CSS Animation */}
-      <style>
-        {`
+            {/* Pagination Dots - Only show if more than itemsPerPage */}
+            {banners.length > itemsPerPage && (
+                <div className="d-flex justify-content-center align-items-center gap-2 mt-4">
+                    {Array.from({ length: totalPages }).map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => goToPage(index)}
+                            style={{
+                                width: currentPage === index ? "30px" : "10px",
+                                height: "10px",
+                                borderRadius: "5px",
+                                border: "none",
+                                background: currentPage === index
+                                    ? "linear-gradient(135deg, #ff4b2b 0%, #ff6b4a 100%)"
+                                    : "#3a3d4a",
+                                cursor: "pointer",
+                                transition: "all 0.3s ease",
+                                boxShadow: currentPage === index
+                                    ? "0 2px 8px rgba(255, 75, 43, 0.4)"
+                                    : "none"
+                            }}
+                            onMouseEnter={(e) => {
+                                if (currentPage !== index) {
+                                    e.target.style.background = "#5a5d6a";
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (currentPage !== index) {
+                                    e.target.style.background = "#3a3d4a";
+                                }
+                            }}
+                        />
+                    ))}
+                </div>
+            )}
+
+            {/* CSS Animation */}
+            <style>
+                {`
           @keyframes fadeIn {
             from {
               opacity: 0;
@@ -285,9 +285,9 @@ const PromotionSection = () => {
             }
           }
         `}
-      </style>
-    </section>
-  );
+            </style>
+        </section>
+    );
 };
 
 export default PromotionSection;
