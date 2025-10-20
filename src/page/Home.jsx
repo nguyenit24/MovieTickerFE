@@ -32,6 +32,7 @@ const Home = () => {
         setComingSoon(resSoon.data || []);
         setMovieBanners(resSlider.data || []);
       } catch (err) {
+        console.log(err);
         showError("❌ Lỗi khi tải phim:", err);
       } finally {
         setLoading(false);
