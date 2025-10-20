@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import categoryService from '../../services/categoryService';
 import {Film, ChartBar, Plus} from "lucide-react";
+import {useToast} from "../common/Toast.jsx";
 
 const CategoryManager = () =>
 {
@@ -12,7 +13,8 @@ const CategoryManager = () =>
   const [formData, setFormData] = useState({ tenTheLoai: '' });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
+  const [errors, setErrors] = useState({});
+  const {showError, showSuccess} = useToast();
 
   useEffect(() => {
     fetchCategories(currentPage);
@@ -33,7 +35,7 @@ const CategoryManager = () =>
         setCurrentPage(1);
       }
     } catch (error) {
-      console.error('Lỗi kết nối API:', error);
+      showError("Lỗi kết nối API: " + error.message);
       setCategories([]); // Sửa lại cho đúng
       setTotalPages(1);
       setCurrentPage(1);
@@ -57,21 +59,32 @@ const CategoryManager = () =>
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+      const newErrors = {};
+      if (!formData.tenTheLoai.trim()) {
+          newErrors.tenTheLoai = 'Vui lòng nhập thể loại';
+      }
+
+      if (Object.keys(newErrors).length > 0) {
+          setErrors(newErrors);
+          return;
+      }
     if (modalType === 'add') {
       const result = await categoryService.createCategory(formData);
       if (result.success) {
         fetchCategories();
+        showSuccess("Thêm thể loại thành công!");
         closeModal();
       } else {
-        alert(result.message);
+        showError(result.message);
       }
     } else if (modalType === 'edit') {
       const result = await categoryService.updateCategory(selectedCategory.maTheLoai, formData);
       if (result.success) {
         fetchCategories();
-        closeModal();
+          showSuccess("Chỉnh sửa thể loại thành công!");
+          closeModal();
       } else {
-        alert(result.message);
+        showError(result.message);
       }
     }
   };
@@ -82,7 +95,7 @@ const CategoryManager = () =>
       if (result.success) {
         fetchCategories();
       } else {
-        alert(result.message);
+        showError(result.message);
       }
     }
   };
@@ -96,8 +109,7 @@ const CategoryManager = () =>
                             <ChartBar size={32}/>
                         </div>
                         <div>
-                            <h1 className="mb-0 h3">Quản Lý thể loại phim</h1>
-                            <p className="text-muted mb-0">Hệ thống quản lý rạp chiếu phim</p>
+                            <h1 className="mb-0 h3">Quản Lý Thể Loại Phim</h1>
                         </div>
                     </div>
                     <button
@@ -105,7 +117,7 @@ const CategoryManager = () =>
                         onClick={() => openModal('add', null)}
                     >
                         <Plus size={20} className="me-2" style={{verticalAlign: 'middle'}}/>
-                        Thêm Suất Chiếu
+                        Thêm Thể Loại
                     </button>
                 </div>
             </div>
@@ -120,7 +132,7 @@ const CategoryManager = () =>
                     <table className="table table-bordered table-hover">
                         <thead className="table-light">
                         <tr>
-                            <th style={{ width: '40px' }}>STT</th>
+                            <th style={{ width: '40px' }}>#</th>
                             <th>Tên thể loại</th>
                             <th style={{ width: '160px' }}>Hành động</th>
                         </tr>
@@ -198,14 +210,16 @@ const CategoryManager = () =>
                         <form onSubmit={handleSubmit}>
                             <div className="modal-body">
                                 <div className="mb-3">
-                                    <label className="form-label">Tên thể loại *</label>
+                                    <label className="form-label">Tên thể loại  <p className="text-danger">*</p></label>
                                     <input
                                         type="text"
-                                        className="form-control"
+                                        className={`form-control ${errors.tenTheLoai ? 'is-invalid' : ''}`}
                                         value={formData.tenTheLoai}
                                         onChange={e => setFormData({ tenTheLoai: e.target.value })}
-                                        required
                                     />
+                                    {errors.tenTheLoai && (
+                                        <div className="invalid-feedback">{errors.tenTheLoai}</div>
+                                    )}
                                 </div>
                             </div>
                             <div className="modal-footer">
@@ -217,6 +231,26 @@ const CategoryManager = () =>
                 </div>
             </div>
         )}
+        <style jsx>{`
+            .modal-title
+            {
+              color: black;
+              display: flex;
+              gap: 0.2rem
+            }
+            
+            .form-label 
+            {
+                color: black;
+                display: flex;
+                gap: 0.2rem;
+                font-weight: 700;
+                height: 24px;
+            }
+            
+            
+            `}
+            </style>
     </div>
 );
 };

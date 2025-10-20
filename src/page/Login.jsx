@@ -4,7 +4,9 @@ import { useAuth } from "../context/AuthContext";
 import authService from "../services/authService";
 import { jwtDecode } from "jwt-decode";
 import { GoogleLogin } from "@react-oauth/google";
-import "./Auth.css"; // Import file CSS mới
+import "./Auth.css";
+import Header from "../components/Layout/Header.jsx";
+import Footer from "../components/Layout/Footer.jsx"; // Import file CSS mới
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -68,73 +70,78 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2 className="text-center">Đăng Nhập</h2>
-        <form onSubmit={handleSubmit}>
-          {error && <div className="alert alert-danger">{error}</div>}
-          <div className="form-group mb-3">
-            <label className="form-label" htmlFor="username">
-              Tên đăng nhập
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </div>
-          <div className="form-group mb-4">
-            <label className="form-label" htmlFor="password">
-              Mật khẩu
-            </label>
-            <input
-              type="password"
-              className="form-control"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+      <div>
+          <Header />
+          <div className="auth-container">
 
-          <button
-            type="submit"
-            className="btn btn-primary w-100 mb-3"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
+              <div className="auth-card">
+                  <h2 className="text-center">Đăng Nhập</h2>
+                  <form onSubmit={handleSubmit}>
+                      {error && <div className="alert alert-danger">{error}</div>}
+                      <div className="form-group mb-3">
+                          <label className="form-label" htmlFor="username">
+                              Tên đăng nhập
+                          </label>
+                          <input
+                              type="text"
+                              className="form-control"
+                              id="username"
+                              value={username}
+                              onChange={(e) => setUsername(e.target.value)}
+                          />
+                      </div>
+                      <div className="form-group mb-4">
+                          <label className="form-label" htmlFor="password">
+                              Mật khẩu
+                          </label>
+                          <input
+                              type="password"
+                              className="form-control"
+                              id="password"
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                          />
+                      </div>
+
+                      <button
+                          type="submit"
+                          className="btn btn-primary w-100 mb-3"
+                          disabled={loading}
+                      >
+                          {loading ? (
+                              <>
                 <span
-                  className="spinner-border spinner-border-sm"
-                  role="status"
-                  aria-hidden="true"
+                    className="spinner-border spinner-border-sm"
+                    role="status"
+                    aria-hidden="true"
                 ></span>
-                <span> Đang tải...</span>
-              </>
-            ) : (
-              "Đăng Nhập"
-            )}
-          </button>
-          <div className="d-flex justify-content-between">
-            <Link to="/forgot-password" className="auth-link">
-              Quên mật khẩu?
-            </Link>
-            <Link to="/register" className="auth-link">
-              Đăng ký ngay
-            </Link>
+                                  <span> Đang tải...</span>
+                              </>
+                          ) : (
+                              "Đăng Nhập"
+                          )}
+                      </button>
+                      <div className="d-flex justify-content-between">
+                          <Link to="/forgot-password" className="auth-link">
+                              Quên mật khẩu?
+                          </Link>
+                          <Link to="/register" className="auth-link">
+                              Đăng ký ngay
+                          </Link>
+                      </div>
+                      <div className="or-divider">hoặc</div>
+                      <div className="d-flex justify-content-center">
+                          <GoogleLogin
+                              onSuccess={handleGoogleSuccess}
+                              onError={handleGoogleError}
+                              useOneTap
+                          />
+                      </div>
+                  </form>
+              </div>
           </div>
-          <div className="or-divider">hoặc</div>
-          <div className="d-flex justify-content-center">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleError}
-              useOneTap
-            />
-          </div>
-        </form>
+          <Footer />
       </div>
-    </div>
   );
 };
 

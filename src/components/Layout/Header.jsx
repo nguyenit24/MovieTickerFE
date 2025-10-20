@@ -41,7 +41,7 @@ const Header = () => {
               <NavLink
                 to="/"
                 className={({ isActive }) =>
-                  `nav-link px-3 ${isActive ? "text-warning" : "text-white"}`
+                  `nav-link px-3 text-header ${isActive ? "text-warning" : "text-white"}`
                 }
               >
                 Trang chủ
@@ -51,7 +51,7 @@ const Header = () => {
               <NavLink
                 to="/movies"
                 className={({ isActive }) =>
-                  `nav-link px-3 ${isActive ? "text-warning" : "text-white"}`
+                  `nav-link px-3 text-header ${isActive ? "text-warning" : "text-white"}`
                 }
               >
                 Phim
@@ -62,7 +62,7 @@ const Header = () => {
                 <NavLink
                   to="/tickets"
                   className={({ isActive }) =>
-                    `nav-link px-3 ${isActive ? "text-warning" : "text-white"}`
+                    `nav-link px-3 text-header ${isActive ? "text-warning" : "text-white"}`
                   }
                 >
                   Vé của tôi
@@ -77,7 +77,7 @@ const Header = () => {
                 <NavLink
                   to="/admin"
                   className={({ isActive }) =>
-                    `nav-link px-3 ${
+                    `nav-link px-3 text-header ${
                       isActive ? "text-warning fw-bold" : "text-warning"
                     }`
                   }
@@ -92,7 +92,7 @@ const Header = () => {
           <div className="text-end">
             {user ? (
               // Giao diện khi đã đăng nhập
-              <div className="dropdown">
+              <div className="dropdown text-header">
                 <a
                   href="#"
                   className="d-block link-light text-decoration-none dropdown-toggle"
@@ -101,16 +101,22 @@ const Header = () => {
                 >
                   <i className="bi bi-person-circle me-2"></i>
                   Chào,{" "}
-                  <span className="text-warning">{user.username}</span>
+                  <span className="text-warning text-header">{user.username}</span>
                 </a>
                 <ul
-                  className={`dropdown-menu dropdown-menu-end text-small ${
+                  className={`dropdown-menu dropdown-menu-end text-small mt-2 ${
                     isDropdownOpen ? "show" : ""
                   }`}
                   aria-labelledby="dropdownUser1"
                 >
+                    <li>
+                        <Link className="dropdown-item p-3" to="/profile">
+                            <i className="bi bi-person-circle me-2"></i>
+                            Quản lý tài khoản
+                        </Link>
+                    </li>
                   <li>
-                    <Link to="/tickets" className="dropdown-item">
+                    <Link to="/tickets" className="dropdown-item p-3">
                       <i className="bi bi-ticket-perforated me-2"></i>
                       Lịch sử đặt vé
                     </Link>
@@ -119,7 +125,7 @@ const Header = () => {
                     <hr className="dropdown-divider" />
                   </li>
                   <li>
-                    <button className="dropdown-item" onClick={handleLogout}>
+                    <button className="dropdown-item text-danger p-3" onClick={handleLogout}>
                       <i className="bi bi-box-arrow-right me-2"></i>
                       Đăng xuất
                     </button>

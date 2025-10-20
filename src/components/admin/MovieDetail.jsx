@@ -5,7 +5,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { useNavigate } from "react-router-dom";
 import categoryService from "../../services/categoryService.js";
-import {useToast} from "../common/Toast.jsx"; // nhớ import ở đầu file
+import {useToast} from "../common/Toast.jsx";
+import Movie from "../home/Movie.jsx"; // nhớ import ở đầu file
 
 
 
@@ -18,6 +19,7 @@ const MovieDetail = () => {
     const [modalType, setModalType] = useState('');
     const [categories, setCategories] = useState([]);
     const {showError, showSuccess} = useToast();
+    const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({
         tenPhim: '',
         moTa: '',
@@ -57,13 +59,49 @@ const MovieDetail = () => {
     useEffect(() => {
         fetchMovie();
     }, [movieId]);
-    if (loading) return <div className="text-center p-5">Đang tải...</div>;
-    if (!movie) return <div className="text-center p-5">Không tìm thấy phim.</div>;
+    if (loading)
+    return (
+        <div className="container-fluid p-4">
+            <div className="d-flex justify-content-center">
+                <div className="spinner-border text-primary"></div>
+            </div>
+        </div>
+    );
+
+    if (!movie)
+        return (
+        <div className="container-fluid p-4">
+            <div className="d-flex justify-content-center">
+                <Movie Size={36} />
+                <div className="text-center p-5">Không tìm thấy phim.</div>;
+            </div>
+        </div>
+    );
+
 
     const handleCloseModal = () => setShowModal(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const newErrors = {};
+        if (!formData.tenPhim.trim()) newErrors.tenPhim = 'Vui lòng nhập tên phim';
+        if (!formData.daoDien.trim()) newErrors.daoDien = 'Vui lòng nhập đạo diễn';
+        if (!formData.ngayKhoiChieu) newErrors.ngayKhoiChieu = 'Vui lòng chọn ngày khới chiếu';
+        if (!formData.tuoi) newErrors.tuoi = 'Vui lòng chọn giới hạn độ tuổi';
+        if (!formData.trangThai) newErrors.trangThai = 'Vui lòng chọn trạng thái phim';
+        if (!formData.thoiLuong || isNaN(formData.thoiLuong) || formData.thoiLuong <= 0)
+            newErrors.thoiLuong = 'Vui lòng nhập thời lượng hợp lệ';
+        if (formData.theLoai.length === 0)
+            newErrors.theLoai = 'Vui lòng chọn ít nhất một thể loại';
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+        setErrors({})
+
+
         // Chuyển mảng id thể loại sang mảng tên thể loại
         const theLoaiNames = categories
             .filter(cat => formData.theLoai.includes(cat.maTheLoai))
@@ -107,6 +145,7 @@ const MovieDetail = () => {
     const closeModal = () => {
         setShowModal(false);
         setModalType('');
+        setErrors({});
     };
 
     return (
@@ -220,8 +259,7 @@ const MovieDetail = () => {
                         </div>
                     </div>
 
-                    {/*<p><strong>Thời lượng:</strong> {movie.thoiLuong} phút</p>*/}
-                    {/*<p><strong>Ngày khởi chiếu:</strong> {new Date(movie.ngayKhoiChieu).toLocaleDateString('vi-VN')}</p>*/}
+
                 </div>
             </div>
 
@@ -268,12 +306,6 @@ const MovieDetail = () => {
                             {modalType === 'view' ? (
                             <div className="modal-body p-0">
                                 <div className="ratio ratio-16x9">
-                                    {/*<iframe width="560" height="315"*/}
-                                    {/*        src="https://www.youtube.com/embed/4Fhs9-B9IHo?si=ruqFtIo4MsLQL9t3&autoplay=1"*/}
-                                    {/*        title="YouTube video player" frameBorder="0"*/}
-                                    {/*        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"*/}
-                                    {/*        referrerPolicy="strict-origin-when-cross-origin"*/}
-                                    {/*        allowFullScreen></iframe>*/}
                                     <iframe width="560" height="315"
                                         src={
                                             movie.trailerURL?.replace("watch?v=", "embed/") + "&autoplay=1" ||
@@ -294,21 +326,27 @@ const MovieDetail = () => {
                                             <label className="form-label">Tên phim *</label>
                                             <input
                                                 type="text"
-                                                className="form-control"
+                                                className={`form-control ${errors.tenPhim ? 'is-invalid' : ''}`}
                                                 value={formData.tenPhim}
                                                 onChange={(e) => setFormData({...formData, tenPhim: e.target.value})}
-                                                required
                                             />
+                                            {errors.tenPhim && (
+                                                <div className="invalid-feedback">{errors.tenPhim}</div>
+                                            )}
                                         </div>
                                         <div className="mb-3">
-                                            <label className="form-label">Đạo diễn *</label>
+                                            <label className="form-label">Đạo diễn
+                                                <span className="text-danger">*</span>
+                                                </label>
                                             <input
                                                 type="text"
-                                                className="form-control"
+                                                className={`form-control ${errors.daoDien ? 'is-invalid' : ''}`}
                                                 value={formData.daoDien}
                                                 onChange={(e) => setFormData({...formData, daoDien: e.target.value})}
-                                                required
                                             />
+                                            {errors.daoDien && (
+                                                <div className="invalid-feedback">{errors.daoDien}</div>
+                                            )}
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-label">Diễn viên</label>
@@ -320,9 +358,11 @@ const MovieDetail = () => {
                                             />
                                         </div>
                                         <div className="mb-3">
-                                            <label className="form-label">Thể loại *</label>
+                                            <label className="form-label">Thể loại
+                                                <span className="text-danger">*</span>
+                                            </label>
                                             <select
-                                                className="form-select"
+                                                className={`form-select ${errors.theLoai ? 'is-invalid' : ''}`}
                                                 multiple
                                                 value={formData.theLoai}
                                                 onChange={e => {
@@ -335,29 +375,37 @@ const MovieDetail = () => {
                                                     <option key={cat.maTheLoai} value={cat.maTheLoai}>{cat.tenTheLoai}</option>
                                                 ))}
                                             </select>
+                                            {errors.theLoai && (
+                                                <div className="invalid-feedback">{errors.theLoai}</div>
+                                            )}
                                             <small className="text-muted">Giữ Ctrl để chọn nhiều thể loại</small>
                                         </div>
                                         <div className="row">
                                             <div className="col-6">
                                                 <div className="mb-3">
-                                                    <label className="form-label">Thời lượng (phút) *</label>
+                                                    <label className="form-label">Thời lượng (phút)
+                                                        <span className="text-danger">*</span>
+                                                    </label>
                                                     <input
                                                         type="number"
-                                                        className="form-control"
+                                                        className={`form-control ${errors.thoiLuong ? 'is-invalid' : ''}`}
                                                         value={formData.thoiLuong}
                                                         onChange={(e) => setFormData({...formData, thoiLuong: e.target.value})}
-                                                        required
                                                     />
+                                                    {errors.thoiLuong && (
+                                                        <div className="invalid-feedback">{errors.thoiLuong}</div>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div className="col-6">
                                                 <div className="mb-3">
-                                                    <label className="form-label">Độ tuổi *</label>
+                                                    <label className="form-label">Độ tuổi
+                                                        <span className="text-danger">*</span>
+                                                    </label>
                                                     <select
-                                                        className="form-select"
+                                                        className={`form-select ${errors.tuoi ? 'is-invalid' : ''}`}
                                                         value={formData.tuoi}
                                                         onChange={(e) => setFormData({...formData, tuoi: e.target.value})}
-                                                        required
                                                     >
                                                         <option value="">Chọn độ tuổi</option>
                                                         <option value="0">0+</option>
@@ -365,23 +413,32 @@ const MovieDetail = () => {
                                                         <option value="16">16+</option>
                                                         <option value="18">18+</option>
                                                     </select>
+                                                    {errors.tuoi && (
+                                                        <div className="invalid-feedback">{errors.tuoi}</div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="col-md-6">
                                         <div className="mb-3">
-                                            <label className="form-label">Ngày khởi chiếu *</label>
+                                            <label className="form-label">Ngày khởi chiếu
+                                                <span className="text-danger">*</span>
+                                            </label>
                                             <input
                                                 type="date"
                                                 className="form-control"
                                                 value={formData.ngayKhoiChieu}
                                                 onChange={(e) => setFormData({...formData, ngayKhoiChieu: e.target.value})}
-                                                required
                                             />
+                                            {errors.ngayKhoiChieu && (
+                                                <div className="invalid-feedback">{errors.ngayKhoiChieu}</div>
+                                            )}
                                         </div>
                                         <div className="mb-3">
-                                            <label className="form-label">Trạng thái *</label>
+                                            <label className="form-label">Trạng thái
+                                                <span className="text-danger">*</span>
+                                            </label>
                                             <select
                                                 className="form-select"
                                                 value={formData.trangThai}
@@ -392,6 +449,9 @@ const MovieDetail = () => {
                                                 <option value="Đang chiếu">Đang chiếu</option>
                                                 <option value="Đã chiếu">Đã chiếu</option>
                                             </select>
+                                            {errors.trangThai && (
+                                                <div className="invalid-feedback">{errors.trangThai}</div>
+                                            )}
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-label">URL Hình ảnh</label>
@@ -440,6 +500,23 @@ const MovieDetail = () => {
                     </div>
                 </div>
                 )}
+            <style jsx>{`
+            .modal-title
+            {
+                color: black;
+                display: flex;
+                gap: 0.2rem
+            }
+
+            .form-label
+            {
+                color: black;
+                display: flex;
+                gap: 0.2rem;
+                font-weight: 700;
+                height: 24px;
+            }
+        `}</style>
         </div>
         )
 };

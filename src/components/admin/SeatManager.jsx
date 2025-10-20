@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import seatService from '../../services/seatService';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useToast } from '../common/Toast';
+import {useNavigate, useParams} from 'react-router-dom';
+import {useToast} from '../common/Toast';
 import {roomService} from "../../services/index.js";
-import {Armchair, MoveLeft, Plus} from "lucide-react";
+import {Armchair, MoveLeft} from "lucide-react";
 
 
 const SeatManager = () => {
@@ -14,11 +14,7 @@ const SeatManager = () => {
     const [modalType, setModalType] = useState('');
     const [selectedSeatType, setSelectedSeatType] = useState(null);
     const [selectedSeat, setSelectedSeat] = useState(null);
-    const [formData, setFormData] = useState({
-        tenLoaiGhe: '',
-        phuThu: 0,
-    });
-    const [seatFormData, setSetFormData] = useState({
+    const [seatFormData, setSeatFormData] = useState({
         tenGhe: '',
         maLoaiGhe: '',
     });
@@ -29,6 +25,7 @@ const SeatManager = () => {
     const {roomId} = useParams();
     const navigate = useNavigate();
     const {showSuccess, showError} = useToast();
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         fetchAllSeatTypesAndRoomSeats();
@@ -41,6 +38,7 @@ const SeatManager = () => {
             seatService.getAllSeatTypes(roomId),
             roomService.getRoomSeats(roomId)
         ]);
+
         if (allTypesRes.success && roomSeatsRes.success) {
             setSeatTypes(allTypesRes.data || []);
             setRoomSeats(Array.isArray(roomSeatsRes.data.listGhe) ? roomSeatsRes.data.listGhe : []);
@@ -67,8 +65,8 @@ const SeatManager = () => {
         for (let i = 0; i < str.length; i++) {
             hash = str.charCodeAt(i) + ((hash << 5) - hash);
         }
-        const color = `hsl(${hash % 360}, 70%, 60%)`; // sinh màu theo hue
-        return color;
+         // sinh màu theo hue
+        return `hsl(${hash % 360}, 70%, 60%)`;
     };
     // Lấy màu theo loại ghế
     const getSeatTypeColor = (seatType) => {
@@ -98,9 +96,15 @@ const SeatManager = () => {
         setModalType(type);
         if (type === 'addSeat') {
             setAddSeat(itemname);
-            setSetFormData({
+            setSeatFormData({
                 tenGhe: itemname,
                 maLoaiGhe: null,
+            })
+        } else if (type === 'changeSeatType') {
+            setEditingSeat(item);
+            setSeatFormData({
+                tenGhe: item.tenGhe,
+                maLoaiGhe: item.maLoaiGhe,
             })
         }
         setShowModal(true);
@@ -113,70 +117,55 @@ const SeatManager = () => {
         setSelectedSeatType(null);
         setSelectedSeat(null);
         setEditingSeat(null);
-        setFormData({tenLoaiGhe: '', phuThu: 0});
-        setSetFormData({tenGhe: '', maLoaiGhe: ''});
+        setSeatFormData({tenGhe: '', maLoaiGhe: ''});
+        setErrors({})
     };
 
     // Handle form input change for seat type
-    const handleInputChange = (e) => {
-        const {name, value} = e.target;
-        setFormData({
-            ...formData,
-            [name]: name === 'phuThu' ? parseFloat(value) : value,
-        });
-    };
 
     // Handle form input change for seat
     const handleSeatInputChange = (e) => {
         const {name, value} = e.target;
-        setSetFormData({
+        setSeatFormData({
             ...seatFormData,
             [name]: value,
         });
     };
 
-    // Submit seat type form
-    const handleSeatTypeSubmit = async (e) => {
-        e.preventDefault();
+  const handleDeleteSeat = async (e, seat) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-        if (modalType === 'addSeatType') {
-            const result = await seatService.createSeatType(formData);
-            if (result.success) {
-                showSuccess('Thêm loại ghế thành công');
-                fetchAllSeatTypesAndRoomSeats();
-                closeModal();
-            } else {
-                showError(result.message || 'Lỗi khi thêm loại ghế');
-            }
-        } else if (modalType === 'editSeatType') {
-            const result = await seatService.updateSeatType(selectedSeatType.maLoaiGhe, formData);
-            if (result.success) {
-                showSuccess('Cập nhật loại ghế thành công');
-                fetchAllSeatTypesAndRoomSeats();
-                closeModal();
-            } else {
-                showError(result.message || 'Lỗi khi cập nhật loại ghế');
-            }
-        }
-    };
-
-  const handleDeleteSeat = async (seat) => {
-      const result = await seatService.deleteSeat(seat.maGhe)
+      const result = await seatService.deleteSeat(seat.maGhe);
       if (result.success) {
-          showSuccess('Xóa loại ghế thành công');
+          showSuccess('Xóa ghế thành công');
           fetchAllSeatTypesAndRoomSeats();
+          closeModal();
       } else {
-          showError(result.message || 'Lỗi khi xóa loại ghế');
+          showError(result.message || 'Lỗi khi xóa ghế');
       }
   }
 
-  const handleCreatSeat = async (seat) => {
-      const result = await seatService.createSeat(
-          {
-              maPhongChieu: roomId,
-              tenGhe: seatFormData.tenGhe,
-              maLoaiGhe: seatFormData.maLoaiGhe,
-          });
+  const handleCreatSeat = async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const newErrors = {};
+      if (!seatFormData.maLoaiGhe) newErrors.maLoaiGhe = 'Vui lòng chọn loại ghế';
+
+      if (Object.keys(newErrors).length > 0) {
+          setErrors(newErrors);
+          return;
+      }
+
+      setErrors({});
+
+      const result = await seatService.createSeat({
+          maPhongChieu: roomId,
+          tenGhe: seatFormData.tenGhe || addSeat,
+          maLoaiGhe: seatFormData.maLoaiGhe,
+      });
+
       if (result.success) {
           showSuccess('Thêm ghế thành công');
           fetchAllSeatTypesAndRoomSeats();
@@ -186,20 +175,33 @@ const SeatManager = () => {
       }
   }
 
-      const handleUpdateSeat = async (seat) => {
-          const result = await seatService.updateSeat(editingSeat.maGhe, {
-              tenGhe: seatFormData.tenGhe,
-              maLoaiGhe: seatFormData.maLoaiGhe
-          });
-          if (result.success) {
-              showSuccess('Thay đổi loại ghế thành công');
-              fetchAllSeatTypesAndRoomSeats();
-              closeModal();
-          } else {
-              showError(result.message || 'Lỗi khi thay đổi loại ghế');
-          }
+  const handleUpdateSeat = async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const newErrors = {};
+      if (!seatFormData.maLoaiGhe) newErrors.maLoaiGhe = 'Vui lòng chọn loại ghế';
+
+      if (Object.keys(newErrors).length > 0) {
+          setErrors(newErrors);
+          return;
       }
 
+      setErrors({});
+
+      const result = await seatService.updateSeat(editingSeat.maGhe, {
+          tenGhe: editingSeat.tenGhe,
+          maLoaiGhe: seatFormData.maLoaiGhe
+      });
+
+      if (result.success) {
+          showSuccess('Thay đổi loại ghế thành công');
+          fetchAllSeatTypesAndRoomSeats();
+          closeModal();
+      } else {
+          showError(result.message || 'Lỗi khi thay đổi loại ghế');
+      }
+  }
   // Generate seat grid for cinema layout
   const renderSeatGrid = () => {
     const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
@@ -390,59 +392,7 @@ const SeatManager = () => {
           </div>
         </div>
       </div>
-      
-      {/* Modal for Add/Edit Seat Type */}
-      {showModal && (modalType === 'addSeatType' || modalType === 'editSeatType') && (
-        <div className="modal show d-block modal-overlay">
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {modalType === 'addSeatType' ? 'Thêm loại ghế' : 'Chỉnh sửa loại ghế'}
-                </h5>
-                <button type="button" className="btn-close" onClick={closeModal}></button>
-              </div>
-              <form onSubmit={handleSeatTypeSubmit}>
-                <div className="modal-body">
-                  <div className="mb-3">
-                    <label htmlFor="tenLoaiGhe" className="form-label">Tên loại ghế *</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="tenLoaiGhe"
-                      name="tenLoaiGhe"
-                      value={formData.tenLoaiGhe}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="phuThu" className="form-label">Phụ thu (VNĐ) *</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      id="phuThu"
-                      name="phuThu"
-                      value={formData.phuThu}
-                      onChange={handleInputChange}
-                      min="0"
-                      step="1000"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={closeModal}>Hủy</button>
-                  <button type="submit" className="btn btn-primary">
-                    {modalType === 'addSeatType' ? 'Thêm' : 'Cập nhật'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-      
+
       {/* Modal for Change Seat Type */}
       {showModal && (modalType === 'changeSeatType' || modalType === 'addSeat') && (
         <div className="modal show d-block modal-overlay">
@@ -457,7 +407,8 @@ const SeatManager = () => {
               <form>
                 <div className="modal-body">
                   <div className="mb-3">
-                    <label className="form-label">Tên ghế</label>
+                    <label className="form-label">Tên ghế
+                    </label>
                     <input
                       type="text"
                       className="form-control"
@@ -468,14 +419,15 @@ const SeatManager = () => {
 
 
                   <div className="mb-3">
-                    <label htmlFor="maLoaiGhe" className="form-label">Loại ghế *</label>
+                    <label htmlFor="maLoaiGhe" className="form-label">Loại ghế
+                        <span className="text-danger">*</span>
+                    </label>
                     <select
-                      className="form-select"
+                        className={`form-select ${errors.maLoaiGhe ? 'is-invalid' : ''}`}
                       id="maLoaiGhe"
                       name="maLoaiGhe"
                       value={seatFormData.maLoaiGhe}
                       onChange={handleSeatInputChange}
-                      required
                     >
                       <option value="">-- Chọn loại ghế --</option>
                       {seatTypes.map((type) => (
@@ -484,20 +436,23 @@ const SeatManager = () => {
                         </option>
                       ))}
                     </select>
+                      {errors.maLoaiGhe && (
+                          <div className="invalid-feedback">{errors.maLoaiGhe}</div>
+                      )}
                   </div>
                 </div>
                 <div className="modal-footer">
                   <button type="button" className="btn btn-secondary" onClick={closeModal}>Hủy</button>
-                    {(modalType === "changeSeatType") ?
-                    <button type="submit" className="btn btn-danger"
-                        onClick={() => handleDeleteSeat(editingSeat)}
+                    {(modalType === "changeSeatType") && (
+                    <button type="button" className="btn btn-danger"
+                        onClick={(e) => handleDeleteSeat(e, editingSeat)}
                     >
-                        {'Xóa'}
-                    </button> : ''
-                    }
-                  <button type="submit" className="btn btn-primary"
-                      onClick={() =>
-                      (modalType === 'addSeat') ? handleCreatSeat(addSeat): handleUpdateSeat(editingSeat)
+                        Xóa
+                    </button>
+                    )}
+                  <button type="button" className="btn btn-primary"
+                      onClick={(e) =>
+                      (modalType === 'addSeat') ? handleCreatSeat(e) : handleUpdateSeat(e)
                   }>
                     {modalType === 'addSeat' ? 'Thêm' : 'Cập nhật'}
                   </button>
@@ -524,6 +479,23 @@ const SeatManager = () => {
           z-index: 1;
           cursor: pointer;
         }
+        
+        .modal-title
+        {
+            color: black;
+            display: flex;
+            gap: 0.2rem
+        }
+
+        .form-label
+        {
+            color: black;
+            display: flex;
+            gap: 0.2rem;
+            font-weight: 700;
+            height: 24px;
+        }
+        
       `}</style>
     </div>
   );

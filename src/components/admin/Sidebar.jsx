@@ -22,16 +22,19 @@ const Sidebar = () => {
         { id: 'film', icon: 'bi-film', label: 'Phim' },
         { id: 'category', icon: 'bi-tags', label: 'Thể loại' },
         { id: 'schedule', icon: 'bi-calendar3', label: 'Suất chiếu' },
+        { id: 'review', icon: 'bi-chat-left-text', label: 'Đánh giá phim' },
     ];
 
-    const otherItems = [
-        { id: 'user', icon: 'bi-people', label: 'Người dùng' },
-        { id: 'service', icon: 'bi-tools', label: 'Dịch vụ khác' },
-        {id: 'promotion', icon: 'bi-gift', label: 'Khuyến mãi' },
+    const revenueItems = [
+        { id: 'revenue', icon: 'bi-currency-dollar', label: 'Doanh thu' },
         { id: 'invoices', icon: 'bi-receipt', label: 'Hóa đơn' },
         { id: 'tickets', icon: 'bi-ticket', label: 'Vé' },
-        { id: 'review', icon: 'bi-chat-left-text', label: 'Đánh giá phim' },
-        { id: 'revenue', icon: 'bi-currency-dollar', label: 'Doanh thu' }
+    ]
+
+    const otherItems = [
+        {id: 'user', icon: 'bi-people', label: 'Người dùng'},
+        {id: 'service', icon: 'bi-basket', label: 'Dịch vụ khác'},
+        {id: 'promotion', icon: 'bi-gift', label: 'Khuyến mãi'},
     ];
 
     return (
@@ -102,6 +105,28 @@ const Sidebar = () => {
                         PHIM
                     </h6>
                     {movieItems.map(item => (
+                        <button
+                            key={item.id}
+                            onClick={() => navigate(`/admin/${item.id}`)}
+                            className={`btn w-100 text-start mb-2 d-flex align-items-center ${
+                                isActive(item.id)
+                                    ? 'btn-warning text-dark fw-bold'
+                                    : 'btn-outline-secondary text-white border-0'
+                            }`}
+                            style={{ height: '45px' }}
+                        >
+                            <i className={`bi ${item.icon} me-3`}></i>
+                            {item.label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Revenue Section */}
+                <div className="mb-4">
+                    <h6 className="text-uppercase text-white fw-bold mb-3" style={{ fontSize: '0.75rem' }}>
+                        DOANH THU
+                    </h6>
+                    {revenueItems.map(item => (
                         <button
                             key={item.id}
                             onClick={() => navigate(`/admin/${item.id}`)}

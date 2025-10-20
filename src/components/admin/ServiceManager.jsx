@@ -1,6 +1,7 @@
 import React, {useState, useEffect, use} from 'react';
 import {Film, Plus, Utensils} from "lucide-react";
 import {serviceService} from "../../services/index.js";
+import {useToast} from "../common/Toast.jsx";
 
 const AdminFoodManagement = () => {
     const [products, setProducts] = useState([])
@@ -10,7 +11,9 @@ const AdminFoodManagement = () => {
     const [editingProduct, setEditingProduct] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [errors, setErrors] = useState({});
     const [totalPages, setTotalPages] = useState(1);
+    const {showError, showSuccess} = useToast();
     const [filterCategory, setFilterCategory] = useState('all');
     const [formData, setFormData] = useState({
         maDv: '',
@@ -51,7 +54,7 @@ const AdminFoodManagement = () => {
                 setCurrentPage(1);
             }
         } catch (error) {
-            console.error('Lỗi kết nối API:', error);
+            showError("Lỗi kết nối API: " + error.message);
             setCurrentProducts([]);
             setTotalPages(1);
             setCurrentPage(1);
@@ -96,14 +99,30 @@ const AdminFoodManagement = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const newErrors = {};
+        if (!formData.tenDv.trim()) newErrors.tenDv = 'Vui lòng nhập tên dịch vụ';
+        if (!formData.donGia)
+            newErrors.donGia = 'Vui lòng nhập đơn giá';
+        if (formData.donGia < 0)
+            newErrors.donGia = 'Đơn giá phải lớn hơn 0';
+        if (formData.trangThai === null || formData.trangThai === undefined) {
+            newErrors.trangThai = 'Vui lòng chọn trạng thái';
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+        setErrors({})
+
         if (editingProduct) {
             const result = await serviceService.updateService(editingProduct.maDv, formData)
             if (!result.success) {
-                alert(result.message);
+                showError(result.message);
                 return;
             }
             else {
-                alert("Chỉnh sửa thành công");
+                showSuccess("Chỉnh sửa dịch vụ thành công");
                 setProducts(products.map(p =>
                     p.maDv === editingProduct.maDv ? {...formData, maDv: p.maDv} : p
                 ));
@@ -112,9 +131,9 @@ const AdminFoodManagement = () => {
             const  result = await serviceService.createService(formData)
             if (result.success) {
                 setProducts([...products, result.data]);
-                alert("Thêm mới thành công");
+                showSuccess("Thêm mới dịch vụ thành công");
             } else {
-                alert(result.message);
+                showError(result.message);
             }
         }
 
@@ -125,11 +144,11 @@ const AdminFoodManagement = () => {
         if (window.confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
             const result = serviceService.deleteService(id);
             try {
-                alert("Xóa sản phẩm thành công");
+                showSuccess("Xóa dịch vụ thành công");
                 setProducts(products.filter(p => p.maDv !== id));
             }
             catch (e) {
-                alert(e.message);
+                showError(e.message);
             }
         }
     };
@@ -138,7 +157,7 @@ const AdminFoodManagement = () => {
         const newProduct = products.find(p => p.maDv === id);
         const result = await serviceService.updateService(id, {...newProduct, trangThai: newProduct.trangThai !== true});
         if (!result.success) {
-            alert(result.message);
+            showError(result.message);
             setProducts(products.map(p =>
                 p.maDv === id ? newProduct : p
             ));
@@ -460,12 +479,14 @@ const AdminFoodManagement = () => {
                                         </label>
                                         <input
                                             type="text"
-                                            className="form-control"
+                                            className={`form-control ${errors.tenDv ? 'is-invalid' : ''}`}
                                             placeholder="VD: Combo 1 Người"
                                             value={formData.tenDv}
                                             onChange={(e) => setFormData({ ...formData, tenDv: e.target.value })}
-                                            required
                                         />
+                                        {errors.tenDv && (
+                                            <div className="invalid-feedback">{errors.tenDv}</div>
+                                        )}
                                     </div>
 
                                     <div className="mb-3">
@@ -490,12 +511,15 @@ const AdminFoodManagement = () => {
                                             </label>
                                             <input
                                                 type="number"
-                                                className="form-control"
+                                                className={`form-control ${errors.donGia ? 'is-invalid' : ''}`}
                                                 placeholder="99000"
                                                 value={formData.donGia}
                                                 onChange={(e) => setFormData({ ...formData, donGia: parseInt(e.target.value) || '' })}
                                                 required
                                             />
+                                            {errors.donGia && (
+                                                <div className="invalid-feedback">{errors.donGia}</div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -534,13 +558,16 @@ const AdminFoodManagement = () => {
                                         <div>
                                             <div className="form-check form-check-inline">
                                                 <input
-                                                    className="form-check-input"
+                                                    className={`form-check-input ${errors.trangThai ? 'is-invalid' : ''}`}
                                                     type="radio"
                                                     id="statusActive"
                                                     value="active"
                                                     checked={formData.trangThai === true}
-                                                    onChange={(e) => setFormData({ ...formData, trangThai: e.target.value = "true" })}
+                                                    onChange={(e) => setFormData({ ...formData, trangThai : true })}
                                                 />
+                                                {errors.trangThai && (
+                                                    <div className="invalid-feedback">{errors.trangThai}</div>
+                                                )}
                                                 <label className="form-check-label" htmlFor="statusActive">
                                                     Đang bán
                                                 </label>
@@ -552,7 +579,7 @@ const AdminFoodManagement = () => {
                                                     id="statusInactive"
                                                     value="inactive"
                                                     checked={formData.trangThai === false}
-                                                    onChange={(e) => setFormData({ ...formData, trangThai: e.target.value = "false" })}
+                                                    onChange={(e) => setFormData({ ...formData, trangThai: false })}
                                                 />
                                                 <label className="form-check-label" htmlFor="statusInactive">
                                                     Ngừng bán
@@ -583,6 +610,16 @@ const AdminFoodManagement = () => {
                     </div>
                 </>
             )}
+            <style jsx>{`
+                .modal-title,
+                .form-label,
+                .form-check-label    
+                {
+                  display: flex;
+                  gap: 0.2rem;
+                  color: black;  
+                }
+            `}</style>
         </div>
     );
 };

@@ -16,6 +16,7 @@ import {
 import scheduleService from "../../services/scheduleService";
 import roomService from "../../services/roomService";
 import { v4 as uuidv4 } from "uuid";
+import {useToast} from "../common/Toast.jsx";
 
 const ScheduleManager = () => {
         const [showtimes, setShowtimes] = useState([]);
@@ -27,6 +28,8 @@ const ScheduleManager = () => {
         const [showModal, setShowModal] = useState(false);
         const [modalType, setModalType] = useState('');
         const [selectedSchedule, setSelectedSchedule] = useState(null);
+        const {showError, showSuccess} = useToast();
+        const [errors, setErrors] = useState({});
         const [formData, setFormData] = useState({
             donGiaCoSo: 90000,
             thoiGianBatDau: '',
@@ -64,7 +67,7 @@ const ScheduleManager = () => {
         };
 
 
-        const [selectedDate, setSelectedDate] = useState('2025-10-12');
+        const [selectedDate, setSelectedDate] = useState(new Date().toLocaleDateString("en-CA"));
         const [selectedRoom, setSelectedRoom] = useState('all');
         const [searchTerm, setSearchTerm] = useState('');
 
@@ -135,22 +138,44 @@ const ScheduleManager = () => {
 
         const handleSubmit = async (e) => {
             e.preventDefault();
+            const newErrors = {};
+            if (!formData.thoiGianBatDau) newErrors.thoiGianBatDau = 'Vui lòng chọn thời gian bắt đầu';
+            if (!formData.donGiaCoSo) newErrors.donGiaCoSo = 'Đơn giá cơ sở không hợp lệ';
+
+            if (formData.thoiGianBatDau) {
+                const inputDate = new Date(formData.thoiGianBatDau); // parse chuỗi thành Date
+                const now = new Date();
+
+                if (isNaN(inputDate.getTime())) {
+                    newErrors.thoiGianBatDau = 'Thời gian bắt đầu không hợp lệ';
+                } else if (inputDate < now) {
+                    newErrors.thoiGianBatDau = 'Thời gian bắt đầu phải là tương lai';
+                }
+            }
+
+            if (Object.keys(newErrors).length > 0) {
+                setErrors(newErrors);
+                return;
+            }
+            setErrors({})
 
             if (modalType === 'add') {
                 const result = await scheduleService.createSchedule(formData);
                 if (result.success) {
-                    fetchSchedules();
+                    showSuccess("Thêm suất chiếu thành công");
+                    await fetchSchedules();
                     closeModal();
                 } else {
-                    alert(result.message || 'Có lỗi xảy ra khi thêm suất chiếu');
+                    showError(result.message || 'Có lỗi xảy ra khi thêm suất chiếu');
                 }
             } else if (modalType === 'edit') {
                 const result = await scheduleService.updateSchedule(selectedSchedule.maSuatChieu, formData);
                 if (result.success) {
-                    fetchSchedules();
+                    showSuccess("Cập nhật suất chiếu thành công");
+                    await fetchSchedules();
                     closeModal();
                 } else {
-                    alert(result.message || 'Có lỗi xảy ra khi cập nhật suất chiếu');
+                    showError(result.message || 'Có lỗi xảy ra khi cập nhật suất chiếu');
                 }
             }
         };
@@ -159,9 +184,10 @@ const ScheduleManager = () => {
             if (window.confirm('Bạn có chắc muốn xóa suất chiếu này?')) {
                 const result = await scheduleService.deleteSchedule(scheduleId);
                 if (result.success) {
-                    fetchSchedules();
+                    showSuccess("Xóa suất chiếu thành công")
+                    await fetchSchedules();
                 } else {
-                    alert(result.message || 'Có lỗi xảy ra khi xóa suất chiếu');
+                    showError (result.message || 'Có lỗi xảy ra khi xóa suất chiếu');
                 }
             }
         };
@@ -181,7 +207,6 @@ const ScheduleManager = () => {
         };
 
         const handleDuplicate = async (show) => {
-            console.log(show);
             const newShow = {
                 donGiaCoSo: show.donGiaCoSo,
                 thoiGianBatDau: show.thoiGianBatDau,
@@ -190,9 +215,7 @@ const ScheduleManager = () => {
             };
 
             newShow.thoiGianBatDau = show.thoiGianBatDau.slice(0, 10) + 'T' +  calculateEndTime(show.thoiGianBatDau, show.phim.thoiLuong);
-            console.log(newShow.thoiGianBatDau);
             newShow.thoiGianBatDau = calculateEndTimeWithDate(newShow.thoiGianBatDau, 70);
-            console.log(newShow);
             setFormData(
                 newShow
             )
@@ -209,7 +232,7 @@ const ScheduleManager = () => {
                      newShowTemp.maSuatChieu = result.data.maSuatChieu;
                      setShowtimes([...showtimes, show]);
                  } else {
-                     alert(result.message || 'Có lỗi xảy ra khi thêm suất chiếu');
+                     showError(result.message || 'Có lỗi xảy ra khi thêm suất chiếu');
                  }
              }
         };
@@ -378,7 +401,6 @@ const ScheduleManager = () => {
                                         <div className="d-grid gap-2">
                                             {getWeekDays().map(day => {
                                                 const dayShowtimes = showtimes.filter(s => dateOnlyFromIsoString(s.thoiGianBatDau) === day);
-                                                console.log()
                                                 const isSelected = day === selectedDate;
                                                 const dayDate = new Date(day);
 
@@ -527,7 +549,9 @@ const ScheduleManager = () => {
                                                                             )}
                                                                             <div className="card-body">
                                                                                 <h5 className="card-title text-dark mb-3">
-                                                                                    🎥 {show.phim.tenPhim}
+                                                                                    🎥 {show.phim.tenPhim.length > 30
+                                                                                        ? show.phim.tenPhim.substring(0, 30) + "..."
+                                                                                        : show.phim.tenPhim}
                                                                                 </h5>
 
                                                                                 <div className="row g-2 mb-3">
@@ -628,7 +652,9 @@ const ScheduleManager = () => {
                                     <form onSubmit={handleSubmit}>
                                         <div className="modal-body">
                                             <div className="mb-3">
-                                                <label className="form-label">Phim *</label>
+                                                <label className="form-label">Phim
+                                                    <span className="text-danger">*</span>
+                                                </label>
                                                 <select
                                                     className="form-select"
                                                     name="maPhim"
@@ -639,13 +665,17 @@ const ScheduleManager = () => {
                                                     <option value="">-- Chọn phim --</option>
                                                     {movies.map(movie => (
                                                         <option key={movie.maPhim} value={movie.maPhim}>
-                                                            {movie.tenPhim}
+                                                            {movie.tenPhim.length > 30
+                                                                ? movie.tenPhim.substring(0, 30) + "..."
+                                                                : movie.tenPhim}
                                                         </option>
                                                     ))}
                                                 </select>
                                             </div>
                                             <div className="mb-3">
-                                                <label className="form-label">Phòng chiếu *</label>
+                                                <label className="form-label">Phòng chiếu
+                                                    <span className="text-danger">*</span>
+                                                </label>
                                                 <select
                                                     className="form-select"
                                                     name="maPhongChieu"
@@ -662,18 +692,24 @@ const ScheduleManager = () => {
                                                 </select>
                                             </div>
                                             <div className="mb-3">
-                                                <label className="form-label">Thời gian bắt đầu *</label>
+                                                <label className="form-label">Thời gian bắt đầu
+                                                    <span className="text-danger">*</span>
+                                                </label>
                                                 <input
                                                     type="datetime-local"
-                                                    className="form-control"
+                                                    className={`form-control ${errors.thoiGianBatDau ? 'is-invalid' : ''}`}
                                                     name="thoiGianBatDau"
                                                     value={formData.thoiGianBatDau}
                                                     onChange={handleInputChange}
-                                                    required
                                                 />
+                                                {errors.thoiGianBatDau && (
+                                                    <div className="invalid-feedback">{errors.thoiGianBatDau}</div>
+                                                )}
                                             </div>
                                             <div className="mb-3">
-                                                <label className="form-label">Đơn giá cơ sở (VNĐ) *</label>
+                                                <label className="form-label">Đơn giá cơ sở (VNĐ)
+                                                    <span className="text-danger">*</span>
+                                                </label>
                                                 <input
                                                     type="number"
                                                     className="form-control"
@@ -699,6 +735,23 @@ const ScheduleManager = () => {
                         </div>
                     )}
                 </div>
+                <style jsx> {`
+                    .modal-title
+                    {
+                        color: black;
+                        display: flex;
+                        gap: 0.2rem
+                    }
+
+                    .form-label
+                    {
+                        color: black;
+                        display: flex;
+                        gap: 0.2rem;
+                        font-weight: 700;
+                        height: 24px;
+                    }
+                `} </style>
             </>
         )};
 export default ScheduleManager;

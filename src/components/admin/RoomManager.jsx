@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import roomService from '../../services/roomService';
 import { useNavigate } from 'react-router-dom';
 import {Film, House, Plus} from "lucide-react";
+import {useToast} from "../common/Toast.jsx";
 
 const RoomManager = ({ setActiveMenu, setSelectedRoomId }) => {
   const navigate = useNavigate();
@@ -13,6 +14,8 @@ const RoomManager = ({ setActiveMenu, setSelectedRoomId }) => {
   const [modalType, setModalType] = useState('');
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [formData, setFormData] = useState({ tenPhong: '' });
+  const {showError, showSuccess} = useToast();
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     fetchRooms(currentPage);
@@ -41,25 +44,40 @@ const RoomManager = ({ setActiveMenu, setSelectedRoomId }) => {
     setModalType('');
     setSelectedRoom(null);
     setFormData({ tenPhong: '' });
+    setErrors({});
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+      const newErrors = {};
+      if (!formData.tenPhong.trim()) {
+          newErrors.tenPhong = 'Vui lòng nhập tên phòng';
+      }
+      if (Object.keys(newErrors).length > 0) {
+          setErrors(newErrors);
+          return;
+      }
+      setErrors({})
+
+
+
     if (modalType === 'add') {
       const result = await roomService.createRoom(formData);
       if (result.success) {
         fetchRooms(currentPage);
+        showSuccess("Thêm phòng thành công");
         closeModal();
       } else {
-        alert(result.message);
+        showError(result.data || result.message);
       }
     } else if (modalType === 'edit') {
       const result = await roomService.updateRoom(selectedRoom.maPhongChieu, formData);
       if (result.success) {
         fetchRooms(currentPage);
         closeModal();
+        showSuccess("Cập nhật phòng thành công");
       } else {
-        alert(result.message);
+        showError(result.data || result.message);
       }
     }
   };
@@ -69,8 +87,9 @@ const RoomManager = ({ setActiveMenu, setSelectedRoomId }) => {
       const result = await roomService.deleteRoom(roomId);
       if (result.success) {
         fetchRooms(currentPage);
+        showSuccess("Xóa phòng thành công");
       } else {
-        alert(result.message);
+        showError(result.message || result.data);
       }
     }
   };
@@ -141,7 +160,7 @@ const RoomManager = ({ setActiveMenu, setSelectedRoomId }) => {
                       </div>
                       <button
                           className="btn btn-primary btn-lg"
-                          onClick={() => openModal(null, 'add')}
+                          onClick={() => openModal('add', null)}
                       >
                           <Plus size={20} className="me-2" style={{verticalAlign: 'middle'}}/>
                           Thêm phòng chiếu
@@ -161,7 +180,7 @@ const RoomManager = ({ setActiveMenu, setSelectedRoomId }) => {
               <table className="table table-bordered table-hover">
                 <thead className="table-light">
                   <tr>
-                    <th style={{ width: '40px' }}>STT</th>
+                    <th style={{ width: '40px' }}>#</th>
                     {/*<th>Mã phòng</th>*/}
                     <th>Tên phòng</th>
                     <th>Số lượng ghế</th>
@@ -209,14 +228,18 @@ const RoomManager = ({ setActiveMenu, setSelectedRoomId }) => {
               <form onSubmit={handleSubmit}>
                 <div className="modal-body">
                   <div className="mb-3">
-                    <label className="form-label">Tên phòng chiếu *</label>
+                    <label className="form-label">Tên phòng chiếu
+                        <span className="text-danger">*</span>
+                    </label>
                     <input
                       type="text"
-                      className="form-control"
+                      className= {`form-control ${errors.tenPhong ? 'is-invalid' : ''}`}
                       value={formData.tenPhong}
                       onChange={e => setFormData({ ...formData, tenPhong: e.target.value })}
-                      required
                     />
+                      {errors.tenPhong && (
+                          <div className="invalid-feedback">{errors.tenPhong}</div>
+                      )}
                   </div>
                 </div>
                 <div className="modal-footer">
@@ -228,6 +251,23 @@ const RoomManager = ({ setActiveMenu, setSelectedRoomId }) => {
           </div>
         </div>
       )}
+        <style jsx> {`
+            .modal-title
+            {
+                color: black;
+                display: flex;
+                gap: 0.2rem
+            }
+            
+            .form-label {
+                display: flex;
+                gap: 0.2rem !important;
+                color: black;
+                font-weight: 700;
+                height: 24px;
+            }
+        `}
+        </style>
     </div>
   );
 };

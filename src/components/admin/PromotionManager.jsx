@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import { Ticket, Plus, Edit2, Trash2, Search, Calendar, DollarSign, Users, TrendingUp } from 'lucide-react';
 import promotionService from "../../services/promotionService.js";
 import {serviceService} from "../../services/index.js";
+import {useToast} from "../common/Toast.jsx";
 
 const PromotionManager = () => {
     const [activeTab, setActiveTab] = useState('list');
@@ -11,6 +12,7 @@ const PromotionManager = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+     const {showError, showSuccess} = useToast()
     const [formData, setFormData] = useState({
         maKm: '',
         tenKm: '',
@@ -25,6 +27,7 @@ const PromotionManager = () => {
     });
     const [errors, setErrors] = useState({});
     const fetchPromotions = async (page = 1) => {
+        setLoading(true);
         const result = await promotionService.getAllPromotionsPageable(page);
         const { currentItems, totalPages, currentPage } = result.data;
         try {
@@ -39,7 +42,7 @@ const PromotionManager = () => {
             }
         }
         catch (error) {
-            console.error('Lỗi kết nối API:', error);
+            showError("Lỗi kết nối API: " + error.message)
             setPromotions([]);
             setTotalPages(1);
             setCurrentPage(1);
@@ -90,7 +93,6 @@ const PromotionManager = () => {
         const newErrors = {};
         if (!formData.tenKm.trim()) newErrors.tenKm = 'Vui lòng nhập tên khuyến mãi';
         if (!formData.maCode.trim()) newErrors.maCode = 'Vui lòng nhập mã code';
-        if (!formData.moTa.trim()) newErrors.moTa = 'Vui lòng nhập mô tả';
         if (!formData.giaTri || formData.giaTri <= 0)
             newErrors.giaTri = 'Vui lòng nhập giá trị giảm hợp lệ';
         if (!formData.ngayBatDau) newErrors.ngayBatDau = 'Vui lòng chọn ngày bắt đầu';
@@ -119,18 +121,17 @@ const PromotionManager = () => {
         setErrors({})
 
         if (editingId) {
-            console.log(formData)
             const result = await promotionService.updatePromotion(editingId, formData);
-            console.log(result);
             if (result.success) {
                 setPromotions(promotions.map(promo =>
                     promo.maKm === editingId
                         ? result.data
                         : promo
                 ));
+                showSuccess("Cập nhập dịch vụ thành công!")
             }
             else {
-                alert(result.message);
+                showError(result.data);
             }
 
             setEditingId(null);
@@ -139,9 +140,9 @@ const PromotionManager = () => {
             if (result.success) {
                 result.data.ves = [];
                 setPromotions([...promotions, result.data]);
-                alert("Thêm mới thành công");
+                showSuccess("Thêm mới thành công");
             } else {
-                alert(result.message);
+                showError(result.data);
             }
         }
 
@@ -183,10 +184,10 @@ const PromotionManager = () => {
             const result = promotionService.deletePromotion(id)
             try {
                 setPromotions(promotions.filter(promo => promo.maKm !== id));
-                alert("Xóa thành công");
+                showSuccess("Xóa dịch vụ thành công");
             } catch (error)
             {
-                alert(error.message);
+                showError(error.message);
             }
         }
     };
@@ -215,12 +216,12 @@ const PromotionManager = () => {
         const hientai = new Date();
 
         if (newPromotion.trangThai !== true && ngayKetThuc <= hientai) {
-            alert("Ngày kết thúc phải sau ngày hiện tại nếu khuyến mãi đang hoạt động")
+            showError("Ngày kết thúc phải sau ngày hiện tại nếu khuyến mãi đang hoạt động")
             return
         }
         const result = await promotionService.updatePromotion(id, {...newPromotion, trangThai: newPromotion.trangThai !== true});
         if (!result.success) {
-            alert(result.message);
+            showError(result.message);
             setPromotions(promotions.map(p =>
                 p.maKm === id ? newPromotion : p
             ));
@@ -358,6 +359,11 @@ const PromotionManager = () => {
                                     </div>
                                 </div>
 
+                                {loading ? (
+                                        <div className="d-flex justify-content-center py-5">
+                                            <div className="spinner-border text-primary"></div>
+                                        </div>
+                                    ) : (
                                 <div className="table-responsive">
                                     <table className="table table-hover">
                                         <thead className="table-light">
@@ -443,6 +449,7 @@ const PromotionManager = () => {
                                         </tbody>
                                     </table>
                                 </div>
+                                    )}
                             </div>
                         )}
 
@@ -461,18 +468,20 @@ const PromotionManager = () => {
                                                 placeholder="VD: Giảm 50% Vé Xem Phim"
                                                 required
                                             />
+                                            {errors.tenKm && (
+                                                <div className="invalid-feedback">{errors.tenKm}</div>
+                                            )}
                                         </div>
 
                                         <div className="mb-3">
                                             <label className="form-label">Mô Tả *</label>
                                             <textarea
-                                                className={`form-control ${errors.moTa ? 'is-invalid' : ''}`}
+                                                className=  "form-control"
                                                 name="moTa"
                                                 value={formData.moTa}
                                                 onChange={handleInputChange}
                                                 rows="3"
                                                 placeholder="Mô tả chi tiết về chương trình khuyến mãi"
-                                                required
                                             />
                                         </div>
 
@@ -488,6 +497,9 @@ const PromotionManager = () => {
                                                     placeholder="VD: CINEMA50"
                                                     required
                                                 />
+                                                {errors.maCode && (
+                                                    <div className="invalid-feedback">{errors.maCode}</div>
+                                                )}
                                             </div>
 
                                             <div className="col-md-6 mb-3">
@@ -515,6 +527,9 @@ const PromotionManager = () => {
                                                     max={100}
                                                     required
                                                 />
+                                                {errors.giaTri && (
+                                                    <div className="invalid-feedback">{errors.giaTri}</div>
+                                                )}
                                             </div>
 
                                             <div className="col-md-6 mb-3">
@@ -527,6 +542,9 @@ const PromotionManager = () => {
                                                     onChange={handleInputChange}
                                                     placeholder="1000"
                                                 />
+                                                {errors.soLuong && (
+                                                    <div className="invalid-feedback">{errors.soLuong}</div>
+                                                )}
                                             </div>
                                         </div>
 
@@ -542,6 +560,9 @@ const PromotionManager = () => {
                                                     min={new Date().toISOString().split("T")[0]}
                                                     required
                                                 />
+                                                {errors.ngayBatDau && (
+                                                    <div className="invalid-feedback">{errors.ngayBatDau}</div>
+                                                )}
                                             </div>
 
                                             <div className="col-md-6 mb-3">
@@ -555,6 +576,9 @@ const PromotionManager = () => {
                                                     min={formData.ngayBatDau || new Date().toISOString().split("T")[0]}
                                                     required
                                                 />
+                                                {errors.ngayKetThuc && (
+                                                    <div className="invalid-feedback">{errors.ngayKetThuc}</div>
+                                                )}
                                             </div>
                                         </div>
 
@@ -568,6 +592,9 @@ const PromotionManager = () => {
                                                 onChange={handleInputChange}
                                                 placeholder="https://example.com/image.jpg"
                                             />
+                                            {errors.urlHinh && (
+                                                <div className="invalid-feedback">{errors.urlHinh}</div>
+                                            )}
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-label fw-bold">Trạng Thái</label>

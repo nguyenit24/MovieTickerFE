@@ -14,14 +14,9 @@ const BookingPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('📍 BookingPage useEffect - movieId:', movieId);
-    console.log('📍 Current URL:', window.location.pathname);
-    
     if (movieId) {
       fetchMovieInfo();
     } else {
-      console.log('❌ No movieId found in URL. Expected format: /booking/{movieId}');
-      console.log('💡 Redirecting to home page to select a movie');
       // If no movieId, redirect to home or show movie selection
       navigate('/', { replace: true });
     }
@@ -30,18 +25,14 @@ const BookingPage = () => {
   const fetchMovieInfo = async () => {
     setLoading(true);
     try {
-      console.log('🎬 Fetching movie info for ID:', movieId);
       const result = await movieService.getMovieById(movieId);
       if (result.success) {
-        console.log('✅ Movie info loaded:', result.data.tenPhim);
         setMovie(result.data);
       } else {
-        console.error('❌ Failed to load movie:', result.message);
         showError(result.message);
         navigate('/');
       }
     } catch (error) {
-      console.error('❌ Error fetching movie info:', error);
       showError('Không thể tải thông tin phim. Vui lòng thử lại.');
       navigate('/');
     }

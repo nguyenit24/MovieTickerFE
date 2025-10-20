@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Thêm useNavigate
-import authService from "../services/authService"; // Thêm authService
+import authService from "../services/authService";
+import Header from "../components/Layout/Header.jsx";
+import Footer from "../components/Layout/Footer.jsx"; // Thêm authService
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -161,118 +163,120 @@ const Register = () => {
   };
 
   return (
-    <>
-      <div className="auth-container">
-        <div className="auth-card">
-          <h2 className="text-center">Đăng Ký</h2>
-          <form onSubmit={handleSubmit} noValidate>
-            {error && <div className="alert alert-danger">{error}</div>}
+      <div>
+          <Header />
+          <div className="auth-container">
+              <div className="auth-card">
+                  <h2 className="text-center">Đăng Ký</h2>
+                  <form onSubmit={handleSubmit} noValidate>
+                      {error && <div className="alert alert-danger">{error}</div>}
 
-            <div className="row">
-              <div className="col-md-6 mb-3">
-                <label className="form-label">Tên đăng nhập</label>
-                <input
-                  type="text"
-                  name="tenDangNhap"
-                  className="form-control"
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="col-md-6 mb-3">
-                <label className="form-label">Họ và tên</label>
-                <input
-                  type="text"
-                  name="hoTen"
-                  className="form-control"
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
+                      <div className="row">
+                          <div className="col-md-6 mb-3">
+                              <label className="form-label">Tên đăng nhập</label>
+                              <input
+                                  type="text"
+                                  name="tenDangNhap"
+                                  className="form-control"
+                                  onChange={handleChange}
+                                  required
+                              />
+                          </div>
+                          <div className="col-md-6 mb-3">
+                              <label className="form-label">Họ và tên</label>
+                              <input
+                                  type="text"
+                                  name="hoTen"
+                                  className="form-control"
+                                  onChange={handleChange}
+                                  required
+                              />
+                          </div>
+                      </div>
 
-            <div className="mb-3">
-              <label className="form-label">Email</label>
-              <input
-                type="email"
-                name="email"
-                className="form-control"
-                onChange={handleChange}
-                required
+                      <div className="mb-3">
+                          <label className="form-label">Email</label>
+                          <input
+                              type="email"
+                              name="email"
+                              className="form-control"
+                              onChange={handleChange}
+                              required
+                          />
+                      </div>
+
+                      <div className="row">
+                          <div className="col-md-6 mb-3">
+                              <label className="form-label">Số điện thoại</label>
+                              <input
+                                  type="text"
+                                  name="sdt"
+                                  className="form-control"
+                                  onChange={handleChange}
+                                  required
+                              />
+                          </div>
+                          <div className="col-md-6 mb-3">
+                              <label className="form-label">Ngày sinh</label>
+                              <input
+                                  type="date"
+                                  name="ngaySinh"
+                                  className="form-control"
+                                  onChange={handleChange}
+                                  required
+                              />
+                          </div>
+                      </div>
+
+                      <div className="mb-3">
+                          <label className="form-label">Mật khẩu</label>
+                          <input
+                              type="password"
+                              name="matKhau"
+                              className="form-control"
+                              onChange={handleChange}
+                              required
+                          />
+                      </div>
+                      <div className="mb-4">
+                          <label className="form-label">Xác nhận mật khẩu</label>
+                          <input
+                              type="password"
+                              name="confirmPassword"
+                              className={`form-control ${passwordError ? "is-invalid" : ""}`}
+                              value={confirmPassword}
+                              onChange={handleConfirmPasswordChange}
+                              required
+                          />
+                          {passwordError && (
+                              <div className="invalid-feedback">{passwordError}</div>
+                          )}
+                      </div>
+
+                      <button
+                          type="submit"
+                          className="btn btn-primary w-100"
+                          disabled={loading}
+                      >
+                          {loading ? "Đang xử lý..." : "Đăng Ký"}
+                      </button>
+                      <div className="text-center mt-3">
+                          <span className="text-muted">Đã có tài khoản? </span>
+                          <Link to="/login" className="auth-link">
+                              Đăng nhập ngay
+                          </Link>
+                      </div>
+                  </form>
+              </div>
+          </div>
+          {showOtpModal && (
+              <OtpModal
+                  email={formData.email}
+                  onLoginRedirect={() => navigate("/login")}
               />
-            </div>
-
-            <div className="row">
-              <div className="col-md-6 mb-3">
-                <label className="form-label">Số điện thoại</label>
-                <input
-                  type="text"
-                  name="sdt"
-                  className="form-control"
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="col-md-6 mb-3">
-                <label className="form-label">Ngày sinh</label>
-                <input
-                  type="date"
-                  name="ngaySinh"
-                  className="form-control"
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label">Mật khẩu</label>
-              <input
-                type="password"
-                name="matKhau"
-                className="form-control"
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="form-label">Xác nhận mật khẩu</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                className={`form-control ${passwordError ? "is-invalid" : ""}`}
-                value={confirmPassword}
-                onChange={handleConfirmPasswordChange}
-                required
-              />
-              {passwordError && (
-                <div className="invalid-feedback">{passwordError}</div>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              className="btn btn-primary w-100"
-              disabled={loading}
-            >
-              {loading ? "Đang xử lý..." : "Đăng Ký"}
-            </button>
-            <div className="text-center mt-3">
-              <span className="text-muted">Đã có tài khoản? </span>
-              <Link to="/login" className="auth-link">
-                Đăng nhập ngay
-              </Link>
-            </div>
-          </form>
-        </div>
+          )}
+            <Footer />
       </div>
-      {showOtpModal && (
-        <OtpModal
-          email={formData.email}
-          onLoginRedirect={() => navigate("/login")}
-        />
-      )}
-    </>
   );
 };
 

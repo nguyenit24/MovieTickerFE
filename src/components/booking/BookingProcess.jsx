@@ -14,8 +14,6 @@ const BookingProcess = ({ movieId: initialMovieId }) => {
   const { showSuccess, showError } = useToast();
   const { user } = useAuth();
   
-  console.log('BookingProcess - Auth user:', user);
-
   // Booking states
   const [currentStep, setCurrentStep] = useState(1);
   const [movieId, setMovieId] = useState(initialMovieId);
@@ -35,18 +33,13 @@ const BookingProcess = ({ movieId: initialMovieId }) => {
   });
   const [formErrors, setFormErrors] = useState({});
   const [paymentMethod, setPaymentMethod] = useState('VNPAY'); // Default to VNPAY
-  console.log('Selected Showtime:', selectedShowtime);
-  console.log('Movie ID:', movieId);
-  console.log('Ten Phim:', tenPhim);
   useEffect(() => {
     // No need to fetch promotions - only validate entered codes
   }, []);
 
   const handleShowtimeSelect = (showtime) => {
-    console.log('BookingProcess - handleShowtimeSelect called with:', showtime);
     setSelectedShowtime(showtime);
     setCurrentStep(2);
-    console.log('BookingProcess - Step updated to:', 2);
   };
 
   const handleMovieSelect = (movie) => {
@@ -70,20 +63,16 @@ const BookingProcess = ({ movieId: initialMovieId }) => {
 
     setLoading(true);
     try {
-      console.log('Validating promotion code:', promotionCode);
       
       // Validate promotion first
       const validateResult = await promotionService.validatePromotion(promotionCode);
-      console.log('Validation result:', validateResult);
       
       if (validateResult.success) {
         // Get promotion details
         const detailResult = await promotionService.getPromotionDetail(promotionCode);
-        console.log('Promotion Detail:', detailResult);
         
         if (detailResult.success) {
           // Log đầy đủ thông tin khuyến mãi
-          console.log('Applied promotion data:', detailResult.data);
           setAppliedPromotion(detailResult.data);
           showSuccess('Áp dụng khuyến mãi thành công');
         } else {
@@ -214,23 +203,18 @@ const BookingProcess = ({ movieId: initialMovieId }) => {
       bookingRequest.sdtKhachHang = customerInfo.sdtKhachHang;
       bookingRequest.emailKhachHang = customerInfo.emailKhachHang;
     }
-    
-    console.log('Booking Request:', bookingRequest);
+
     try {
       const result = await ticketService.bookTicket(bookingRequest);
-      console.log('Booking Result:', result);
       
       if (result.success) {
-        console.log('Booking Data:', result.data);
         setBookingData(result.data);
         setCurrentStep(4); // Move to payment step
         showSuccess('Đặt vé thành công! Vui lòng thanh toán để hoàn tất.');
       } else {
-        console.error('Booking failed:', result.message);
         showError(result.message);
       }
     } catch (error) {
-      console.error('Error during booking process:', error);
       showError('Có lỗi xảy ra khi đặt vé. Vui lòng thử lại.');
     }
 

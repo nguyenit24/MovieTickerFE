@@ -27,6 +27,7 @@ const SeatTypeManager = () => {
     const [hoveringSeatType, setHoveringSeatType] = useState(null);
     const {roomId} = useParams();
     const {showSuccess, showError} = useToast();
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         fetchAllSeatTypesAndSeat();
@@ -37,7 +38,7 @@ const SeatTypeManager = () => {
         setLoading(true);
         const [allTypesRes, roomSeatsRes, rooms] = await Promise.all([
             seatService.getAllSeatTypes(roomId),
-            roomService.getAllSeats(),
+            roomService.getRoomSeats(roomId),
         ]);
         if (allTypesRes.success || roomSeatsRes.success) {
             setSeatTypes(allTypesRes.data || []);
@@ -53,8 +54,8 @@ const SeatTypeManager = () => {
         for (let i = 0; i < str.length; i++) {
             hash = str.charCodeAt(i) + ((hash << 5) - hash);
         }
-        const color = `hsl(${hash % 360}, 70%, 60%)`; // sinh màu theo hue
-        return color;
+         // sinh màu theo hue
+        return `hsl(${hash % 360}, 70%, 60%)`;
     };
     // Lấy màu theo loại ghế
     const getSeatTypeColor = (seatType) => {
@@ -106,10 +107,10 @@ const SeatTypeManager = () => {
         setShowModal(false);
         setModalType('');
         setSelectedSeatType(null);
-        setSelectedSeat(null);
         setEditingSeat(null);
         setFormData({tenLoaiGhe: '', phuThu: 0});
         setSetFormData({tenGhe: '', maLoaiGhe: ''});
+        setErrors({})
     };
 
     // Handle form input change for seat type
@@ -124,11 +125,23 @@ const SeatTypeManager = () => {
     // Submit seat type form
     const handleSeatTypeSubmit = async (e) => {
         e.preventDefault();
+        const newErrors = {};
+        if (!formData.tenLoaiGhe.trim()) newErrors.tenLoaiGhe = 'Vui lòng nhập tên loại ghế';
+        if (!formData.phuThu < 0)
+            newErrors.phuThu = 'Vui lòng nhập phụ thu hợp lệ';
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+        setErrors({})
+
+
 
         if (modalType === 'addSeatType') {
-           handleAddSeatType()
+           await handleAddSeatType()
         } else if (modalType === 'editSeatType') {
-            handleUpdateSeatType()
+            await handleUpdateSeatType()
         }
     };
 
@@ -293,30 +306,38 @@ const SeatTypeManager = () => {
                             <form onSubmit={handleSeatTypeSubmit}>
                                 <div className="modal-body">
                                     <div className="mb-3">
-                                        <label htmlFor="tenLoaiGhe" className="form-label">Tên loại ghế *</label>
+                                        <label htmlFor="tenLoaiGhe" className="form-label">Tên loại ghế
+                                            <span className="text-danger">*</span>
+                                            </label>
                                         <input
                                             type="text"
-                                            className="form-control"
+                                            className={`form-control ${errors.tenLoaiGhe ? 'is-invalid' : ''}`}
                                             id="tenLoaiGhe"
                                             name="tenLoaiGhe"
                                             value={formData.tenLoaiGhe}
                                             onChange={handleInputChange}
-                                            required
                                         />
+                                        {errors.tenLoaiGhe && (
+                                            <div className="invalid-feedback">{errors.tenLoaiGhe}</div>
+                                        )}
                                     </div>
                                     <div className="mb-3">
-                                        <label htmlFor="phuThu" className="form-label">Phụ thu (đ) *</label>
+                                        <label htmlFor="phuThu" className="form-label">Phụ thu (đ)
+                                            <span className="text-danger">*</span>
+                                        </label>
                                         <input
                                             type="number"
-                                            className="form-control"
+                                            className={`form-control ${errors.phuThu ? 'is-invalid' : ''}`}
                                             id="phuThu"
                                             name="phuThu"
                                             value={formData.phuThu}
                                             onChange={handleInputChange}
                                             min="0"
                                             step="1000"
-                                            required
                                         />
+                                        {errors.phuThu && (
+                                            <div className="invalid-feedback">{errors.phuThu}</div>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="modal-footer">
@@ -346,6 +367,21 @@ const SeatTypeManager = () => {
           transform: scale(1.1);
           z-index: 1;
           cursor: pointer;
+        }
+        .modal-title
+        {
+            color: black;
+            display: flex;
+            gap: 0.2rem
+        }
+
+        .form-label
+        {
+            color: black;
+            display: flex;
+            gap: 0.2rem;
+            font-weight: 700;
+            height: 24px;
         }
       `}</style>
         </div>

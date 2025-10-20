@@ -31,6 +31,7 @@ const Banner = ({ movies = []}) => {
                     const ratings = movie?.data?.danhGiaPhims || [];
                     return {
                         id: item.maCauHinh,
+                        maPhim: movie?.data?.maPhim,
                         hinhAnh: item.giaTri,
                         tenPhim: movie?.data?.tenPhim,
                         thoiLuong: movie?.data?.thoiLuong,
@@ -100,6 +101,7 @@ const Banner = ({ movies = []}) => {
     const handleTrailer = () => {
         const url = movie.trailerURL || movie.trailerurl || movie.trailerUrl || movie.trailerUrl;
         setSelectedMovie(movie);
+        console.log(movie);
         if (url) setShowModal(true);
         else showError("Phim này chưa có trailer.");
     };

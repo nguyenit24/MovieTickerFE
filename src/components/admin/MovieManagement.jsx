@@ -15,6 +15,7 @@ const MovieManagement = () => {
   const [modalType, setModalType] = useState('');
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [errors, setErrors] = useState({});
     const {showSuccess, showError} = useToast();
     const [formData, setFormData] = useState({
     tenPhim: '',
@@ -41,14 +42,12 @@ const MovieManagement = () => {
           fetchMovies(currentPage);
       }
       else {
-            console.log(currentPage);
             searchMovies(searchTerm, currentPage);
       }
   }, [currentPage]);
 
   const fetchCategories = async () => {
     const result = await categoryService.getAllCategories();
-    console.log(result);
     if (result.success) setCategories(result.data);
   };
 
@@ -140,10 +139,36 @@ const MovieManagement = () => {
     setShowModal(false);
     setModalType('');
     setSelectedMovie(null);
+    setErrors({});
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+      e.preventDefault();
+      const newErrors = {};
+      if (!formData.tenPhim.trim()) newErrors.tenPhim = 'Vui lòng nhập tên phim';
+      if (!formData.daoDien.trim()) newErrors.daoDien = 'Vui lòng nhập đạo diễn';
+      if (!formData.ngayKhoiChieu) newErrors.ngayKhoiChieu = 'Vui lòng chọn ngày khới chiếu';
+      if (!formData.tuoi) newErrors.tuoi = 'Vui lòng chọn giới hạn độ tuổi';
+      if (!formData.trangThai) newErrors.trangThai = 'Vui lòng chọn trạng thái phim';
+      if (!formData.thoiLuong || isNaN(formData.thoiLuong) || formData.thoiLuong <= 0)
+          newErrors.thoiLuong = 'Vui lòng nhập thời lượng hợp lệ';
+
+
+      const ngayKhoiChieu = new Date(formData.ngayKhoiChieu);
+      const hientai = new Date();
+
+      if (ngayKhoiChieu <= hientai) {
+          newErrors.ngayKhoiChieu = "Ngày khởi chiếu phải sau ngày hiện tại";
+      }
+
+
+      if (Object.keys(newErrors).length > 0) {
+          setErrors(newErrors);
+          return;
+      }
+      setErrors({})
+
+
     // Chuyển mảng id thể loại sang mảng tên thể loại
     const theLoaiNames = categories
       .filter(cat => formData.theLoai.includes(cat.maTheLoai))
@@ -153,25 +178,25 @@ const MovieManagement = () => {
       if (modalType === 'add') {
         const result = await movieService.createMovie(submitData);
         if (result.success) {
-          alert('Thêm phim thành công!');
+          showSuccess('Thêm phim thành công!');
           fetchMovies();
           closeModal();
         } else {
-          alert('Lỗi: ' + result.message);
+          showError('Có lỗi xảy ra: ' + result.message);
         }
       } else if (modalType === 'edit') {
         const result = await movieService.updateMovie(selectedMovie.maPhim, submitData);
         if (result.success) {
-          alert('Cập nhật phim thành công!');
+          showSuccess('Cập nhật phim thành công!');
           fetchMovies();
           closeModal();
         } else {
-          alert('Lỗi: ' + result.message);
+          showError('Có lỗi xảy ra: ' + result.message);
         }
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('Có lỗi xảy ra');
+      showError('Có lỗi xảy ra: ' + error.message);
     }
   };
 
@@ -180,14 +205,14 @@ const MovieManagement = () => {
       try {
         const result = await movieService.deleteMovie(movieId);
         if (result.success) {
-          alert('Xóa phim thành công!');
+          showSuccess('Xóa phim thành công!');
           fetchMovies();
         } else {
-          alert('Lỗi: ' + result.message);
+          showError('Có lỗi xảy ra: ' + result.message);
         }
       } catch (error) {
         console.error('Error deleting movie:', error);
-        alert('Có lỗi xảy ra');
+        showError('Có lỗi xảy ra' + result.message);
       }
     }
   };
@@ -209,7 +234,6 @@ const MovieManagement = () => {
   const handleSearchInput = (e) => {
     if (e.key === 'Enter' || e.key === 'Spacebar') {
         searchMovies(searchTerm);
-      console.log('Searching for:', searchTerm);
     }
   };
 
@@ -235,7 +259,6 @@ const MovieManagement = () => {
                         </div>
                         <div>
                             <h1 className="mb-0 h3">Quản Lý Phim</h1>
-                            <p className="text-muted mb-0">Hệ thống quản lý rạp chiếu phim</p>
                         </div>
                     </div>
                     <button
@@ -402,24 +425,32 @@ const MovieManagement = () => {
                     <div className="row">
                       <div className="col-md-6">
                         <div className="mb-3">
-                          <label className="form-label">Tên phim *</label>
+                          <label className="form-label">Tên phim
+                              <span className="text-danger">*</span>
+                              </label>
                           <input 
                             type="text" 
-                            className="form-control" 
+                            className={`form-control ${errors.tenPhim ? 'is-invalid' : ''}`}
                             value={formData.tenPhim}
                             onChange={(e) => setFormData({...formData, tenPhim: e.target.value})}
-                            required
                           />
+                            {errors.tenPhim && (
+                                <div className="invalid-feedback">{errors.tenPhim}</div>
+                            )}
                         </div>
                         <div className="mb-3">
-                          <label className="form-label">Đạo diễn *</label>
+                          <label className="form-label">Đạo diễn
+                              <span className="text-danger">*</span>
+                          </label>
                           <input 
                             type="text" 
-                            className="form-control" 
+                            className={`form-control ${errors.daoDien ? 'is-invalid' : ''}`}
                             value={formData.daoDien}
                             onChange={(e) => setFormData({...formData, daoDien: e.target.value})}
-                            required
                           />
+                            {errors.daoDien && (
+                                <div className="invalid-feedback">{errors.daoDien}</div>
+                            )}
                         </div>
                         <div className="mb-3">
                           <label className="form-label">Diễn viên</label>
@@ -431,9 +462,11 @@ const MovieManagement = () => {
                           />
                         </div>
                         <div className="mb-3">
-                          <label className="form-label">Thể loại *</label>
+                          <label className="form-label">Thể loại
+                              <span className="text-danger">*</span>
+                          </label>
                           <select
-                            className="form-select"
+                            className={`form-select`}
                             multiple
                             value={formData.theLoai}
                             onChange={e => {
@@ -451,24 +484,29 @@ const MovieManagement = () => {
                         <div className="row">
                           <div className="col-6">
                             <div className="mb-3">
-                              <label className="form-label">Thời lượng (phút) *</label>
+                              <label className="form-label">Thời lượng (phút)
+                                  <span className="text-danger">*</span>
+                              </label>
                               <input 
                                 type="number" 
-                                className="form-control" 
+                                className={`form-control ${errors.thoiLuong ? 'is-invalid' : ''}`}
                                 value={formData.thoiLuong}
                                 onChange={(e) => setFormData({...formData, thoiLuong: e.target.value})}
-                                required
                               />
+                                {errors.thoiLuong && (
+                                    <div className="invalid-feedback">{errors.thoiLuong}</div>
+                                )}
                             </div>
                           </div>
                           <div className="col-6">
                             <div className="mb-3">
-                              <label className="form-label">Độ tuổi *</label>
+                              <label className="form-label">Độ tuổi
+                                  <span className="text-danger">*</span>
+                              </label>
                               <select 
-                                className="form-select"
+                                className={`form-select ${errors.tuoi ? 'is-invalid' : ''}`}
                                 value={formData.tuoi}
                                 onChange={(e) => setFormData({...formData, tuoi: e.target.value})}
-                                required
                               >
                                 <option value="">Chọn độ tuổi</option>
                                 <option value="0">0+</option>
@@ -476,25 +514,34 @@ const MovieManagement = () => {
                                 <option value="16">16+</option>
                                 <option value="18">18+</option>
                               </select>
+                                {errors.tuoi && (
+                                    <div className="invalid-feedback">{errors.tuoi}</div>
+                                )}
                             </div>
                           </div>
                         </div>
                       </div>
                       <div className="col-md-6">
                         <div className="mb-3">
-                          <label className="form-label">Ngày khởi chiếu *</label>
+                          <label className="form-label">Ngày khởi chiếu
+                              <span className="text-danger">*</span>
+                          </label>
                           <input 
                             type="date" 
-                            className="form-control" 
+                            className={`form-control ${errors.ngayKhoiChieu ? 'is-invalid' : ''}`}
                             value={formData.ngayKhoiChieu}
                             onChange={(e) => setFormData({...formData, ngayKhoiChieu: e.target.value})}
-                            required
                           />
+                            {errors.ngayKhoiChieu && (
+                                <div className="invalid-feedback">{errors.ngayKhoiChieu}</div>
+                            )}
                         </div>
                         <div className="mb-3">
-                          <label className="form-label">Trạng thái *</label>
+                          <label className="form-label">Trạng thái
+                              <span className="text-danger">*</span>
+                          </label>
                           <select 
-                            className="form-select"
+                            className={`form-select ${errors.trangThai ? 'is-invalid' : ''}`}
                             value={formData.trangThai}
                             onChange={(e) => setFormData({...formData, trangThai: e.target.value})}
                             required
@@ -503,6 +550,9 @@ const MovieManagement = () => {
                             <option value="Đang chiếu">Đang chiếu</option>
                             <option value="Đã chiếu">Đã chiếu</option>
                           </select>
+                            {errors.trangThai && (
+                                <div className="invalid-feedback">{errors.trangThai}</div>
+                            )}
                         </div>
                         <div className="mb-3">
                           <label className="form-label">URL Hình ảnh</label>
@@ -541,7 +591,15 @@ const MovieManagement = () => {
                     <button type="button" className="btn btn-secondary" onClick={closeModal}>
                       Đóng
                     </button>
-                    <button type="submit" className="btn btn-primary">
+                      <button
+                          type="button"
+                          className="btn btn-success"
+                          onClick={() => {handleUploadExcel}}
+                      >
+                          <i className="bi bi-file-earmark-spreadsheet me-2"></i>
+                            Excel
+                      </button>
+                      <button type="submit" className="btn btn-primary">
                       {modalType === 'add' ? 'Thêm phim' : 'Lưu thay đổi'}
                     </button>
                   </div>
@@ -550,6 +608,25 @@ const MovieManagement = () => {
           </div>
         </div>
       )}
+        <style jsx>{`
+            .modal-title
+            {
+                color: black;
+                display: flex;
+                gap: 0.2rem
+            }
+
+            .form-label
+            {
+                color: black;
+                display: flex;
+                gap: 0.2rem;
+                font-weight: 700;
+                height: 24px;
+            }
+        `}
+        </style>
+
     </div>
   );
 }

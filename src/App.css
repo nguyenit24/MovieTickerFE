@@ -2,7 +2,7 @@
 
 /* General layout */
 body {
-  background-color: #181a20 !important;
+  background-color: #fff !important;
   margin: 0;
   padding: 0;
 }
@@ -122,6 +122,25 @@ body {
 .movie-card:hover {
     transform: scale(1.03);
     filter: brightness(0.8); /* làm tối nhẹ */
+}
+
+.dropdown-menu {
+    border-radius: 10px !important;
+}
+
+.dropdown-item {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    color: black !important;
+}
+
+.dropdown-item:hover {
+    background-color: #0d6efd !important;
+    color: white !important;
+}
+
+.text-header {
+    font-size: 1.25rem !important;
 }
 
 /* ========== RESPONSIVE LAYOUT ========== */

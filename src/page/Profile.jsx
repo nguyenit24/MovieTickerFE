@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import profileService from "../services/profileService";
+import {useToast} from "../components/common/Toast.jsx";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -24,8 +25,7 @@ const ProfilePage = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const {showSuccess, showError} = useToast();
 
   useEffect(() => {
     fetchUserInfo();
@@ -114,18 +114,15 @@ const ProfilePage = () => {
       return;
     }
     setLoading(true);
-    setSuccessMessage("");
-    setErrorMessage("");
     try {
       const result = await profileService.updateMyInfo(profileData);
       if (result.success) {
-        setSuccessMessage("Cập nhật thông tin thành công!");
-        setTimeout(() => setSuccessMessage(""), 3000);
+          showSuccess("Cập nhật thông tin thành công!")
       } else {
-        setErrorMessage(result.message);
+          showError(result.message);
       }
     } catch (error) {
-      setErrorMessage("Có lỗi xảy ra khi cập nhật thông tin");
+        showError("Có lỗi xảy ra khi cập nhật thông tin");
     } finally {
       setLoading(false);
     }
@@ -139,27 +136,23 @@ const ProfilePage = () => {
       return;
     }
     setLoading(true);
-    setSuccessMessage("");
-    setErrorMessage("");
     try {
       const result = await profileService.changePassword({
         oldPassword: passwordData.oldPassword,
         newPassword: passwordData.newPassword,
       });
       if (result.success) {
-        setSuccessMessage("Đổi mật khẩu thành công!");
+          showSuccess("Đổi mật khẩu thành công!");
         setPasswordData({
           oldPassword: "",
           newPassword: "",
           confirmPassword: "",
         });
-        setShowPasswordForm(false);
-        setTimeout(() => setSuccessMessage(""), 3000);
       } else {
-        setErrorMessage(result.message);
+          showError(result.message);
       }
     } catch (error) {
-      setErrorMessage("Có lỗi xảy ra khi đổi mật khẩu");
+        showError("Có lỗi xảy ra khi đổi mật khẩu");
     } finally {
       setLoading(false);
     }
@@ -187,14 +180,14 @@ const ProfilePage = () => {
   return (
     <div
       className="d-flex flex-column min-vh-100"
-      style={{ background: "#181a20", overflowX: "hidden" }}
+      style={{ background: "#fff", overflowX: "hidden" }}
     >
       {/* Page Banner */}
       <div
         className="profile-banner position-relative"
         style={{
-          background: "#0d0d12",
-          padding: "60px 0",
+          background: "#0D6FFD",
+          padding: "30px 0",
           marginBottom: "40px",
         }}
       >
@@ -213,55 +206,6 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {/* Notifications */}
-      {successMessage && (
-        <div className="container mb-4">
-          <div
-            className="alert alert-success d-flex align-items-center"
-            style={{
-              background: "rgba(40, 199, 111, 0.1)",
-              border: "1px solid #28c76f",
-              borderRadius: "8px",
-            }}
-          >
-            <i
-              className="bi bi-check-circle-fill me-2 text-success"
-              style={{ fontSize: "1.5rem" }}
-            ></i>
-            <div className="flex-grow-1 text-white">{successMessage}</div>
-            <button
-              type="button"
-              className="btn-close btn-close-white"
-              onClick={() => setSuccessMessage("")}
-            ></button>
-          </div>
-        </div>
-      )}
-
-      {errorMessage && (
-        <div className="container mb-4">
-          <div
-            className="alert alert-danger d-flex align-items-center"
-            style={{
-              background: "rgba(234, 84, 85, 0.1)",
-              border: "1px solid #ea5455",
-              borderRadius: "8px",
-            }}
-          >
-            <i
-              className="bi bi-exclamation-triangle-fill me-2 text-danger"
-              style={{ fontSize: "1.5rem" }}
-            ></i>
-            <div className="flex-grow-1 text-white">{errorMessage}</div>
-            <button
-              type="button"
-              className="btn-close btn-close-white"
-              onClick={() => setErrorMessage("")}
-            ></button>
-          </div>
-        </div>
-      )}
-
       {/* Main Content */}
       <main className="flex-grow-1 pb-5">
         <div className="container">
@@ -271,7 +215,7 @@ const ProfilePage = () => {
               {/* User Card */}
               <div
                 className="card border-0 shadow-lg mb-4"
-                style={{ background: "#1f2029", borderRadius: "12px" }}
+                style={{ background: "#fff", borderRadius: "12px" }}
               >
                 <div className="card-body text-center p-4">
                   <div
@@ -279,14 +223,13 @@ const ProfilePage = () => {
                     style={{
                       width: "100px",
                       height: "100px",
-                      background:
-                        "linear-gradient(135deg, #ff4b2b 0%, #ff416c 100%)",
+                      background: "#ff4b2b",
                       fontSize: "2.5rem",
                     }}
                   >
                     <i className="bi bi-person text-white"></i>
                   </div>
-                  <h5 className="mb-1 fw-bold text-white">
+                  <h5 className="mb-1 fw-bold text-black">
                     {user?.username || "User"}
                   </h5>
                   <p className="text-muted small mb-0">{profileData.email}</p>
@@ -307,14 +250,13 @@ const ProfilePage = () => {
                     style={
                       activeTab === "info"
                         ? {
-                            background:
-                              "linear-gradient(135deg, #ff4b2b 0%, #ff416c 100%)",
+                            background: "#ff4b2b",
                             color: "white",
                             border: "none",
                             borderRadius: "0",
                           }
                         : {
-                            background: "transparent",
+                            background: "#fff",
                             color: "#a0a0a0",
                             border: "none",
                           }
@@ -331,14 +273,13 @@ const ProfilePage = () => {
                     style={
                       activeTab === "security"
                         ? {
-                            background:
-                              "linear-gradient(135deg, #ff4b2b 0%, #ff416c 100%)",
+                            background: "#ff4b2b",
                             color: "white",
                             border: "none",
                             borderRadius: "0",
                           }
                         : {
-                            background: "transparent",
+                            background: "#fff",
                             color: "#a0a0a0",
                             border: "none",
                           }
@@ -356,17 +297,21 @@ const ProfilePage = () => {
               {activeTab === "info" && (
                 <div
                   className="card border-0 shadow-lg"
-                  style={{ background: "#1f2029", borderRadius: "12px" }}
+                  style={{
+                      background: "#fff",
+                      borderRadius: "12px",
+                        border: "1px solid #e0e0e0"
+                  }}
                 >
                   <div
                     className="card-header py-4"
                     style={{
-                      background: "rgba(255, 75, 43, 0.05)",
+                      background: "#ff4b2b",
                       borderBottom: "1px solid rgba(255, 75, 43, 0.2)",
                       borderRadius: "12px 12px 0 0",
                     }}
                   >
-                    <h5 className="mb-0 fw-bold" style={{ color: "#ff4b2b" }}>
+                    <h5 className="mb-0 fw-bold" style={{ color: "#fff" }}>
                       <i className="bi bi-pencil-square me-2"></i>
                       Thông tin cá nhân
                     </h5>
@@ -375,7 +320,7 @@ const ProfilePage = () => {
                     <form onSubmit={handleUpdateProfile}>
                       <div className="row g-4">
                         <div className="col-md-6">
-                          <label className="form-label text-white fw-semibold">
+                          <label className="form-label text-black fw-semibold">
                             Họ và tên{" "}
                             <span style={{ color: "#ff4b2b" }}>*</span>
                           </label>
@@ -389,9 +334,9 @@ const ProfilePage = () => {
                             onChange={handleProfileChange}
                             placeholder="Nhập họ tên"
                             style={{
-                              background: "#0d0d12",
+                              background: "#fff",
                               border: "1px solid #2d2d35",
-                              color: "white",
+                              color: "black",
                               padding: "12px",
                               borderRadius: "8px",
                             }}
@@ -404,7 +349,7 @@ const ProfilePage = () => {
                         </div>
 
                         <div className="col-md-6">
-                          <label className="form-label text-white fw-semibold">
+                          <label className="form-label text-black fw-semibold">
                             Email <span style={{ color: "#ff4b2b" }}>*</span>
                           </label>
                           <input
@@ -417,9 +362,9 @@ const ProfilePage = () => {
                             onChange={handleProfileChange}
                             placeholder="Nhập email"
                             style={{
-                              background: "#0d0d12",
+                              background: "#fff",
                               border: "1px solid #2d2d35",
-                              color: "white",
+                              color: "black",
                               padding: "12px",
                               borderRadius: "8px",
                             }}
@@ -432,7 +377,7 @@ const ProfilePage = () => {
                         </div>
 
                         <div className="col-md-6">
-                          <label className="form-label text-white fw-semibold">
+                          <label className="form-label text-black fw-semibold">
                             Số điện thoại{" "}
                             <span style={{ color: "#ff4b2b" }}>*</span>
                           </label>
@@ -446,9 +391,9 @@ const ProfilePage = () => {
                             onChange={handleProfileChange}
                             placeholder="Nhập số điện thoại"
                             style={{
-                              background: "#0d0d12",
+                              background: "#fff",
                               border: "1px solid #2d2d35",
-                              color: "white",
+                              color: "black",
                               padding: "12px",
                               borderRadius: "8px",
                             }}
@@ -459,7 +404,7 @@ const ProfilePage = () => {
                         </div>
 
                         <div className="col-md-6">
-                          <label className="form-label text-white fw-semibold">
+                          <label className="form-label text-black fw-semibold">
                             Ngày sinh
                           </label>
                           <input
@@ -469,9 +414,9 @@ const ProfilePage = () => {
                             value={profileData.ngaySinh}
                             onChange={handleProfileChange}
                             style={{
-                              background: "#0d0d12",
+                              background: "#fff",
                               border: "1px solid #2d2d35",
-                              color: "white",
+                              color: "black",
                               padding: "12px",
                               borderRadius: "8px",
                             }}
@@ -487,7 +432,7 @@ const ProfilePage = () => {
                           style={{
                             background: "transparent",
                             border: "1px solid #2d2d35",
-                            color: "white",
+                            color: "black",
                             borderRadius: "8px",
                           }}
                         >
@@ -499,8 +444,7 @@ const ProfilePage = () => {
                           className="btn px-4 py-2"
                           disabled={loading}
                           style={{
-                            background:
-                              "linear-gradient(135deg, #ff4b2b 0%, #ff416c 100%)",
+                            background: "#ff4b2b",
                             color: "white",
                             border: "none",
                             borderRadius: "8px",
@@ -528,17 +472,21 @@ const ProfilePage = () => {
               {activeTab === "security" && (
                 <div
                   className="card border-0 shadow-lg"
-                  style={{ background: "#1f2029", borderRadius: "12px" }}
+                  style={{
+                      background: "#fff",
+                      borderRadius: "12px",
+                      border: "1px solid #e0e0e0"
+                }}
                 >
                   <div
                     className="card-header py-4"
                     style={{
-                      background: "rgba(255, 75, 43, 0.05)",
+                      background: "#ff4b2b",
                       borderBottom: "1px solid rgba(255, 75, 43, 0.2)",
                       borderRadius: "12px 12px 0 0",
                     }}
                   >
-                    <h5 className="mb-0 fw-bold" style={{ color: "#ff4b2b" }}>
+                    <h5 className="mb-0 fw-bold" style={{ color: "#fff" }}>
                       <i className="bi bi-shield-lock me-2"></i>
                       Bảo mật tài khoản
                     </h5>
@@ -549,9 +497,9 @@ const ProfilePage = () => {
                         <div
                           className="d-flex align-items-start p-4 mb-4"
                           style={{
-                            background: "#0d0d12",
+                            background: "#fff",
                             borderRadius: "12px",
-                            border: "1px solid #2d2d35",
+                            border: "1px solid #ccc",
                           }}
                         >
                           <div className="flex-shrink-0">
@@ -571,18 +519,17 @@ const ProfilePage = () => {
                             </div>
                           </div>
                           <div className="flex-grow-1 ms-4">
-                            <h6 className="mb-2 text-white fw-bold">
+                            <h6 className="mb-2 text-black fw-bold">
                               Mật khẩu
                             </h6>
-                            <p className="text-white mb-3">
+                            <p className="text-black mb-3">
                               Đổi mật khẩu định kỳ để bảo vệ tài khoản của bạn
                             </p>
                             <button
                               className="btn btn-sm px-4"
                               onClick={() => setShowPasswordForm(true)}
                               style={{
-                                background:
-                                  "linear-gradient(135deg, #ff4b2b 0%, #ff416c 100%)",
+                                background: "#ff4b2b",
                                 color: "white",
                                 border: "none",
                                 borderRadius: "8px",
@@ -597,9 +544,9 @@ const ProfilePage = () => {
                         <div
                           className="d-flex align-items-start p-4"
                           style={{
-                            background: "#0d0d12",
+                            background: "#fff",
                             borderRadius: "12px",
-                            border: "1px solid #2d2d35",
+                            border: "1px solid #ccc",
                           }}
                         >
                           <div className="flex-shrink-0">
@@ -619,10 +566,10 @@ const ProfilePage = () => {
                             </div>
                           </div>
                           <div className="flex-grow-1 ms-4">
-                            <h6 className="mb-2 text-white fw-bold">
+                            <h6 className="mb-2 text-black fw-bold">
                               Tài khoản đã xác thực
                             </h6>
-                            <p className="text-white mb-3">
+                            <p className="text-black mb-3">
                               Tài khoản của bạn đã được xác thực và bảo mật
                             </p>
                             <span
@@ -642,7 +589,7 @@ const ProfilePage = () => {
                     ) : (
                       <form onSubmit={handleChangePassword}>
                         <div className="mb-4">
-                          <label className="form-label text-white fw-semibold">
+                          <label className="form-label text-black fw-semibold">
                             Mật khẩu hiện tại{" "}
                             <span style={{ color: "#ff4b2b" }}>*</span>
                           </label>
@@ -656,9 +603,9 @@ const ProfilePage = () => {
                             onChange={handlePasswordChange}
                             placeholder="Nhập mật khẩu hiện tại"
                             style={{
-                              background: "#0d0d12",
+                              background: "#fff",
                               border: "1px solid #2d2d35",
-                              color: "white",
+                              color: "black",
                               padding: "12px",
                               borderRadius: "8px",
                             }}
@@ -671,7 +618,7 @@ const ProfilePage = () => {
                         </div>
 
                         <div className="mb-4">
-                          <label className="form-label text-white fw-semibold">
+                          <label className="form-label text-black fw-semibold">
                             Mật khẩu mới{" "}
                             <span style={{ color: "#ff4b2b" }}>*</span>
                           </label>
@@ -685,9 +632,9 @@ const ProfilePage = () => {
                             onChange={handlePasswordChange}
                             placeholder="Nhập mật khẩu mới"
                             style={{
-                              background: "#0d0d12",
+                              background: "#fff",
                               border: "1px solid #2d2d35",
-                              color: "white",
+                              color: "black",
                               padding: "12px",
                               borderRadius: "8px",
                             }}
@@ -703,7 +650,7 @@ const ProfilePage = () => {
                         </div>
 
                         <div className="mb-4">
-                          <label className="form-label text-white fw-semibold">
+                          <label className="form-label text-black fw-semibold">
                             Xác nhận mật khẩu mới{" "}
                             <span style={{ color: "#ff4b2b" }}>*</span>
                           </label>
@@ -717,9 +664,9 @@ const ProfilePage = () => {
                             onChange={handlePasswordChange}
                             placeholder="Nhập lại mật khẩu mới"
                             style={{
-                              background: "#0d0d12",
+                              background: "#fff",
                               border: "1px solid #2d2d35",
-                              color: "white",
+                              color: "black",
                               padding: "12px",
                               borderRadius: "8px",
                             }}
@@ -747,7 +694,7 @@ const ProfilePage = () => {
                             style={{
                               background: "transparent",
                               border: "1px solid #2d2d35",
-                              color: "white",
+                              color: "black",
                               borderRadius: "8px",
                             }}
                           >
@@ -760,7 +707,7 @@ const ProfilePage = () => {
                             disabled={loading}
                             style={{
                               background:
-                                "linear-gradient(135deg, #ff4b2b 0%, #ff416c 100%)",
+                                "#ff4b2b",
                               color: "white",
                               border: "none",
                               borderRadius: "8px",
@@ -792,7 +739,7 @@ const ProfilePage = () => {
 
       <style jsx>{`
         .form-control:focus {
-          background: #0d0d12 !important;
+          background: #fff !important;
           border-color: #ff4b2b !important;
           box-shadow: 0 0 0 0.2rem rgba(255, 75, 43, 0.25) !important;
           color: white !important;
@@ -812,18 +759,14 @@ const ProfilePage = () => {
         }
 
         .list-group-item:hover:not(.active) {
-          background: rgba(255, 75, 43, 0.1) !important;
+          background: #ff4b2b !important;
           color: white !important;
         }
 
         .card {
           transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-
-        .card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
-        }
+        
       `}</style>
     </div>
   );

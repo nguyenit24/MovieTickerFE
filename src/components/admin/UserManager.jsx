@@ -11,14 +11,27 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+    Utensils,
+    User
 } from "lucide-react";
 import userService from "../../services/userService";
 import { useToast } from "../common/Toast";
 
 const UserModal = ({ show, mode, userData, onClose, onSave }) => {
   const [formData, setFormData] = useState({});
+  const [errors, setErrors] = useState({});
 
-  useEffect(() => {
+    function isEmail(value) {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(value);
+    }
+
+    function isPhone(value) {
+        const regex = /^(0[3|5|7|8|9])[0-9]{8}$/;
+        return regex.test(value);
+    }
+
+    useEffect(() => {
     const defaultData = {
       hoTen: "",
       email: "",
@@ -44,6 +57,29 @@ const UserModal = ({ show, mode, userData, onClose, onSave }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+      const newErrors = {};
+      if (!formData.hoTen.trim()) {
+          newErrors.hoTen = 'Vui lòng nhập họ và tên';
+      }
+      if (!formData.email.trim()) newErrors.email = 'Vui lòng nhập email';
+      if (!formData.ngaySinh) newErrors.ngaySinh = 'Vui lòng chọn ngày sinh';
+      if (!formData.tenDangNhap) newErrors.tenDangNhap = 'Vui lòng nhập tên đăng nhập';
+      if (!formData.matKhau) newErrors.matKhau = 'Vui lòng nhập mật khẩu';
+
+      if (formData.email.trim() && !isEmail(formData.email.trim())) {
+            newErrors.email = 'Định dạng email không hợp lệ';
+      }
+
+      if (formData.sdt.trim() && !isPhone(formData.sdt.trim())) {
+            newErrors.sdt = 'Định dạng số điện thoại không hợp lệ';
+      }
+
+      if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+      }
+      setErrors({})
+
     onSave(formData);
   };
 
@@ -56,8 +92,10 @@ const UserModal = ({ show, mode, userData, onClose, onSave }) => {
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">
-              {mode === "add" ? "Thêm User Mới" : "Chỉnh Sửa Thông Tin User"}
+            <h5 className="modal-title" style={{
+                color: 'black'
+            }}>
+              {mode === "add" ? "Thêm người dùng mới" : "Chỉnh sửa thông tin người dùng"}
             </h5>
             <button
               type="button"
@@ -68,26 +106,30 @@ const UserModal = ({ show, mode, userData, onClose, onSave }) => {
           <div className="modal-body">
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label className="form-label">Họ và Tên</label>
+                <label className="form-label">Họ và Tên<p className="text-danger">*</p></label>
                 <input
                   type="text"
                   name="hoTen"
                   value={formData.hoTen || ""}
                   onChange={handleChange}
-                  className="form-control"
-                  required
+                  className= {`form-control ${errors.hoTen ? 'is-invalid' : ''}`}
                 />
+                  {errors.hoTen && (
+                      <div className="invalid-feedback">{errors.hoTen}</div>
+                  )}
               </div>
               <div className="mb-3">
-                <label className="form-label">Email</label>
+                <label className="form-label">Email<p className="text-danger">*</p></label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email || ""}
                   onChange={handleChange}
-                  className="form-control"
-                  required
+                  className={`form-control ${errors.email ? 'is-invalid' : ''}`}
                 />
+                  {errors.email && (
+                      <div className="invalid-feedback">{errors.email}</div>
+                  )}
               </div>
               <div className="mb-3">
                 <label className="form-label">Số Điện Thoại</label>
@@ -96,42 +138,52 @@ const UserModal = ({ show, mode, userData, onClose, onSave }) => {
                   name="sdt"
                   value={formData.sdt || ""}
                   onChange={handleChange}
-                  className="form-control"
+                  className={`form-control ${errors.sdt ? 'is-invalid' : ''}`}
                 />
+                  {errors.sdt && (
+                      <div className="invalid-feedback">{errors.sdt}</div>
+                  )}
               </div>
               <div className="mb-3">
-                <label className="form-label">Ngày Sinh</label>
+                <label className="form-label">Ngày Sinh<p className="text-danger">*</p></label>
                 <input
                   type="date"
                   name="ngaySinh"
                   value={formData.ngaySinh || ""}
                   onChange={handleChange}
-                  className="form-control"
+                  className={`form-control ${errors.ngaySinh ? 'is-invalid' : ''}`}
                 />
+                  {errors.ngaySinh && (
+                      <div className="invalid-feedback">{errors.ngaySinh}</div>
+                  )}
               </div>
               <div className="mb-3">
-                <label className="form-label">Tên Đăng Nhập</label>
+                <label className="form-label">Tên Đăng Nhập <p className="text-danger">*</p></label>
                 <input
                   type="text"
                   name="tenDangNhap"
                   value={formData.tenDangNhap || ""}
                   onChange={handleChange}
-                  className="form-control"
-                  required
+                  className={`form-control ${errors.tenDangNhap ? 'is-invalid' : ''}`}
                   disabled={mode === "edit"}
                 />
+                  {errors.tenDangNhap && (
+                      <div className="invalid-feedback">{errors.tenDangNhap}</div>
+                  )}
               </div>
               {mode === "add" && (
                 <div className="mb-3">
-                  <label className="form-label">Mật Khẩu</label>
+                  <label className="form-label">Mật Khẩu <p className="text-danger">*</p></label>
                   <input
                     type="password"
                     name="matKhau"
                     value={formData.matKhau || ""}
                     onChange={handleChange}
-                    className="form-control"
-                    required
+                    className={`form-control ${errors.matKhau ? 'is-invalid' : ''}`}
                   />
+                    {errors.matKhau && (
+                        <div className="invalid-feedback">{errors.matKhau}</div>
+                    )}
                 </div>
               )}
               {/* Đã ẩn trường chọn Vai Trò */}
@@ -287,9 +339,27 @@ const UserManagement = () => {
 
   return (
     <div className="container-fluid p-4">
-      <h2 className="mb-4" style={{ color: "white" }}>
-        Quản lý User
-      </h2>
+        <div className="card shadow-sm mb-4 mt-4">
+            <div className="card-body">
+                <div className="d-flex align-items-center justify-content-between">
+                    <div className="d-flex align-items-center gap-3">
+                        <div className="bg-primary text-white p-3 rounded">
+                            <User size={32}/>
+                        </div>
+                        <div>
+                            <h1 className="mb-0 h3">Quản Lý Người Dùng</h1>
+                        </div>
+                    </div>
+                    <button
+                        className="btn btn-primary btn-lg"
+                        onClick={handleAddUserClick}
+                    >
+                        <Plus size={20} className="me-2" style={{verticalAlign: 'middle'}}/>
+                        Thêm người dùng
+                    </button>
+                </div>
+            </div>
+        </div>
 
       <div className="card mb-4">
         <div className="card-body">
@@ -326,9 +396,6 @@ const UserManagement = () => {
               </select>
             </div>
             <div className="col-lg-2 text-end">
-              <button className="btn btn-primary" onClick={handleAddUserClick}>
-                <Plus size={18} className="me-1" /> Thêm mới
-              </button>
             </div>
           </div>
         </div>
@@ -502,6 +569,16 @@ const UserManagement = () => {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveUser}
       />
+        <style jsx> {`
+            .form-label {
+                display: flex;
+                gap: 0.2rem !important;
+                color: black;
+                font-weight: 700;
+                height: 24px;
+            }
+        `}
+        </style>
     </div>
   );
 };

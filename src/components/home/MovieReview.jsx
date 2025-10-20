@@ -21,7 +21,6 @@ const MovieReviews = ({ maPhim, tenPhim }) => {
 
     const { showSuccess, showError } = useToast();
     const { user } = useAuth();
-    console.log('User in MovieReviews:', user);
 
     useEffect(() => {
         if (maPhim) {
