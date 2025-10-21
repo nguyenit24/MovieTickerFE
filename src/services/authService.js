@@ -12,10 +12,36 @@ const handleApiResponse = (response) => {
 };
 
 const handleError = (error) => {
-  const message =
-    error.response?.data?.message ||
-    error.message ||
-    "Không thể kết nối đến máy chủ.";
+  const resp = error.response?.data;
+  let message =
+    resp?.message || error.message || "Không thể kết nối đến máy chủ.";
+
+  // Ưu tiên lấy thông báo cụ thể từ resp.data (hoặc resp.errors nếu có)
+  const details = resp?.data ?? resp?.errors;
+  if (details) {
+    if (typeof details === "string") {
+      message = details;
+    } else if (Array.isArray(details) && details.length) {
+      const first = details[0];
+      message =
+        first?.message ||
+        first?.msg ||
+        first?.error ||
+        (typeof first === "string" ? first : message);
+    } else if (typeof details === "object") {
+      const firstKey = Object.keys(details)[0];
+      const firstVal = details[firstKey];
+      if (Array.isArray(firstVal) && firstVal.length) {
+        message =
+          firstVal[0]?.message ||
+          firstVal[0]?.msg ||
+          (typeof firstVal[0] === "string" ? firstVal[0] : message);
+      } else if (typeof firstVal === "string") {
+        message = firstVal;
+      }
+    }
+  }
+
   return { success: false, data: [], message };
 };
 
