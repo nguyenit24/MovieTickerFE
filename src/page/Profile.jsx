@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import profileService from "../services/profileService";
-import {useToast} from "../components/common/Toast.jsx";
+import { useToast } from "../components/common/Toast.jsx";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const ProfilePage = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const {showSuccess, showError} = useToast();
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     fetchUserInfo();
@@ -117,12 +117,12 @@ const ProfilePage = () => {
     try {
       const result = await profileService.updateMyInfo(profileData);
       if (result.success) {
-          showSuccess("Cập nhật thông tin thành công!")
+        showSuccess("Cập nhật thông tin thành công!");
       } else {
-          showError(result.message);
+        showError(result.message);
       }
     } catch (error) {
-        showError("Có lỗi xảy ra khi cập nhật thông tin");
+      showError("Có lỗi xảy ra khi cập nhật thông tin");
     } finally {
       setLoading(false);
     }
@@ -142,17 +142,17 @@ const ProfilePage = () => {
         newPassword: passwordData.newPassword,
       });
       if (result.success) {
-          showSuccess("Đổi mật khẩu thành công!");
+        showSuccess("Đổi mật khẩu thành công!");
         setPasswordData({
           oldPassword: "",
           newPassword: "",
           confirmPassword: "",
         });
       } else {
-          showError(result.message);
+        showError(result.message);
       }
     } catch (error) {
-        showError("Có lỗi xảy ra khi đổi mật khẩu");
+      showError("Có lỗi xảy ra khi đổi mật khẩu");
     } finally {
       setLoading(false);
     }
@@ -298,9 +298,9 @@ const ProfilePage = () => {
                 <div
                   className="card border-0 shadow-lg"
                   style={{
-                      background: "#fff",
-                      borderRadius: "12px",
-                        border: "1px solid #e0e0e0"
+                    background: "#fff",
+                    borderRadius: "12px",
+                    border: "1px solid #e0e0e0",
                   }}
                 >
                   <div
@@ -473,10 +473,10 @@ const ProfilePage = () => {
                 <div
                   className="card border-0 shadow-lg"
                   style={{
-                      background: "#fff",
-                      borderRadius: "12px",
-                      border: "1px solid #e0e0e0"
-                }}
+                    background: "#fff",
+                    borderRadius: "12px",
+                    border: "1px solid #e0e0e0",
+                  }}
                 >
                   <div
                     className="card-header py-4"
@@ -706,8 +706,7 @@ const ProfilePage = () => {
                             className="btn px-4 py-2"
                             disabled={loading}
                             style={{
-                              background:
-                                "#ff4b2b",
+                              background: "#ff4b2b",
                               color: "white",
                               border: "none",
                               borderRadius: "8px",
@@ -742,7 +741,7 @@ const ProfilePage = () => {
           background: #fff !important;
           border-color: #ff4b2b !important;
           box-shadow: 0 0 0 0.2rem rgba(255, 75, 43, 0.25) !important;
-          color: white !important;
+          color: #121010ff !important;
         }
 
         .form-control::placeholder {
@@ -766,7 +765,6 @@ const ProfilePage = () => {
         .card {
           transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
       `}</style>
     </div>
   );
