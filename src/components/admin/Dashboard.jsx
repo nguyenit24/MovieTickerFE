@@ -142,6 +142,7 @@ const Dashboard = () => {
     const endDate = today.toISOString().split('T')[0];
 
     const result = await invoiceService.getAllInvoiceStatus(startDate, endDate);
+    console.log(result);
     if (result.success) {
       const activities = result.data
         .sort((a, b) => new Date(b.ngayLap) - new Date(a.ngayLap))
@@ -154,13 +155,21 @@ const Dashboard = () => {
           time: formatTimeAgo(new Date(inv.ngayLap)),
           icon: 'ticket',
           color: 'primary'
-            }): (
+            }): (inv.trangThai === "REFUNDED") ?  (
             {
                 type: 'ticket',
                 message: `Người dùng đã trả ${inv.soLuongVe} vé cho phim "${inv.tenPhim}"`,
                 time: formatTimeAgo(new Date(inv.ngayLap)),
                 icon: 'ticket',
                 color: 'danger'
+            }
+            ) : (
+            {
+                type: 'ticket',
+                message: `Đã hủy ${inv.soLuongVe} vé cho phim "${inv.tenPhim}"`,
+                time: formatTimeAgo(new Date(inv.ngayLap)),
+                icon: 'ticket',
+                color: 'warning'
             }
             )
         ));
