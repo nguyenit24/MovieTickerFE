@@ -73,7 +73,7 @@ const Header = () => {
                 <NavLink
                   to="/my-reviews"
                   className={({ isActive }) =>
-                    `nav-link px-3 ${isActive ? "text-warning" : "text-white"}`
+                    `nav-link px-3 text-header ${isActive ? "text-warning" : "text-white"}`
                   }
                 >
                   Lịch sử đánh giá

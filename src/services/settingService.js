@@ -57,10 +57,9 @@ class SettingService {
         }
     }
 
-    // Xóa phòng chiếu
-    async deleteSetting(settingId) {
+    async deleteSetting(id) {
         try {
-            const response = await apiClient.delete(`/setting/${settingId}`);
+            const response = await apiClient.delete(`/setting/${id}`);
             return handleApiResponse(response);
         } catch (error) {
             return handleError(error);
