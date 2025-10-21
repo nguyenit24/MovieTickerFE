@@ -7,8 +7,7 @@ import PromotionSection from "../components/home/PromotionSection";
 import {settingService} from "../services/index.js";
 import {useToast} from "../components/common/Toast.jsx"
 import {Flame, CalendarClock, ChevronRight, Info, Mail, Phone} from "lucide-react";
-
-
+import { API_CONFIG } from "../services/config.js";
 const Home = () => {
     const [nowShowing, setNowShowing] = useState([]);
     const [comingSoon, setComingSoon] = useState([]);
@@ -17,14 +16,15 @@ const Home = () => {
     const {showError, showSuccess} = useToast();
     const [Email, setEmail] = useState("");
     const [PhoneNumber, setPhoneNumber] = useState("");
+    
 
     useEffect(() => {
         const fetchMovies = async () => {
             try {
                 setLoading(true);
                 const [resNow, resSoon, resSlider] = await Promise.all([
-                    fetch("http://localhost:8080/api/phim/dangchieu").then((r) => r.json()),
-                    fetch("http://localhost:8080/api/phim/sapchieu").then((r) => r.json()),
+                    fetch(`${API_CONFIG}/api/phim/dangchieu`).then((r) => r.json()),
+                    fetch(`${API_CONFIG}/api/phim/sapchieu`).then((r) => r.json()),
                     settingService.getAllPhimBanner()
                 ]);
 
