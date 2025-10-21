@@ -68,25 +68,30 @@ const CategoryManager = () =>
           setErrors(newErrors);
           return;
       }
-    if (modalType === 'add') {
-      const result = await categoryService.createCategory(formData);
-      if (result.success) {
-        fetchCategories();
-        showSuccess("Thêm thể loại thành công!");
-        closeModal();
-      } else {
-        showError(result.message);
+      try {
+        if (modalType === 'add') {
+        const result = await categoryService.createCategory(formData);
+          if (result.success) {
+              await fetchCategories();
+              showSuccess("Thêm thể loại thành công!");
+              closeModal();
+          } else {
+              showError(result.message);
+          }
       }
-    } else if (modalType === 'edit') {
-      const result = await categoryService.updateCategory(selectedCategory.maTheLoai, formData);
-      if (result.success) {
-        fetchCategories();
-          showSuccess("Chỉnh sửa thể loại thành công!");
-          closeModal();
-      } else {
-        showError(result.message);
+          else if (modalType === 'edit') {
+            const result = await categoryService.updateCategory(selectedCategory.maTheLoai, formData);
+            if (result.success) {
+                await fetchCategories();
+                showSuccess("Chỉnh sửa thể loại thành công!");
+                closeModal();
+            } else {
+                showError(result.message);
+            }
+        }
+      } catch (error) {
+        showError("Đã có lỗi xảy ra: " + error.message);
       }
-    }
   };
 
   const handleDelete = async (categoryId) => {

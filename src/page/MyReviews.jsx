@@ -206,15 +206,22 @@ const MyReviews = () => {
   }
 
   return (
-    <div className="container my-5">
-      <div className="row">
-        <div className="col-12">
-          <h1 className="mb-4 text-center">
-            <i className="bi bi-film me-2"></i>
-            Lịch sử đánh giá của bạn
-          </h1>
+    <div className="container-fluid p-4">
+        <div className="bg-primary text-white py-4 mb-4">
+            <div className="container">
+                <div className="row align-items-center">
+                    <div className="col-md-8">
+                        <h2 className="mb-0">
+                            <i className="bi bi-film me-2"></i>
+                            Lịch sử đánh giá của tôi
+                        </h2>
+                        <p className="mb-0 opacity-75">
+                            Quản lý và xem thông tin lịch sử đánh giá
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
 
       {topMovies.length > 0 && (
         <div className="row mb-5">

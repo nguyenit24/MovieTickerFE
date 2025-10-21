@@ -1,9 +1,12 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import authService from "../../services/authService.js";
+import {useAuth} from "../../context/AuthContext.jsx";
 
 const Sidebar = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { user, logOut } = useAuth();
     // Lấy phần sau 'admin' trong pathname
     const activeMenu = location.pathname.split('/')[2];
     const isActive = (id) => activeMenu && activeMenu.startsWith(id);
@@ -36,6 +39,22 @@ const Sidebar = () => {
         {id: 'service', icon: 'bi-basket', label: 'Dịch vụ khác'},
         {id: 'promotion', icon: 'bi-gift', label: 'Khuyến mãi'},
     ];
+
+    const handleLogout = async () => {
+        try {
+            // Luôn gọi API để vô hiệu hóa token trên server trước
+            await authService.logout();
+        } catch (error) {
+            console.error(
+                "Logout API call failed, but proceeding with client-side logout.",
+                error
+            );
+        } finally {
+            logOut(); // Xóa state và localStorage
+            // Điều này buộc trình duyệt phải tải lại trang hoàn toàn, đảm bảo state được reset 100%
+            window.location.href = "/login";
+        }
+    };
 
     return (
         <div className="bg-dark text-white d-flex flex-column h-100 p-0">
@@ -181,7 +200,9 @@ const Sidebar = () => {
                     </div>
                 </div>
 
-                <button className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center">
+                <button className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center"
+                    onClick={handleLogout}
+                >
                     <i className="bi bi-box-arrow-right me-2"></i>
                     Đăng xuất
                 </button>

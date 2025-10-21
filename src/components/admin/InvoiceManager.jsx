@@ -296,7 +296,6 @@ const InvoiceManager = () => {
             </div>
             <div>
               <h1 className="mb-0 h3">Quản Lý Hóa Đơn</h1>
-              <p className="text-muted mb-0">Hệ thống quản lý rạp chiếu phim</p>
             </div>
           </div>
         </div>

@@ -18,6 +18,15 @@ const invoiceService = {
         }
     },
 
+    getAllInvoiceStatus: async (NgayBD, NgayKT) => {
+        try {
+            const response = await apiClient.get("/payment/status?NgayBD=" + NgayBD + "&NgayKT=" + NgayKT);
+            return handleApiResponse(response);
+        } catch (error) {
+            return handleError(error);
+        }
+    },
+
     getAllPhimInvoice: async (NgayBD, NgayKT) => {
         try {
             const response = await apiClient.get(`/payment/phim?NgayBD=` + NgayBD + `&NgayKT=` + NgayKT);

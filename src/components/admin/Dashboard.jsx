@@ -141,18 +141,29 @@ const Dashboard = () => {
     const startDate = threeDaysAgo.toISOString().split('T')[0];
     const endDate = today.toISOString().split('T')[0];
 
-    const result = await invoiceService.getAllInvoice(startDate, endDate);
+    const result = await invoiceService.getAllInvoiceStatus(startDate, endDate);
     if (result.success) {
       const activities = result.data
         .sort((a, b) => new Date(b.ngayLap) - new Date(a.ngayLap))
         .slice(0, 5)
-        .map(inv => ({
+        .map(inv => (
+            (inv.trangThai === 'PAID') ? (
+            {
           type: 'ticket',
           message: `Đã bán ${inv.soLuongVe} vé cho phim "${inv.tenPhim}"`,
           time: formatTimeAgo(new Date(inv.ngayLap)),
           icon: 'ticket',
           color: 'primary'
-        }));
+            }): (
+            {
+                type: 'ticket',
+                message: `Người dùng đã trả ${inv.soLuongVe} vé cho phim "${inv.tenPhim}"`,
+                time: formatTimeAgo(new Date(inv.ngayLap)),
+                icon: 'ticket',
+                color: 'danger'
+            }
+            )
+        ));
 
       setRecentActivities(activities);
     }
