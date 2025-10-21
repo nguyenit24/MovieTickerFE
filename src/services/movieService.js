@@ -116,6 +116,20 @@ class MovieService {
           return handleError(error);
       }
   }
+
+    async uploadMoviesExcel(selectedFile) {
+        try {
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+            const response = await apiClient.post(`/phim/upload-excel`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            return handleApiResponse(response);
+        } catch (error) {
+            console.error("Lỗi kết nối API uploadMoviesExcel:", error);
+            return handleError(error);
+        }
+    }
 }
 
 export default new MovieService();

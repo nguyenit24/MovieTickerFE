@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from "react";
-import {Plus, Pencil, Trash2, CalendarCog, Save, Search, Calendar, Edit2, ImagePlay, FileCog} from "lucide-react";
+import {
+    Plus,
+    Pencil,
+    Trash2,
+    CalendarCog,
+    Save,
+    Search,
+    Calendar,
+    Edit2,
+    ImagePlay,
+    FileCog,
+    Trash
+} from "lucide-react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import SeatTypeManager from "./SeatTypeManager.jsx";
 import settingService from "../../services/settingService.js";
@@ -13,7 +25,8 @@ const SettingsManager = () => {
     const [promotion, setPromotion] = useState([]);
     const [service, setService] = useState([])
     const [prevSettings, setPrevSettings] = useState([])
-    const {showSuccess, showError} = useToast();
+    const {showSuccess, showError} = useToast()
+    const [errors, setErrors] = useState({});
     const [formStyle, setFormStyle] = useState('')
     const [formData, setFormData] = useState({
         maCauHinh: '',
@@ -89,9 +102,16 @@ const SettingsManager = () => {
         }
     }
 
-    const handleDeleteSlider = (id) => {
+    const handleDeleteSlider = async (s) => {
+        console.log(s);
         if (window.confirm("Bạn có chắc muốn xóa slider này không?")) {
-            setSliders((prev) => prev.filter((s) => s.id !== id));
+            const result = await settingService.deleteSetting(s.maCauHinh);
+            if (result.success) {
+                showSuccess("Xóa slider thành công");
+                await fetchSettings();
+            } else {
+                showError("Lỗi khi xóa slider: " + result.error);
+            }
         }
     };
 
@@ -108,7 +128,7 @@ const SettingsManager = () => {
         setShowModal(true)
         setFormStyle(style)
         let id = null
-        if (item.Loai === 'Phim') {
+        if (item.loai === 'Phim') {
             const match = item.tenCauHinh.match(/[0-9a-fA-F-]{36}/);
             id = match ? match[0] : null;
         }
@@ -129,29 +149,33 @@ const SettingsManager = () => {
         setShowModal(true);
     };
 
-    useEffect(() => {
-        console.log(formData);
-    }, [formData])
-
     const handleInputChange = (key, value) => {
+        console.log(key, value);
         setSettings(prev =>
             prev.map(item =>
-                item.maCauHinh === key
-                    ? { ...item, giaTri: value } // tạo bản copy, không mutate
+                item.maCauHinh.trim() === key
+                    ? { ...item, giaTri: value }
                     : item
             )
         );
     };
 
     const handleInputFormDataChange = (e) => {
-        const {name, value} = e.target;
-        console.log(name);
-        console.log(value)
         if (e.target.name === 'Loai') {
+            let doiTuong = null
+            if (e.target.value === 'Phim' && movie.length > 0) {
+                doiTuong = movie[0].maPhim;
+            }
+            else if (e.target.value === 'Dịch vụ' && service.length > 0) {
+                doiTuong = service[0].maDv.toString();
+            }
+            else if (e.target.value === 'Khuyến mãi' && promotion.length > 0) {
+                doiTuong = promotion[0].maKm.toString();
+            }
             setFormData(prev => ({
                 ...prev,
                 Loai: e.target.value,
-                DoiTuong: '', // reset khi đổi loại
+                DoiTuong: doiTuong, // reset khi đổi loại
             }));
         } else {
             setFormData(prev => ({
@@ -160,9 +184,6 @@ const SettingsManager = () => {
             }));
         }
     };
-
-
-
 
     const changedSettings = settings.filter(s => {
         const old = prevSettings.find(p => p.maCauHinh === s.maCauHinh);
@@ -176,12 +197,48 @@ const SettingsManager = () => {
         });
 
         if (changedSettings.length === 0) {
+            setErrors({})
             showError("Không có thay đổi nào để lưu!");
             return;
         }
 
         try {
             for (const s of changedSettings) {
+                setErrors({})
+                console.log(s);
+                const newErrors = {};
+                if (!s.giaTri.trim()) {
+                    newErrors.ma = s.maCauHinh
+                    newErrors.loi = "Vui lòng nhập giá trị cho " + s.tenCauHinh;
+                }
+                else if (s.maCauHinh === 'EMAIL_SUPPORT') {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(s.giaTri)) {
+                        newErrors.ma = s.maCauHinh
+                        newErrors.loi = "Vui lòng nhập địa chỉ email hợp lệ";
+                    }
+                }
+                else if (s.maCauHinh === 'TIME_HOLD_SEAT' || s.maCauHinh === 'MAX_TICKET_BOOKING' || s.maCauHinh === 'TIME_IMAGES_TRANSITION') {
+                    const numberValue = Number(s.giaTri);
+                    if (isNaN(numberValue) || numberValue <= 0 || !Number.isInteger(numberValue)) {
+                        newErrors.ma = s.maCauHinh
+                        newErrors.loi = "Vui lòng nhập số nguyên dương cho " + s.tenCauHinh;
+                    }
+                }
+                else if (s.maCauHinh === 'HOT_LINE') {
+                    const phoneRegex = /^[0-9+\-\s()]+$/;
+                    if (!phoneRegex.test(s.giaTri)) {
+                        newErrors.ma = s.maCauHinh
+                        newErrors.loi = "Vui lòng nhập số điện thoại hợp lệ";
+                    }
+                }
+                if (Object.keys(newErrors).length > 0) {
+                    setErrors(newErrors);
+                    return;
+                }
+                setErrors({})
+
+
                 const result = await settingService.updateSetting(s);
                 if (result.success) {
                     showSuccess(`Đã lưu ${s.maCauHinh} thành công`);
@@ -206,23 +263,39 @@ const SettingsManager = () => {
             DoiTuong: '',
             Loai: 'Phim'
         })
-        // setActiveTab("slider")
+        setErrors({})
     };
 
     const handleImageSubmit = async (e) => {
-        e.preventDefault();
-        // let DoiTuong = {
-        //     urlHinh: formData.urlHinh
-        // // }
+        e.preventDefault()
+        setErrors({})
+        const newErrors = {};
+        if (!formData.tieuDe.trim()) newErrors.tieuDe = 'Vui lòng nhập tiêu đề';
+        if (!formData.Loai.trim()) newErrors.Loai = 'Vui lòng chọn loại quảng cáo';
+        if (formData.Loai === 'Phim' && !formData.urlHinh.trim()) {
+            newErrors.urlHinh = 'Vui lòng nhập hình ảnh';
+        }
+        else if (formData.urlHinh) {
+            try {
+                new URL(formData.urlHinh);
+            } catch (e) {
+                newErrors.urlHinh = "Vui lòng nhập URL hình ảnh hợp lệ";
+            }
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+        setErrors({})
+
+
         let DoiTuong = {};
         if (formData.Loai !== 'Phim') {
-            console.log(formData);
             if (formData.Loai === 'Khuyến mãi') {
                 DoiTuong = promotion.find(p => p.maKm === formData.DoiTuong.trim())
             } else DoiTuong = service.find(p => p.maDv === parseInt(formData.DoiTuong.trim()))
         }
-        console.log(service)
-        console.log(DoiTuong)
         const slider = {
             maCauHinh: formData.maCauHinh,
             tenCauHinh: formData.tieuDe + ' - ' + formData.DoiTuong,
@@ -235,7 +308,6 @@ const SettingsManager = () => {
                 result = await settingService.updateSetting(slider);
             }
             else result = await settingService.creatSetting(slider);
-            console.log(result)
             if (result.success) {
                 showSuccess(`Đã lưu ${formData.maCauHinh} thành công`);
                 fetchSettings();
@@ -261,7 +333,6 @@ const SettingsManager = () => {
                             </div>
                             <div>
                                 <h1 className="mb-0 h3">Cấu hình hệ thống</h1>
-                                <p className="text-muted mb-0">Hệ thống quản lý rạp chiếu phim</p>
                             </div>
                         </div>
                     </div>
@@ -300,56 +371,71 @@ const SettingsManager = () => {
                                             <label className="form-label fw-semibold">Thời gian giữ ghế (phút)</label>
                                             <input
                                                 type="number"
-                                                className="form-control"
+                                                className={`form-control ${errors.ma === 'TIME_HOLD_SEAT' ? 'is-invalid' : ''}`}
                                                 value={getSettingValue('TIME_HOLD_SEAT')}
                                                 onChange={(e) =>
                                                     handleInputChange('TIME_HOLD_SEAT', e.target.value)
                                                 }
                                             />
+                                            {errors.ma === 'TIME_HOLD_SEAT' && (
+                                                <div className="invalid-feedback">{errors.loi}</div>
+                                            )}
                                         </div>
                                         <div className="col-md-4">
                                             <label className="form-label fw-semibold">Số vé tối đa mỗi trong một phim</label>
                                             <input
                                                 type="number"
-                                                className="form-control"
+                                                className={`form-control ${errors.ma  === 'MAX_TICKET_BOOKING' ? 'is-invalid' : ''}`}
                                                 value={getSettingValue('MAX_TICKET_BOOKING')}
                                                 onChange={(e) =>
                                                     handleInputChange('MAX_TICKET_BOOKING', e.target.value)
                                                 }
                                             />
+                                            {errors.ma === 'MAX_TICKET_BOOKING' && (
+                                                <div className="invalid-feedback">{errors.loi}</div>
+                                            )}
                                         </div>
                                         <div className="col-md-4">
                                             <label className="form-label fw-semibold">Thời gian chuyển ảnh slider (giây)</label>
                                             <input
                                                 type="number"
-                                                className="form-control"
+                                                className={`form-control ${errors.ma === 'TIME_IMAGES_TRANSITION' ? 'is-invalid' : ''}`}
                                                 value={getSettingValue('TIME_IMAGES_TRANSITION')}
                                                 onChange={(e) =>
                                                     handleInputChange('TIME_IMAGES_TRANSITION', e.target.value)
                                                 }
                                             />
+                                            {errors.ma === 'TIME_IMAGES_TRANSITION' && (
+                                                <div className="invalid-feedback">{errors.loi}</div>
+                                            )}
                                         </div>
                                         <div className="col-md-4">
                                             <label className="form-label fw-semibold">Email hỗ trợ</label>
                                             <input
                                                 type="email"
-                                                className="form-control"
+                                                className={`form-control ${errors.ma === 'EMAIL_SUPPORT' ? 'is-invalid' : ''}`}
                                                 value={getSettingValue('EMAIL_SUPPORT')}
                                                 onChange={(e) =>
                                                     handleInputChange('EMAIL_SUPPORT', e.target.value)
                                                 }
                                             />
+                                            {errors.ma === 'EMAIL_SUPPORT' && (
+                                                <div className="invalid-feedback">{errors.loi}</div>
+                                            )}
                                         </div>
                                         <div className="col-md-4">
                                             <label className="form-label fw-semibold">Hotline hệ thống</label>
                                             <input
                                                 type="text"
-                                                className="form-control"
+                                                className={`form-control ${errors.ma === 'HOT_LINE' ? 'is-invalid' : ''}`}
                                                 value={getSettingValue('HOT_LINE')}
                                                 onChange={(e) =>
-                                                    handleInputChange('HOT_LINE ', e.target.value)
+                                                    handleInputChange('HOT_LINE', e.target.value)
                                                 }
                                             />
+                                            {errors.ma === 'HOT_LINE' && (
+                                                <div className="invalid-feedback">{errors.loi}</div>
+                                            )}
                                         </div>
                                         <div className="col-12">
                                             <button className="btn btn-primary mt-3"
@@ -368,11 +454,15 @@ const SettingsManager = () => {
                                 <div className="card-body">
                                     <div className="d-flex justify-content-between align-items-center mb-3">
                                         <h5 className="fw-bold mb-0">Danh Sách Banner</h5>
-                                        <button className="btn btn-primary d-flex align-items-center gap-2"
-                                                onClick={() => openModal('add', null)}
-                                        >
-                                            <Plus size={18} /> Thêm Mới
-                                        </button>
+                                            <button className={
+                                                (movie.length > 0 || service.length > 0 || promotion.length > 0)
+                                                    ? 'btn btn-primary d-flex align-items-center gap-2'
+                                                    : 'btn btn-secondary disabled d-flex align-items-center gap-2'
+                                            }
+                                                    onClick={() => openModal('add', null)}
+                                            >
+                                                <Plus size={18}/> Thêm Mới
+                                            </button>
                                     </div>
 
                                     {/* Search box */}
@@ -424,6 +514,11 @@ const SettingsManager = () => {
                                                         >
                                                             <Pencil size={16} />
                                                         </button>
+                                                        <button className="btn btn-outline-danger btn-sm me-2"
+                                                                onClick={() => handleDeleteSlider(slider)}
+                                                        >
+                                                            <Trash size={16} />
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -444,29 +539,35 @@ const SettingsManager = () => {
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title">
-                                    Chỉnh sửa banner quảng cáo
+                                    {formStyle === 'add' ? 'Thêm mới banner quảng cáo' : 'Chỉnh sửa banner quảng cáo'}
                                 </h5>
                                 <button type="button" className="btn-close" onClick={closeModal}></button>
                             </div>
                             <form onSubmit={handleImageSubmit}>
                                 <div className="modal-body">
                                     <div className="mb-3">
-                                        <label htmlFor="tieuDe" className="form-label">Tiêu đề quảng cáo *</label>
+                                        <label htmlFor="tieuDe" className="form-label">Tiêu đề quảng cáo
+                                            <span className="text-danger">*</span>
+                                            </label>
                                         <input
                                             type="text"
-                                            className="form-control"
+                                            className={`form-control ${errors.tieuDe ? 'is-invalid' : ''}`}
                                             id="tieuDe"
                                             name="tieuDe"
                                             value={formData.tieuDe}
                                             onChange={handleInputFormDataChange}
-                                            required
                                         />
+                                        {errors.tieuDe && (
+                                            <div className="invalid-feedback">{errors.tieuDe}</div>
+                                        )}
                                     </div>
 
                                     <div className="mb-3">
-                                        <label htmlFor="loai" className="form-label">Loại quảng cáo *</label>
+                                        <label htmlFor="loai" className="form-label">Loại quảng cáo
+                                            <span className="text-danger">*</span>
+                                        </label>
                                         <select
-                                            className="form-select"
+                                            className={`form-select ${errors.Loai ? 'is-invalid' : ''}`}
                                             id="loai"
                                             name="Loai"
                                             value={formData.Loai || ''}   // đảm bảo có default value
@@ -478,15 +579,19 @@ const SettingsManager = () => {
                                                 <option key={cat.id} value={cat.name}>{cat.name}</option>
                                             ))}
                                         </select>
+                                        {errors.Loai && (
+                                            <div className="invalid-feedback">{errors.Loai}</div>
+                                        )}
                                     </div>
                                     {formData.Loai && (
                                         <div className="mb-3">
                                             <label htmlFor="phim" className="form-label">
-                                                {formData.Loai === 'Phim' ?
-                                                    'Phim *' :
-                                                    formData.Loai === 'Dịch vụ' ?
-                                                        'Dịch vụ *' : 'Khuyến mãi *'
+                                                {(formData.Loai === 'Phim' && movie.length > 0) ?
+                                                    'Phim' :
+                                                    (formData.Loai === 'Dịch vụ' && movie.length > 0) ?
+                                                        'Dịch vụ' : 'Khuyến mãi'
                                                 }
+                                                <span className="text-danger">*</span>
                                             </label>
                                             <select
                                                 className="form-select"
@@ -494,7 +599,6 @@ const SettingsManager = () => {
                                                 name="DoiTuong"
                                                 value={formData.DoiTuong}   // đảm bảo có default value
                                                 onChange={handleInputFormDataChange}
-                                                required
                                             >
                                                 {formData.Loai === 'Phim' ?
                                                     movie.map(m => (
@@ -514,17 +618,22 @@ const SettingsManager = () => {
 
                                     {formData.Loai === 'Phim' ?
                                         <div className="mb-3">
-                                            <label htmlFor="urlHinh" className="form-label">Hình ảnh *</label>
+                                            <label htmlFor="urlHinh" className="form-label">Hình ảnh
+                                                <span className="text-danger">*</span>
+                                            </label>
                                             <input
                                                 type="url"
-                                                className="form-control"
+                                                className={`form-control ${errors.urlHinh ? 'is-invalid' : ''}`}
                                                 id="urlHinh"
                                                 name="urlHinh"
                                                 value={formData.urlHinh}
                                                 placeholder="https://example.com/image.jpg"
-                                                required
+                                                onChange={handleInputFormDataChange}
                                                 //readOnly= {formData.Loai === 'Phim'}
                                             />
+                                            {errors.urlHinh && (
+                                                <div className="invalid-feedback">{errors.urlHinh}</div>
+                                            )}
                                         </div> : <></> }
                                 </div>
                                 <div className="modal-footer">
@@ -538,6 +647,24 @@ const SettingsManager = () => {
                     </div>
                 </div>
             )}
+            <style jsx>{`
+                .modal-title
+                {
+                    color: black;
+                    display: flex;
+                    gap: 0.2rem
+                }
+
+                .form-label
+                {
+                    color: black;
+                    display: flex;
+                    gap: 0.2rem;
+                    font-weight: 700;
+                    height: 24px;
+                }
+            `}
+            </style>
         </div>
     );
 }
