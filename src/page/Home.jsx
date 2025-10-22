@@ -23,8 +23,8 @@ const Home = () => {
             try {
                 setLoading(true);
                 const [resNow, resSoon, resSlider] = await Promise.all([
-                    fetch(`${API_CONFIG}/api/phim/dangchieu`).then((r) => r.json()),
-                    fetch(`${API_CONFIG}/api/phim/sapchieu`).then((r) => r.json()),
+                    fetch(`${API_CONFIG}/phim/dangchieu`).then((r) => r.json()),
+                    fetch(`${API_CONFIG}/phim/sapchieu`).then((r) => r.json()),
                     settingService.getAllPhimBanner()
                 ]);
 
