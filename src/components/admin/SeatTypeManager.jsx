@@ -38,7 +38,7 @@ const SeatTypeManager = () => {
         setLoading(true);
         const [allTypesRes, roomSeatsRes, rooms] = await Promise.all([
             seatService.getAllSeatTypes(roomId),
-            roomService.getRoomSeats(roomId),
+            roomService.getAllSeats(),
         ]);
         if (allTypesRes.success || roomSeatsRes.success) {
             setSeatTypes(allTypesRes.data || []);
