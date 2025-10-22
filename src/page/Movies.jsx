@@ -3,7 +3,7 @@ import Header from "../components/Layout/Header";
 import Footer from "../components/Layout/Footer";
 import Banner from "../components/home/MovieBanner";
 import Movie from "../components/home/Movie";
-const { API_CONFIG } = require("../services/config");
+import { API_CONFIG } from "../services/config";
 
 
 const Movies = () => {
@@ -22,10 +22,10 @@ const Movies = () => {
                 let url = "";
 
                 if (statusFilter === "dangchieu")
-                    url = `${API_CONFIG}/phim/dangchieu`;
+                    url = `${API_CONFIG.BASE_URL}/phim/dangchieu`;
                 else if (statusFilter === "sapchieu")
-                    url = `${API_CONFIG}/phim/sapchieu`;
-                else url = `${API_CONFIG}/phim/pageable?page=${page}&size=8`;
+                    url = `${API_CONFIG.BASE_URL}/phim/sapchieu`;
+                else url = `${API_CONFIG.BASE_URL}/phim/pageable?page=${page}&size=8`;
 
                 const res = await fetch(url);
                 const data = await res.json();

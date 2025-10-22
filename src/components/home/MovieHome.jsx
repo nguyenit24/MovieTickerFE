@@ -15,8 +15,8 @@ const MovieHome = () => {
             try {
                 setIsLoading(true);
                 const [nowRes, upcomingRes] = await Promise.all([
-                    axios.get(`${API_CONFIG}/phim/dang-chieu`),
-                    axios.get(`${API_CONFIG}/phim/sap-chieu`),
+                    axios.get(`${API_CONFIG.BASE_URL}/phim/dang-chieu`),
+                    axios.get(`${API_CONFIG.BASE_URL}/phim/sap-chieu`),
                 ]);
 
                 setMovies({
