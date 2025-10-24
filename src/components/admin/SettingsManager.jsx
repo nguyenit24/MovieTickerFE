@@ -128,11 +128,12 @@ const SettingsManager = () => {
         setShowModal(true)
         setFormStyle(style)
         let id = null
-        if (item.loai === 'Phim') {
-            const match = item.tenCauHinh.match(/[0-9a-fA-F-]{36}/);
-            id = match ? match[0] : null;
+        if (item !== null) {
+            if (item.loai === 'Phim') {
+                const match = item.tenCauHinh.match(/[0-9a-fA-F-]{36}/);
+                id = match ? match[0] : null;
+            } else id = item.tenCauHinh.split("-")[1].trim();
         }
-        else id = item.tenCauHinh.split("-")[1].trim();
         setFormData(item ? {
             maCauHinh: item.maCauHinh,
             tieuDe: item.tenCauHinh.split("-")[0].trim(),
@@ -205,7 +206,6 @@ const SettingsManager = () => {
         try {
             for (const s of changedSettings) {
                 setErrors({})
-                console.log(s);
                 const newErrors = {};
                 if (!s.giaTri.trim()) {
                     newErrors.ma = s.maCauHinh
@@ -296,12 +296,14 @@ const SettingsManager = () => {
                 DoiTuong = promotion.find(p => p.maKm === formData.DoiTuong.trim())
             } else DoiTuong = service.find(p => p.maDv === parseInt(formData.DoiTuong.trim()))
         }
+        console.log(formData)
         const slider = {
             maCauHinh: formData.maCauHinh,
             tenCauHinh: formData.tieuDe + ' - ' + formData.DoiTuong,
-            giaTri: DoiTuong?.urlHinh || formData.DoiTuong,
+            giaTri: DoiTuong?.urlHinh || formData.urlHinh,
             loai: formData.Loai,
         }
+        console.log(slider)
         let result;
         try {
             if (formStyle === "update") {
