@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Star, Play, Ticket, Film, Clock, Calendar } from "lucide-react";
+import { API_CONFIG } from "../../services/config";
 
 const MovieHome = () => {
     const [movies, setMovies] = useState([]);
@@ -14,8 +15,8 @@ const MovieHome = () => {
             try {
                 setIsLoading(true);
                 const [nowRes, upcomingRes] = await Promise.all([
-                    axios.get("http://localhost:8080/api/phim/dang-chieu"),
-                    axios.get("http://localhost:8080/api/phim/sap-chieu"),
+                    axios.get(`${API_CONFIG.BASE_URL}/phim/dang-chieu`),
+                    axios.get(`${API_CONFIG.BASE_URL}/phim/sap-chieu`),
                 ]);
 
                 setMovies({
